@@ -21,14 +21,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.tracecompass.internal.statesystem.core.Activator;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.CoreNode;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTConfig;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTInterval;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTNode;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTree;
 import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
 import org.eclipse.tracecompass.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException;
@@ -43,6 +39,8 @@ import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
  * @author Alexandre Montplaisir
  */
 public class HistoryTreeBackend implements IStateHistoryBackend {
+
+    private static final Logger LOGGER = Logger.getLogger(HistoryTreeBackend.class.getName());
 
     private final @NonNull String fSsid;
 
@@ -318,7 +316,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
                 total += node.getNodeUsagePercent();
             }
         } catch (ClosedChannelException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
 
         ret = total / fSht.getNodeCount();

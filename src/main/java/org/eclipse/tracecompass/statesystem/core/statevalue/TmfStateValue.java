@@ -12,8 +12,9 @@
 
 package org.eclipse.tracecompass.statesystem.core.statevalue;
 
+import java.util.logging.Logger;
+
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.tracecompass.internal.statesystem.core.Activator;
 import org.eclipse.tracecompass.statesystem.core.exceptions.StateValueTypeException;
 
 /**
@@ -29,6 +30,8 @@ import org.eclipse.tracecompass.statesystem.core.exceptions.StateValueTypeExcept
  * @author Alexandre Montplaisir
  */
 public abstract class TmfStateValue implements ITmfStateValue {
+
+    private static final Logger LOGGER = Logger.getLogger(TmfStateValue.class.getName());
 
     // ------------------------------------------------------------------------
     // State value caches (sizes must be powers of 2)
@@ -146,7 +149,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
          */
         for (char c : strValue.toCharArray()) {
             if (Character.isISOControl(c)) {
-                Activator.getDefault().logError("Trying to use invalid string: " + strValue); //$NON-NLS-1$
+               LOGGER.severe("Trying to use invalid string: " + strValue); //$NON-NLS-1$
                 throw new IllegalArgumentException();
             }
         }

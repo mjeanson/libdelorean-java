@@ -18,9 +18,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.tracecompass.internal.statesystem.core.Activator;
 
 /**
  * This class abstracts inputs/outputs of the HistoryTree nodes.
@@ -35,6 +36,9 @@ import org.eclipse.tracecompass.internal.statesystem.core.Activator;
  *
  */
 class HT_IO {
+
+    private static final Logger LOGGER = Logger.getLogger(HT_IO.class.getName());
+
     /* Configuration of the History Tree */
     private final HTConfig fConfig;
 
@@ -125,7 +129,7 @@ class HT_IO {
             throw e;
         } catch (IOException e) {
             /* Other types of IOExceptions shouldn't happen at this point though */
-            Activator.getDefault().logError(e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
             throw new IllegalStateException();
         }
     }
@@ -142,7 +146,7 @@ class HT_IO {
             node.writeSelf(fFileChannelOut);
         } catch (IOException e) {
             /* If we were able to open the file, we should be fine now... */
-            Activator.getDefault().logError(e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -158,7 +162,7 @@ class HT_IO {
              */
             seekFCToNodePos(fFileChannelIn, nodeOffset);
         } catch (IOException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
         return fFileInputStream;
     }
@@ -168,7 +172,7 @@ class HT_IO {
             fFileInputStream.close();
             fFileOutputStream.close();
         } catch (IOException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
@@ -178,7 +182,7 @@ class HT_IO {
         File historyTreeFile = fConfig.getStateFile();
         if (!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
-            Activator.getDefault().logError("Failed to delete" + historyTreeFile.getName()); //$NON-NLS-1$
+            LOGGER.severe("Failed to delete" + historyTreeFile.getName()); //$NON-NLS-1$
         }
     }
 

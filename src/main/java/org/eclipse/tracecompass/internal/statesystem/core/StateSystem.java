@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -51,6 +52,8 @@ import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
  *
  */
 public class StateSystem implements ITmfStateSystemBuilder {
+
+    private static final Logger LOGGER = Logger.getLogger(StateSystem.class.getName());
 
     /* References to the inner structures */
     private final AttributeTree attributeTree;
@@ -622,7 +625,7 @@ public class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     static void logMissingInterval(int attribute, long timestamp) {
-        Activator.getDefault().logInfo("No data found in history for attribute " + //$NON-NLS-1$
+        LOGGER.severe("No data found in history for attribute " + //$NON-NLS-1$
                 attribute + " at time " + timestamp + //$NON-NLS-1$
                 ", returning dummy interval"); //$NON-NLS-1$
     }

@@ -25,9 +25,10 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.tracecompass.internal.statesystem.core.Activator;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;
 import org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException;
 
@@ -40,6 +41,8 @@ import com.google.common.collect.ImmutableList;
  * @author Alexandre Montplaisir
  */
 public class HistoryTree {
+
+    private static final Logger LOGGER = Logger.getLogger(HistoryTree.class.getName());
 
     /**
      * Size of the "tree header" in the tree-file The nodes will use this offset
@@ -759,11 +762,11 @@ public class HistoryTree {
             }
 
         } catch (ClosedChannelException e) {
-            Activator.getDefault().logError(e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
 
         if (!ret) {
-            Activator.getDefault().logError("SHT: Integrity check failed for node #"
+            LOGGER.severe("SHT: Integrity check failed for node #"
                     + node.getSequenceNumber() + ":" + buf.toString());
         }
         return ret;
@@ -837,7 +840,7 @@ public class HistoryTree {
                     preOrderPrint(writer, printIntervals, nextNode, curDepth + 1);
                 }
             } catch (ClosedChannelException e) {
-                Activator.getDefault().logError(e.getMessage());
+                LOGGER.severe(e.getMessage());
             }
             break;
 

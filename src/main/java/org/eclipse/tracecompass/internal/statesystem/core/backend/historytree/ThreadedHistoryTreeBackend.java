@@ -17,10 +17,11 @@ package org.eclipse.tracecompass.internal.statesystem.core.backend.historytree;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.tracecompass.common.core.collect.BufferedBlockingQueue;
-import org.eclipse.tracecompass.internal.statesystem.core.Activator;
 import org.eclipse.tracecompass.statesystem.core.exceptions.StateSystemDisposedException;
 import org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
@@ -35,6 +36,8 @@ import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
  */
 public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
         implements Runnable {
+
+    private static final Logger LOGGER = Logger.getLogger(ThreadedHistoryTreeBackend.class.getName());
 
     private static final int CHUNK_SIZE = 127;
     private final @NonNull BufferedBlockingQueue<HTInterval> intervalQueue;
@@ -178,9 +181,9 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             intervalQueue.flushInputBuffer();
             shtThread.join();
         } catch (TimeRangeException e) {
-            Activator.getDefault().logError("Error closing state system", e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "Error closing state system", e); //$NON-NLS-1$
         } catch (InterruptedException e) {
-            Activator.getDefault().logError("State system interrupted", e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "State system interrupted", e); //$NON-NLS-1$
         }
     }
 
@@ -208,7 +211,7 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             return;
         } catch (TimeRangeException e) {
             /* This should not happen */
-            Activator.getDefault().logError("Error starting the state system", e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "Error starting the state system", e); //$NON-NLS-1$
         }
     }
 

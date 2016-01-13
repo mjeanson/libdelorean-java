@@ -26,9 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.tracecompass.internal.common.core.Activator;
 
 /**
  * A BufferedBlockingQueue is a wrapper around a {@link BlockingQueue}, which
@@ -48,6 +49,8 @@ import org.eclipse.tracecompass.internal.common.core.Activator;
  * @since 1.0
  */
 public class BufferedBlockingQueue<T> implements Iterable<T> {
+
+    private static final Logger LOGGER = Logger.getLogger(BufferedBlockingQueue.class.getName());
 
     private final BlockingDeque<Deque<T>> fInnerQueue;
     private final Lock fInputLock = new ReentrantLock();
@@ -140,7 +143,7 @@ public class BufferedBlockingQueue<T> implements Iterable<T> {
             }
 
         } catch (InterruptedException e) {
-            Activator.instance().logError("Buffered queue interrupted", e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "Buffered queue interrupted", e); //$NON-NLS-1$
         } finally {
             fInputLock.unlock();
         }
@@ -183,7 +186,7 @@ public class BufferedBlockingQueue<T> implements Iterable<T> {
             fSize.decrementAndGet();
             return element;
         } catch (InterruptedException e) {
-            Activator.instance().logError("Buffered queue interrupted", e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "Buffered queue interrupted", e); //$NON-NLS-1$
             throw new IllegalStateException();
         } finally {
             fOutputLock.unlock();
@@ -218,7 +221,7 @@ public class BufferedBlockingQueue<T> implements Iterable<T> {
             /* Our implementation guarantees this output buffer is not empty. */
             return checkNotNull(fOutputBuffer.peek());
         } catch (InterruptedException e) {
-            Activator.instance().logError("Buffered queue interrupted", e); //$NON-NLS-1$
+            LOGGER.log(Level.SEVERE, "Buffered queue interrupted", e); //$NON-NLS-1$
             throw new IllegalStateException();
         } finally {
             fOutputLock.unlock();
