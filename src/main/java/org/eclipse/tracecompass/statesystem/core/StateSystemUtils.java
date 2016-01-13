@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.tracecompass.statesystem.core.exceptions.AttributeNotFoundException;
@@ -185,8 +183,7 @@ public final class StateSystemUtils {
      *             If the query is sent after the state system has been disposed
      */
     public static List<ITmfStateInterval> queryHistoryRange(ITmfStateSystem ss,
-            int attributeQuark, long t1, long t2, long resolution,
-            @Nullable IProgressMonitor monitor)
+            int attributeQuark, long t1, long t2, long resolution)
             throws AttributeNotFoundException, StateSystemDisposedException {
         List<ITmfStateInterval> intervals = new LinkedList<>();
         ITmfStateInterval currentInterval = null;
@@ -204,19 +201,11 @@ public final class StateSystemUtils {
             tEnd = t2;
         }
 
-        IProgressMonitor mon = monitor;
-        if (mon == null) {
-            mon = new NullProgressMonitor();
-        }
-
         /*
          * Iterate over the "resolution points". We skip unneeded queries in the
          * case the current interval is longer than the resolution.
          */
         for (ts = t1; ts <= tEnd; ts += ((currentInterval.getEndTime() - ts) / resolution + 1) * resolution) {
-            if (mon.isCanceled()) {
-                return intervals;
-            }
             currentInterval = ss.querySingleState(ts, attributeQuark);
             intervals.add(currentInterval);
         }
