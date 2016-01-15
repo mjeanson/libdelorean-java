@@ -1,0 +1,125 @@
+/*******************************************************************************
+ * Copyright (c) 2016 Ericsson, EfficiOS Inc. and others
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
+
+package org.eclipse.tracecompass.statesystem.core.tests.backend;
+
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTreeBackend;
+import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
+import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+/**
+ * Test the {@link HistoryTreeBackend} class.
+ *
+ * @author Patrick Tasse
+ * @author Alexandre Montplaisir
+ */
+@RunWith(Parameterized.class)
+public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
+
+    /** State system ID */
+    protected static final @NonNull String SSID = "test";
+    /** Provider version */
+    protected static final int PROVIDER_VERSION = 0;
+
+    /** Default maximum number of children nodes */
+    protected static final int MAX_CHILDREN = 2;
+    /** Default block size */
+    protected static final int BLOCK_SIZE = 4096;
+
+    /** ReOpen test parameter */
+    protected final boolean fReOpen;
+
+    /** History tree file */
+    protected File fTempFile;
+
+    /**
+     * @return the test parameters
+     */
+    @Parameters(name = "ReOpen={0}")
+    public static Collection<Boolean> parameters() {
+        return Arrays.asList(Boolean.FALSE, Boolean.TRUE);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param reOpen
+     *            true if the backend should be re-opened before querying
+     */
+    public HistoryTreeBackendTest(Boolean reOpen) {
+        fReOpen = reOpen;
+    }
+
+    @Override
+    @Before
+    public void setup() {
+        try {
+            fTempFile = File.createTempFile("HistoryTreeBackendTest", ".ht");
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
+        super.setup();
+    }
+
+    @Override
+    @After
+    public void teardown() {
+        /*
+         * We need the super-class's teardown() to happen first, so we override
+         * this method to do so, because the default order would run it *after*
+         * the file.delete() here.
+         */
+        super.teardown();
+        if (fTempFile != null) {
+            fTempFile.delete();
+        }
+    }
+
+    @Override
+    protected void prepareBackend(long startTime, long endTime,
+            List<ITmfStateInterval> intervals) {
+        try {
+            IStateHistoryBackend backend = new HistoryTreeBackend(SSID, fTempFile,
+                    PROVIDER_VERSION, startTime, BLOCK_SIZE, MAX_CHILDREN);
+            for (ITmfStateInterval interval : intervals) {
+                backend.insertPastState(interval.getStartTime(), interval.getEndTime(),
+                        interval.getAttribute(), interval.getStateValue());
+            }
+            backend.finishedBuilding(Math.max(endTime, backend.getEndTime()));
+
+            if (fReOpen) {
+                /*
+                 * Close the existing backend, and instantiate a new one that
+                 * will re-read the same file.
+                 */
+                backend.dispose();
+                backend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION);
+            }
+            fBackend = backend;
+
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
+    }
+
+}
