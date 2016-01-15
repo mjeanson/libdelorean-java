@@ -13,36 +13,18 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.efficios.statesys</groupId>
-  <artifactId>statesys</artifactId>
+  <groupId>ca.polymtl.dorsal.statesys</groupId>
+  <artifactId>statesys-parent</artifactId>
   <version>0.5.0</version>
-  <packaging>jar</packaging>
-
-  <name>Generic State System Library</name>
+  <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.eclipse.jdt</groupId>
-      <artifactId>org.eclipse.jdt.annotation</artifactId>
-      <version>2.0.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>19.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>RELEASE</version>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>statesys-core</module>
+  </modules>
 
   <build>
     <plugins>
