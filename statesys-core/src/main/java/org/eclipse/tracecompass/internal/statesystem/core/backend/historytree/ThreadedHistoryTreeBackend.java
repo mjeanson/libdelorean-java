@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2015 Ericsson
+ * Copyright (c) 2012, 2016 Ericsson
  * Copyright (c) 2010, 2011 École Polytechnique de Montréal
  * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
  *
@@ -42,6 +42,11 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
     private static final int CHUNK_SIZE = 127;
     private final @NonNull BufferedBlockingQueue<HTInterval> intervalQueue;
     private final @NonNull Thread shtThread;
+    /**
+     * The backend tracks its end time separately from the tree, to take into
+     * consideration intervals in the queue.
+     */
+    private long fEndTime;
 
     /**
      * New state history constructor
@@ -79,6 +84,7 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             int maxChildren)
                     throws IOException {
         super(ssid, newStateFile, providerVersion, startTime, blockSize, maxChildren);
+        fEndTime = startTime;
 
         intervalQueue = new BufferedBlockingQueue<>(queueSize / CHUNK_SIZE, CHUNK_SIZE);
         shtThread = new Thread(this, "History Tree Thread"); //$NON-NLS-1$
@@ -113,6 +119,7 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
             int queueSize)
                     throws IOException {
         super(ssid, newStateFile, providerVersion, startTime);
+        fEndTime = startTime;
 
         intervalQueue = new BufferedBlockingQueue<>(queueSize / CHUNK_SIZE, CHUNK_SIZE);
         shtThread = new Thread(this, "History Tree Thread"); //$NON-NLS-1$
@@ -138,6 +145,12 @@ public final class ThreadedHistoryTreeBackend extends HistoryTreeBackend
         HTInterval interval = new HTInterval(stateStartTime, stateEndTime,
                 quark, (TmfStateValue) value);
         intervalQueue.put(interval);
+        fEndTime = Math.max(fEndTime, stateEndTime);
+    }
+
+    @Override
+    public long getEndTime() {
+        return fEndTime;
     }
 
     @Override

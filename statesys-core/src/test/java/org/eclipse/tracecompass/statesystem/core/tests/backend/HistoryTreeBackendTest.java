@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTreeBackend;
@@ -97,7 +96,7 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
 
     @Override
     protected void prepareBackend(long startTime, long endTime,
-            List<ITmfStateInterval> intervals) {
+            Collection<ITmfStateInterval> intervals) {
         try {
             IStateHistoryBackend backend = new HistoryTreeBackend(SSID, fTempFile,
                     PROVIDER_VERSION, startTime, BLOCK_SIZE, MAX_CHILDREN);

@@ -258,10 +258,11 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     private void checkValidTime(long t) {
-        long treeStart = fSht.getTreeStart();
-        long treeEnd = fSht.getTreeEnd();
-        if (t < treeStart || t > treeEnd) {
-            throw new TimeRangeException(fSsid + " Time:" + t + ", Start:" + treeStart + ", End:" + treeEnd); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        long startTime = getStartTime();
+        long endTime = getEndTime();
+        if (t < startTime || t > endTime) {
+            throw new TimeRangeException(String.format("%s Time:%d, Start:%d, End:%d", //$NON-NLS-1$
+                    fSsid, t, startTime, endTime));
         }
     }
 

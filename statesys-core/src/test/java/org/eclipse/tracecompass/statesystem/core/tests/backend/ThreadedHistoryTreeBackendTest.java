@@ -12,7 +12,7 @@ package org.eclipse.tracecompass.statesystem.core.tests.backend;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTreeBackend;
 import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.ThreadedHistoryTreeBackend;
@@ -42,7 +42,7 @@ public class ThreadedHistoryTreeBackendTest extends HistoryTreeBackendTest {
 
     @Override
     protected void prepareBackend(long startTime, long endTime,
-            List<ITmfStateInterval> intervals) {
+            Collection<ITmfStateInterval> intervals) {
         try {
             IStateHistoryBackend backend = new ThreadedHistoryTreeBackend(SSID, fTempFile,
                     PROVIDER_VERSION, startTime, QUEUE_SIZE, BLOCK_SIZE, MAX_CHILDREN);

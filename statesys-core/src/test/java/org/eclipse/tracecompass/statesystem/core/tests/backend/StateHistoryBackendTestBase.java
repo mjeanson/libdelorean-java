@@ -15,6 +15,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -68,7 +70,7 @@ public abstract class StateHistoryBackendTestBase {
      *            The intervals to insert in the history backend
      */
     protected abstract void prepareBackend(long startTime, long endTime,
-            List<ITmfStateInterval> intervals);
+            Collection<ITmfStateInterval> intervals);
 
     /**
      * Test the full query method
@@ -86,7 +88,7 @@ public abstract class StateHistoryBackendTestBase {
      *            The list of intervals to insert
      */
     private void testDoQuery(long startTime, long endTime, int nbAttr,
-            List<ITmfStateInterval> intervals) {
+            Collection<ITmfStateInterval> intervals) {
 
         prepareBackend(startTime, endTime, intervals);
         IStateHistoryBackend backend = fBackend;
@@ -151,5 +153,52 @@ public abstract class StateHistoryBackendTestBase {
         }
 
         testDoQuery(startTime, endTime, nbAttr, intervals);
+    }
+
+    /**
+     * Test the full query method by filling a small backend with intervals that
+     * take the full time range, like this:
+     *
+     * <pre>
+     * |x-------------x|
+     * |x-------------x|
+     * |x-------------x|
+     * |x-------------x|
+     * |      ...      |
+     * </pre>
+     *
+     * and then querying at every single timestamp, making sure all, and only,
+     * the expected intervals are returned.
+     */
+    @Test
+    public void testFullIntervals() {
+        final int nbAttr = 1000;
+        final long startTime = 0;
+        final long endTime = 1000;
+
+        List<ITmfStateInterval> intervals = new ArrayList<>();
+        for (int attr = 0; attr < nbAttr; attr++) {
+            intervals.add(new TmfStateInterval(
+                    startTime,
+                    endTime,
+                    attr,
+                    TmfStateValue.newValueLong(attr)));
+        }
+
+        testDoQuery(startTime, endTime, nbAttr, intervals);
+    }
+
+    /**
+     * Test that the backend time is set correctly if there is only one interval
+     * inserted, and both the interval time and backend end time are the same.
+     */
+    @Test
+    public void testBackendEndTime() {
+        long start = 0;
+        long end = 100;
+
+        ITmfStateInterval interval = new TmfStateInterval(start, end, 0, TmfStateValue.nullValue());
+
+        testDoQuery(start, end, 1, Collections.singleton(interval));
     }
 }
