@@ -41,23 +41,23 @@ public class ThreadedHistoryTreeBackendTest extends HistoryTreeBackendTest {
     }
 
     @Override
-    protected void prepareBackend(long startTime, long endTime,
-            Collection<ITmfStateInterval> intervals) {
+    protected void prepareBackend(long startTime, long endTime, Collection<ITmfStateInterval> intervals) {
         try {
-            IStateHistoryBackend backend = new ThreadedHistoryTreeBackend(SSID, fTempFile,
-                    PROVIDER_VERSION, startTime, QUEUE_SIZE, BLOCK_SIZE, MAX_CHILDREN);
-            for (ITmfStateInterval interval : intervals) {
-                backend.insertPastState(interval.getStartTime(), interval.getEndTime(),
-                        interval.getAttribute(), interval.getStateValue());
-            }
+            final IStateHistoryBackend backend = new ThreadedHistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION,
+                    startTime, QUEUE_SIZE, BLOCK_SIZE, MAX_CHILDREN);
+
+            intervals.forEach(interval -> backend.insertPastState(interval.getStartTime(), interval.getEndTime(),
+                    interval.getAttribute(), interval.getStateValue()));
+
             backend.finishedBuilding(Math.max(endTime, backend.getEndTime()));
 
             if (fReOpen) {
                 /* Re-open the file using a standard history tree backend. */
                 backend.dispose();
-                backend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION);
+                fBackend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION);
+            } else {
+                fBackend = backend;
             }
-            fBackend = backend;
 
         } catch (IOException e) {
             fail(e.getMessage());

@@ -95,15 +95,14 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
     }
 
     @Override
-    protected void prepareBackend(long startTime, long endTime,
-            Collection<ITmfStateInterval> intervals) {
+    protected void prepareBackend(long startTime, long endTime, Collection<ITmfStateInterval> intervals) {
         try {
-            IStateHistoryBackend backend = new HistoryTreeBackend(SSID, fTempFile,
-                    PROVIDER_VERSION, startTime, BLOCK_SIZE, MAX_CHILDREN);
-            for (ITmfStateInterval interval : intervals) {
-                backend.insertPastState(interval.getStartTime(), interval.getEndTime(),
-                        interval.getAttribute(), interval.getStateValue());
-            }
+            final IStateHistoryBackend backend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION, startTime,
+                    BLOCK_SIZE, MAX_CHILDREN);
+
+            intervals.forEach(interval -> backend.insertPastState(interval.getStartTime(), interval.getEndTime(),
+                    interval.getAttribute(), interval.getStateValue()));
+
             backend.finishedBuilding(Math.max(endTime, backend.getEndTime()));
 
             if (fReOpen) {
@@ -112,9 +111,10 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
                  * will re-read the same file.
                  */
                 backend.dispose();
-                backend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION);
+                fBackend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION);
+            } else {
+                fBackend = backend;
             }
-            fBackend = backend;
 
         } catch (IOException e) {
             fail(e.getMessage());

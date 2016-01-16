@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
@@ -100,17 +101,16 @@ public abstract class StateHistoryBackendTestBase {
              * intervals are returned.
              */
             for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
-                List<@Nullable ITmfStateInterval> stateInfo = new ArrayList<>(nbAttr);
-                for (int i = 0; i < nbAttr; i++) {
-                    stateInfo.add(null);
-                }
-                backend.doQuery(stateInfo, t);
-                for (int attr = 0; attr < stateInfo.size(); attr++) {
-                    ITmfStateInterval interval = stateInfo.get(attr);
+                final long ts = t;
 
-                    assertTrue("null interval at t=" + t + " for attr=" + attr, interval != null);
-                    assertTrue(interval + " does not intersect t=" + t, interval.intersects(t));
-                }
+                List<@Nullable ITmfStateInterval> stateInfo = new ArrayList<>(nbAttr);
+                IntStream.range(0, nbAttr).forEach(i -> stateInfo.add(null));
+                backend.doQuery(stateInfo, t);
+
+                stateInfo.forEach(interval -> {
+                    assertNotNull(interval);
+                    assertTrue(interval.intersects(ts));
+                });
             }
 
             assertEquals(startTime, backend.getStartTime());
