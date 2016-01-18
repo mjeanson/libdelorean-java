@@ -537,17 +537,25 @@ public abstract class HTNode {
              */
             index = -index - 1;
 
-        } else {
-            /*
-             * Another API quirkiness, the returned index is the one of the *last*
-             * element of a series of equal endtimes, which happens sometimes. We
-             * want the *first* element of such a series, to read through them
-             * again.
-             */
-            while (index > 0
-                    && fIntervals.get(index - 1).compareTo(fIntervals.get(index)) == 0) {
-                index--;
-            }
+        }
+
+        /* Sometimes binarySearch yields weird stuff... */
+        if (index < 0) {
+            index = 0;
+        }
+        if (index >= fIntervals.size()) {
+            index = fIntervals.size() - 1;
+        }
+
+        /*
+         * Another API quirkiness, the returned index is the one of the *last*
+         * element of a series of equal endtimes, which happens sometimes. We
+         * want the *first* element of such a series, to read through them
+         * again.
+         */
+        while (index > 0
+                && fIntervals.get(index - 1).compareTo(fIntervals.get(index)) == 0) {
+            index--;
         }
 
         return index;
