@@ -24,10 +24,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven-deploy-destination>file:///var/www/statesys/maven/</maven-deploy-destination>
+    <p2-deploy-destination>/var/www/statesys/repository/latest/</p2-deploy-destination>
   </properties>
 
   <modules>
     <module>statesys</module>
+    <module>p2-update-site</module>
   </modules>
 
   <build>
@@ -43,5 +46,12 @@
       </plugin>
     </plugins>
   </build>
+
+  <distributionManagement>
+    <repository>
+      <id>statesys-maven-repo</id>
+      <url>${maven-deploy-destination}</url>
+    </repository>
+  </distributionManagement>
 
 </project>
