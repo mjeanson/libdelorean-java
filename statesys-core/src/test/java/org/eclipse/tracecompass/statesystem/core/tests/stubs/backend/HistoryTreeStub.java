@@ -9,16 +9,16 @@
 
 package org.eclipse.tracecompass.statesystem.core.tests.stubs.backend;
 
-import static org.eclipse.tracecompass.common.core.NonNullUtils.checkNotNull;
+import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTConfig;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTNode;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTree;
-
 import com.google.common.collect.Iterables;
+
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTConfig;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTNode;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTree;
 
 /**
  * Stub class to unit test the history tree. You can set the size of the

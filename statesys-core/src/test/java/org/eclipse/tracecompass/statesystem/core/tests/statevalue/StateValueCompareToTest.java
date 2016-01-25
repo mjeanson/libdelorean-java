@@ -15,10 +15,11 @@ package org.eclipse.tracecompass.statesystem.core.tests.statevalue;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.tracecompass.statesystem.core.exceptions.StateValueTypeException;
-import org.eclipse.tracecompass.statesystem.core.statevalue.ITmfStateValue;
-import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
 import org.junit.Test;
+
+import ca.polymtl.dorsal.statesys.exceptions.StateValueTypeException;
+import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**
  * Unit test for the {@link ITmfStateValue#compareTo(ITmfStateValue)} method

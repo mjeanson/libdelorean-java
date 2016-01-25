@@ -19,15 +19,16 @@ import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTConfig;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTInterval;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HTNode;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTree;
-import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
 import org.eclipse.tracecompass.statesystem.core.tests.stubs.backend.HistoryTreeStub;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTConfig;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTInterval;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTNode;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTree;
+import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**
  * Tests the history tree

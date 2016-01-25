@@ -14,10 +14,10 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTreeBackend;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.ThreadedHistoryTreeBackend;
-import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
-import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
+import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.ThreadedHistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 
 /**
  * Test the {@link ThreadedHistoryTreeBackend} class.

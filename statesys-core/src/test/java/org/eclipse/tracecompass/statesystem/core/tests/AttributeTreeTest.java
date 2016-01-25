@@ -19,12 +19,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.eclipse.tracecompass.internal.statesystem.core.AttributeTree;
-import org.eclipse.tracecompass.internal.statesystem.core.StateSystem;
-import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
-import org.eclipse.tracecompass.statesystem.core.backend.StateHistoryBackendFactory;
-import org.eclipse.tracecompass.statesystem.core.exceptions.AttributeNotFoundException;
 import org.junit.Test;
+
+import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.statesys.backend.StateHistoryBackendFactory;
+import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.statesys.internal.AttributeTree;
+import ca.polymtl.dorsal.statesys.internal.StateSystem;
 
 /**
  * Test the {@link AttributeTree} class

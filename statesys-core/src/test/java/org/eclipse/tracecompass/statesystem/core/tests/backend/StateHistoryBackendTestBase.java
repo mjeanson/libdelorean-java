@@ -21,14 +21,15 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
-import org.eclipse.tracecompass.statesystem.core.exceptions.StateSystemDisposedException;
-import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
-import org.eclipse.tracecompass.statesystem.core.interval.TmfStateInterval;
-import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.statesys.exceptions.StateSystemDisposedException;
+import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
+import ca.polymtl.dorsal.statesys.interval.TmfStateInterval;
+import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**
  * Abstract class to test implementations of the {@link IStateHistoryBackend}

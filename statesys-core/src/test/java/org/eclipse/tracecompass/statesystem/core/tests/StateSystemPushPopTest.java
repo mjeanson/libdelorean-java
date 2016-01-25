@@ -13,7 +13,7 @@
 
 package org.eclipse.tracecompass.statesystem.core.tests;
 
-import static org.eclipse.tracecompass.common.core.NonNullUtils.checkNotNull;
+import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -23,21 +23,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.eclipse.tracecompass.internal.statesystem.core.StateSystem;
-import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;
-import org.eclipse.tracecompass.statesystem.core.StateSystemUtils;
-import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
-import org.eclipse.tracecompass.statesystem.core.backend.StateHistoryBackendFactory;
-import org.eclipse.tracecompass.statesystem.core.exceptions.AttributeNotFoundException;
-import org.eclipse.tracecompass.statesystem.core.exceptions.StateSystemDisposedException;
-import org.eclipse.tracecompass.statesystem.core.exceptions.StateValueTypeException;
-import org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException;
-import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
-import org.eclipse.tracecompass.statesystem.core.statevalue.ITmfStateValue;
-import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import ca.polymtl.dorsal.statesys.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.statesys.StateSystemUtils;
+import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.statesys.backend.StateHistoryBackendFactory;
+import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.statesys.exceptions.StateSystemDisposedException;
+import ca.polymtl.dorsal.statesys.exceptions.StateValueTypeException;
+import ca.polymtl.dorsal.statesys.exceptions.TimeRangeException;
+import ca.polymtl.dorsal.statesys.internal.StateSystem;
+import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
+import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**
  * Unit tests for stack-attributes in the Generic State System (using

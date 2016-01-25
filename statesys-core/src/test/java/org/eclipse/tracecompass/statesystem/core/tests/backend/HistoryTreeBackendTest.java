@@ -17,14 +17,15 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.tracecompass.internal.statesystem.core.backend.historytree.HistoryTreeBackend;
-import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
-import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 
 /**
  * Test the {@link HistoryTreeBackend} class.
