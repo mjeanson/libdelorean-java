@@ -10,7 +10,7 @@
  *
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.io.File;
 
@@ -19,7 +19,7 @@ import java.io.File;
  *
  * @author Alexandre Montplaisir
  */
-public final class HTConfig {
+final class HTConfig {
 
     private static final int DEFAULT_BLOCKSIZE = 64 * 1024;
     private static final int DEFAULT_MAXCHILDREN = 50;

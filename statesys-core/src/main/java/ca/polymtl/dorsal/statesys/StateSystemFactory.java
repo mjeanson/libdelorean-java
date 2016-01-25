@@ -17,7 +17,6 @@ import java.io.IOException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
-import ca.polymtl.dorsal.statesys.internal.StateSystem;
 
 /**
  * Factory to create state systems.

@@ -10,7 +10,7 @@
  *   Florian Wininger - Initial API and implementation
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.nio.ByteBuffer;
 
@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
  *
  * @author Florian Wininger
  */
-public final class LeafNode extends HTNode {
+final class LeafNode extends HTNode {
 
     /**
      * Initial constructor. Use this to initialize a new EMPTY node.

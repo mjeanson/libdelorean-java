@@ -13,7 +13,7 @@
  *    Patrick Tasse - Add message to exceptions
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,7 +32,7 @@ import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-public final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
+final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
     private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
 

@@ -13,7 +13,7 @@
  *   Patrick Tasse - Add message to exceptions
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.internal;
+package ca.polymtl.dorsal.statesys;
 
 import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 
@@ -42,7 +42,7 @@ import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
  * @author alexmont
  *
  */
-public final class AttributeTree {
+final class AttributeTree {
 
     /* "Magic number" for attribute tree files or file sections */
     private static final int ATTRIB_TREE_MAGIC_NUMBER = 0x06EC3671;

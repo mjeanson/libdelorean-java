@@ -17,10 +17,8 @@ import java.io.IOException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTreeBackend;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.ThreadedHistoryTreeBackend;
-import ca.polymtl.dorsal.statesys.backend.internal.InMemoryBackend;
-import ca.polymtl.dorsal.statesys.backend.internal.NullBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.HistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.ThreadedHistoryTreeBackend;
 
 /**
  * Factory for the various types {@link IStateHistoryBackend} supplied by this

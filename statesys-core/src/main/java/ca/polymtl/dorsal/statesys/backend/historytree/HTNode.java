@@ -12,7 +12,7 @@
  *   Patrick Tasse - Keep interval list sorted on insert
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,7 +37,7 @@ import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-public abstract class HTNode {
+abstract class HTNode {
 
     // ------------------------------------------------------------------------
     // Class fields

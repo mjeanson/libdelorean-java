@@ -13,7 +13,7 @@
  *   Patrick Tasse - Add message to exceptions
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.io.File;
 import java.io.FileInputStream;

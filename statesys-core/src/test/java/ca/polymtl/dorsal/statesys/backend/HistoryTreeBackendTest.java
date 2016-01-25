@@ -24,7 +24,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.HistoryTreeBackend;
 import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 
 /**

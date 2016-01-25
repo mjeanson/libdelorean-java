@@ -12,7 +12,7 @@
  *   Patrick Tasse - Add message to exceptions
  ******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.internal;
+package ca.polymtl.dorsal.statesys.backend;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,7 +25,6 @@ import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.statesys.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
@@ -45,7 +44,7 @@ import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-public class InMemoryBackend implements IStateHistoryBackend {
+class InMemoryBackend implements IStateHistoryBackend {
 
     /**
      * We need to compare the end time and the attribute, because we can have 2

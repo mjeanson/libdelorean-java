@@ -12,7 +12,7 @@
  *     Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.internal;
+package ca.polymtl.dorsal.statesys;
 
 import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 
@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  * @author Alexandre Montplaisir
  *
  */
-public final class Attribute {
+final class Attribute {
 
     private final Attribute parent;
     private final @NonNull String name;

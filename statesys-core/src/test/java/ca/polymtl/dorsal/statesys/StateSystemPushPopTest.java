@@ -35,7 +35,6 @@ import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.statesys.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.statesys.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.statesys.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.statesys.internal.StateSystem;
 import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
 import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;

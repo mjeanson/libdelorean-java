@@ -20,7 +20,7 @@ import java.util.Comparator;
  *
  * @author Alexandre Montplaisir
  */
-public class TmfIntervalEndComparator implements Comparator<ITmfStateInterval> {
+class TmfIntervalEndComparator implements Comparator<ITmfStateInterval> {
 
     @Override
     public int compare(ITmfStateInterval o1, ITmfStateInterval o2) {

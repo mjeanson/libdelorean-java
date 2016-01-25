@@ -10,7 +10,7 @@
  *   Alexandre Montplaisir - Initial API and implementation
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.internal;
+package ca.polymtl.dorsal.statesys.backend;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
 
@@ -31,7 +30,7 @@ import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-public class NullBackend implements IStateHistoryBackend {
+class NullBackend implements IStateHistoryBackend {
 
     private final @NonNull String ssid;
 

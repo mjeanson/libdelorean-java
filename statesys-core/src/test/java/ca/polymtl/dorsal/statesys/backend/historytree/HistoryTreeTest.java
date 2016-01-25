@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -23,11 +23,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTConfig;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTInterval;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTNode;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTree;
-import ca.polymtl.dorsal.statesys.backend.stubs.HistoryTreeStub;
+import ca.polymtl.dorsal.statesys.backend.historytree.HTConfig;
+import ca.polymtl.dorsal.statesys.backend.historytree.HTInterval;
+import ca.polymtl.dorsal.statesys.backend.historytree.HTNode;
+import ca.polymtl.dorsal.statesys.backend.historytree.HistoryTree;
 import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**

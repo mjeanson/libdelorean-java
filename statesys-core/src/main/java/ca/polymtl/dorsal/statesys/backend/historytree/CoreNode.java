@@ -11,7 +11,7 @@
  *   Florian Wininger - Add Extension and Leaf Node
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Alexandre Montplaisir
  */
-public final class CoreNode extends HTNode {
+final class CoreNode extends HTNode {
 
     /** Number of bytes in a int */
     private static final int SIZE_INT = 4;

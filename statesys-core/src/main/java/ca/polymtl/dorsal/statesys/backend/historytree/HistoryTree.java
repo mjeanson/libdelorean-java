@@ -12,7 +12,7 @@
  *   Patrick Tasse - Add message to exceptions
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.historytree.internal;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +41,7 @@ import ca.polymtl.dorsal.statesys.exceptions.TimeRangeException;
  *
  * @author Alexandre Montplaisir
  */
-public class HistoryTree {
+class HistoryTree {
 
     private static final Logger LOGGER = Logger.getLogger(HistoryTree.class.getName());
 

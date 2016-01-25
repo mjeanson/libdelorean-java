@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.util.Collection;
 
 import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTreeBackend;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.ThreadedHistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.HistoryTreeBackend;
+import ca.polymtl.dorsal.statesys.backend.historytree.ThreadedHistoryTreeBackend;
 import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 
 /**

@@ -7,18 +7,16 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.backend.stubs;
+package ca.polymtl.dorsal.statesys.backend.historytree;
 
 import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 
 import java.io.IOException;
 import java.util.List;
 
-import com.google.common.collect.Iterables;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTConfig;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTNode;
-import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTree;
+import com.google.common.collect.Iterables;
 
 /**
  * Stub class to unit test the history tree. You can set the size of the
@@ -29,6 +27,7 @@ import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTree;
  *
  * @author Geneviève Bastien
  */
+@NonNullByDefault
 public class HistoryTreeStub extends HistoryTree {
 
     /**

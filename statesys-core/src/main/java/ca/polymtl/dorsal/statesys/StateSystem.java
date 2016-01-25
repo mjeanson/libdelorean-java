@@ -13,7 +13,7 @@
  *   Patrick Tasse - Add message to exceptions
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.internal;
+package ca.polymtl.dorsal.statesys;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,6 @@ import java.util.logging.Logger;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import ca.polymtl.dorsal.statesys.ITmfStateSystemBuilder;
 import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.statesys.exceptions.StateSystemDisposedException;
@@ -36,8 +35,8 @@ import ca.polymtl.dorsal.statesys.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.statesys.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.statesys.interval.ITmfStateInterval;
 import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue.Type;
+import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -52,7 +51,7 @@ import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue.Type;
  * @author alexmont
  *
  */
-public class StateSystem implements ITmfStateSystemBuilder {
+class StateSystem implements ITmfStateSystemBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(StateSystem.class.getName());
 

@@ -24,8 +24,6 @@ import org.junit.Test;
 import ca.polymtl.dorsal.statesys.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.statesys.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.statesys.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.statesys.internal.AttributeTree;
-import ca.polymtl.dorsal.statesys.internal.StateSystem;
 
 /**
  * Test the {@link AttributeTree} class

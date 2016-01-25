@@ -13,7 +13,7 @@
  *   Patrick Tasse - Add message to exceptions
  *******************************************************************************/
 
-package ca.polymtl.dorsal.statesys.internal;
+package ca.polymtl.dorsal.statesys;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue.Type;
  * @author Alexandre Montplaisir
  */
 @NonNullByDefault
-public class TransientState {
+class TransientState {
 
     /* Indicates where to insert state changes that we generate */
     private final IStateHistoryBackend fBackend;
