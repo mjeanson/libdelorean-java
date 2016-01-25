@@ -11,7 +11,7 @@
  *   Alexandre Montplaisir - Port to JUnit4
  ******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests;
+package ca.polymtl.dorsal.statesys;
 
 import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 import static org.junit.Assert.assertEquals;

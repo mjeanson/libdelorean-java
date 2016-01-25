@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests.stubs.backend;
+package ca.polymtl.dorsal.statesys.backend.stubs;
 
 import static ca.polymtl.dorsal.statesys.utils.NonNullUtils.checkNotNull;
 

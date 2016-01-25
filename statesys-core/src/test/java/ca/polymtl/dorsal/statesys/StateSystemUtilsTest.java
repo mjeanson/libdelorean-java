@@ -10,7 +10,7 @@
  *   Geneviève Bastien - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests;
+package ca.polymtl.dorsal.statesys;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

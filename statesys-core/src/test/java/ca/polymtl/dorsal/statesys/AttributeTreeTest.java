@@ -10,7 +10,7 @@
  *   Patrick Tasse - Initial API and implementation
  *******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests;
+package ca.polymtl.dorsal.statesys;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;

@@ -10,7 +10,7 @@
  *   Matthew Khouzam - Initial API and implementation
  ******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests.backend;
+package ca.polymtl.dorsal.statesys.backend;
 
 import static org.junit.Assert.*;
 

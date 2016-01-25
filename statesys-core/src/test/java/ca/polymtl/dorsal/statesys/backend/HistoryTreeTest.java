@@ -7,7 +7,7 @@
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests.backend;
+package ca.polymtl.dorsal.statesys.backend;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -19,7 +19,6 @@ import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.tracecompass.statesystem.core.tests.stubs.backend.HistoryTreeStub;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +27,7 @@ import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTConfig;
 import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTInterval;
 import ca.polymtl.dorsal.statesys.backend.historytree.internal.HTNode;
 import ca.polymtl.dorsal.statesys.backend.historytree.internal.HistoryTree;
+import ca.polymtl.dorsal.statesys.backend.stubs.HistoryTreeStub;
 import ca.polymtl.dorsal.statesys.statevalue.TmfStateValue;
 
 /**

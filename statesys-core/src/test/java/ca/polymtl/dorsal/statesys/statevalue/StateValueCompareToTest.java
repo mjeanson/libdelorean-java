@@ -10,7 +10,7 @@
  *   Naser Ezzati - Initial API and implementation
  ******************************************************************************/
 
-package org.eclipse.tracecompass.statesystem.core.tests.statevalue;
+package ca.polymtl.dorsal.statesys.statevalue;
 
 import static org.junit.Assert.assertTrue;
 
