@@ -27,7 +27,7 @@
   </properties>
 
   <modules>
-    <module>statesys-core</module>
+    <module>statesys</module>
   </modules>
 
   <build>
