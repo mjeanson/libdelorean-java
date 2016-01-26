@@ -34,7 +34,7 @@ import ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue;
  * @author Geneviève Bastien
  */
 @NonNullByDefault
-final class StateSystemUtils {
+public final class StateSystemUtils {
 
     private StateSystemUtils() {
     }
