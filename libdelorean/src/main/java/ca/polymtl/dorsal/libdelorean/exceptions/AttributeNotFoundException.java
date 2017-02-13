@@ -21,7 +21,7 @@ package ca.polymtl.dorsal.libdelorean.exceptions;
  *
  * @author Alexandre Montplaisir
  */
-public class AttributeNotFoundException extends Exception {
+public class AttributeNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 7964275803369706145L;
 
