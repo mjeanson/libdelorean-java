@@ -107,7 +107,8 @@ public final class NonNullUtils {
         if (stream == null) {
             throw new NullPointerException();
         }
-        return checkNotNull(stream.map(t -> checkNotNull(t)));
+        Stream<@NonNull T> ret = stream.map(t -> checkNotNull(t));
+        return ret;
     }
 
     /**
@@ -125,7 +126,6 @@ public final class NonNullUtils {
             throw new NullPointerException();
         }
         Arrays.stream(array).forEach(elem -> checkNotNull(elem));
-        @SuppressWarnings("null")
         @NonNull T[] ret = (@NonNull T[]) array;
         return ret;
     }
