@@ -14,12 +14,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>ca.polymtl.dorsal.statesys</groupId>
-    <artifactId>statesys-parent</artifactId>
+    <groupId>ca.polymtl.dorsal.libdelorean</groupId>
+    <artifactId>libdelorean-parent</artifactId>
     <version>0.6.0</version>
   </parent>
 
-  <artifactId>statesys-p2-update-site</artifactId>
+  <artifactId>libdelorean-p2-update-site</artifactId>
   <packaging>pom</packaging>
 
   <pluginRepositories>
@@ -45,7 +45,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <id>ca.polymtl.dorsal.statesys:statesys:${project.version}</id>
+                  <id>ca.polymtl.dorsal.libdelorean:libdelorean:${project.version}</id>
                   <source>true</source>
                 </artifact>
               </artifacts>

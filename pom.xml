@@ -17,19 +17,19 @@
     <maven>3.0</maven>
   </prerequisites>
 
-  <groupId>ca.polymtl.dorsal.statesys</groupId>
-  <artifactId>statesys-parent</artifactId>
+  <groupId>ca.polymtl.dorsal.libdelorean</groupId>
+  <artifactId>libdelorean-parent</artifactId>
   <version>0.6.0</version>
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven-deploy-destination>file:///var/www/statesys/maven/</maven-deploy-destination>
-    <p2-deploy-destination>/var/www/statesys/repository/latest/</p2-deploy-destination>
+    <maven-deploy-destination>file:///var/www/libdelorean/maven/</maven-deploy-destination>
+    <p2-deploy-destination>/var/www/libdelorean/repository/latest/</p2-deploy-destination>
   </properties>
 
   <modules>
-    <module>statesys</module>
+    <module>libdelorean</module>
     <module>p2-update-site</module>
   </modules>
 
@@ -49,7 +49,7 @@
 
   <distributionManagement>
     <repository>
-      <id>statesys-maven-repo</id>
+      <id>libdelorean-maven-repo</id>
       <url>${maven-deploy-destination}</url>
     </repository>
   </distributionManagement>
