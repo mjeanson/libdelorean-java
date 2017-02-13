@@ -33,6 +33,9 @@ import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
  */
 public interface ITmfStateSystem {
 
+    /** Quark representing the root attribute */
+    int ROOT_ATTRIBUTE = -1;
+
     /**
      * Get the ID of this state system.
      *
