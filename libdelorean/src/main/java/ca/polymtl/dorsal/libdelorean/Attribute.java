@@ -11,7 +11,7 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import static ca.polymtl.dorsal.libdelorean.utils.NonNullUtils.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.io.PrintWriter;
 import java.util.Collections;
@@ -222,7 +222,7 @@ final class Attribute {
             buf.append('/');
         }
         buf.append(array[array.length - 1]);
-        return checkNotNull(buf.toString());
+        return requireNonNull(buf.toString());
     }
 
     @Override

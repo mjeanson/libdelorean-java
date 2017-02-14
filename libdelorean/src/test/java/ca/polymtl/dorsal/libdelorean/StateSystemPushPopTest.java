@@ -10,7 +10,7 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import static ca.polymtl.dorsal.libdelorean.utils.NonNullUtils.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -78,7 +78,7 @@ public class StateSystemPushPopTest {
         testHtFile = File.createTempFile("test", ".ht");
 
         IStateHistoryBackend backend = StateHistoryBackendFactory.createHistoryTreeBackendNewFile(
-                "push-pop-test", checkNotNull(testHtFile), 0, 0, 0);
+                "push-pop-test", requireNonNull(testHtFile), 0, 0, 0);
         ss = new StateSystem(backend, true);
 
         /* Build the thing */

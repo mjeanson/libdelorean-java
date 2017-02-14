@@ -9,7 +9,7 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
-import static ca.polymtl.dorsal.libdelorean.utils.NonNullUtils.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,7 +45,7 @@ public class HistoryTreeStub extends HistoryTree {
 
     @Override
     public List<HTNode> getLatestBranch() {
-        return checkNotNull(super.getLatestBranch());
+        return requireNonNull(super.getLatestBranch());
     }
 
     /**
@@ -55,7 +55,7 @@ public class HistoryTreeStub extends HistoryTree {
      */
     public HTNode getLatestLeaf() {
         List<HTNode> latest = getLatestBranch();
-        return checkNotNull(Iterables.getLast(latest));
+        return requireNonNull(Iterables.getLast(latest));
     }
 
     /**
@@ -68,7 +68,7 @@ public class HistoryTreeStub extends HistoryTree {
      */
     public HTNode getNodeAt(int pos) {
         List<HTNode> latest = getLatestBranch();
-        return checkNotNull(latest.get(pos));
+        return requireNonNull(latest.get(pos));
     }
 
     /**

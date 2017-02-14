@@ -10,6 +10,8 @@
 
 package ca.polymtl.dorsal.libdelorean.utils;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -44,49 +46,9 @@ public final class NonNullUtils {
         return (str == null ? "" : str); //$NON-NLS-1$
     }
 
-    /**
-     * Checks equality with two nullable objects
-     *
-     * @param o1
-     *            the first object to compare
-     * @param o2
-     *            the second object to compare
-     * @return true if o1.equals(o2) or o1 == o2
-     * @since 1.0
-     */
-    public static boolean equalsNullable(final @Nullable Object o1, final @Nullable Object o2) {
-        if (o1 == o2) {
-            return true;
-        }
-        if (o1 == null) {
-            return false;
-        }
-        return o1.equals(o2);
-    }
-
     // ------------------------------------------------------------------------
     // checkNotNull() methods, to convert @Nullable references to @NonNull ones
     // ------------------------------------------------------------------------
-
-    /**
-     * Convert a non-annotated object reference to a {@link NonNull} one.
-     *
-     * If the reference is actually null, a {@link NullPointerException} is
-     * thrown. This is usually more desirable than letting an unwanted null
-     * reference go through and fail much later.
-     *
-     * @param obj
-     *            The object that is supposed to be non-null
-     * @return A {@link NonNull} reference to the same object
-     * @throws NullPointerException
-     *             If the reference was actually null
-     */
-    public static <T> @NonNull T checkNotNull(@Nullable T obj) {
-        if (obj == null) {
-            throw new NullPointerException();
-        }
-        return obj;
-    }
 
     /**
      * Ensures a {@link Stream} does not contain any null values.
@@ -105,7 +67,7 @@ public final class NonNullUtils {
         if (stream == null) {
             throw new NullPointerException();
         }
-        Stream<@NonNull T> ret = stream.map(t -> checkNotNull(t));
+        Stream<@NonNull T> ret = stream.map(t -> requireNonNull(t));
         return ret;
     }
 
@@ -123,7 +85,7 @@ public final class NonNullUtils {
         if (array == null) {
             throw new NullPointerException();
         }
-        Arrays.stream(array).forEach(elem -> checkNotNull(elem));
+        Arrays.stream(array).forEach(elem -> requireNonNull(elem));
         @NonNull T[] ret = array;
         return ret;
     }

@@ -11,7 +11,7 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import static ca.polymtl.dorsal.libdelorean.utils.NonNullUtils.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -225,7 +225,7 @@ final class AttributeTree {
                 nextNode = prevNode.getSubAttributeNode(curDirectory);
                 if (nextNode == null) {
                     /* This is where we need to start adding */
-                    nextNode = new Attribute(prevNode, checkNotNull(curDirectory), attributeList.size());
+                    nextNode = new Attribute(prevNode, requireNonNull(curDirectory), attributeList.size());
                     prevNode.addSubAttribute(nextNode);
                     attributeList.add(nextNode);
                     ss.addEmptyAttribute();
