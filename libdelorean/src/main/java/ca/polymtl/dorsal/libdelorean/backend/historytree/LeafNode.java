@@ -25,8 +25,9 @@ final class LeafNode extends HTNode {
     /**
      * Initial constructor. Use this to initialize a new EMPTY node.
      *
-     * @param config
-     *            Configuration of the History Tree
+     * @param blockSize
+     *            The size of each "block" on disk. One node will always fit in
+     *            one block.
      * @param seqNumber
      *            The (unique) sequence number assigned to this particular node
      * @param parentSeqNumber
@@ -34,9 +35,9 @@ final class LeafNode extends HTNode {
      * @param start
      *            The earliest timestamp stored in this node
      */
-    public LeafNode(HTConfig config, int seqNumber, int parentSeqNumber,
+    public LeafNode(int blockSize, int seqNumber, int parentSeqNumber,
             long start) {
-        super(config, seqNumber, parentSeqNumber, start);
+        super(blockSize, seqNumber, parentSeqNumber, start);
     }
 
     @Override

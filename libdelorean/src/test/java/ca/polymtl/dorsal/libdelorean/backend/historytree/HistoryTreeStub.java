@@ -11,6 +11,7 @@ package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -33,14 +34,34 @@ public class HistoryTreeStub extends HistoryTree {
     /**
      * Constructor for this history tree stub
      *
-     * @param conf
-     *            The config to use for this History Tree.
+     * @param newStateFile
+     *            The name of the history file
+     * @param blockSize
+     *            The size of each "block" on disk. One node will always fit in
+     *            one block.
+     * @param maxChildren
+     *            The maximum number of children allowed per core (non-leaf)
+     *            node.
+     * @param providerVersion
+     *            The version of the state provider. If a file already exists,
+     *            and their versions match, the history file will not be rebuilt
+     *            uselessly.
+     * @param startTime
+     *            The start time of the history
      * @throws IOException
      *             If an error happens trying to open/write to the file
      *             specified in the config
      */
-    public HistoryTreeStub(HTConfig conf) throws IOException {
-        super(conf);
+    public HistoryTreeStub(File newStateFile,
+            int blockSize,
+            int maxChildren,
+            int providerVersion,
+            long startTime) throws IOException {
+        super(newStateFile,
+                blockSize,
+                maxChildren,
+                providerVersion,
+                startTime);
     }
 
     @Override

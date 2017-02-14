@@ -30,6 +30,8 @@ final class CoreNode extends HTNode {
     /** Number of bytes in a long */
     private static final int SIZE_LONG = 8;
 
+    private final int fMaxChildren;
+
     /** Nb. of children this node has */
     private int nbChildren;
 
@@ -51,8 +53,12 @@ final class CoreNode extends HTNode {
     /**
      * Initial constructor. Use this to initialize a new EMPTY node.
      *
-     * @param config
-     *            Configuration of the History Tree
+     * @param blockSize
+     *            The size of each "block" on disk. One node will always fit in
+     *            one block.
+     * @param maxChildren
+     *            The maximum number of children allowed per core (non-leaf)
+     *            node.
      * @param seqNumber
      *            The (unique) sequence number assigned to this particular node
      * @param parentSeqNumber
@@ -60,11 +66,11 @@ final class CoreNode extends HTNode {
      * @param start
      *            The earliest timestamp stored in this node
      */
-    public CoreNode(HTConfig config, int seqNumber, int parentSeqNumber,
+    public CoreNode(int blockSize, int maxChildren, int seqNumber, int parentSeqNumber,
             long start) {
-        super(config, seqNumber, parentSeqNumber, start);
+        super(blockSize, seqNumber, parentSeqNumber, start);
+        fMaxChildren = maxChildren;
         this.nbChildren = 0;
-        int size = config.getMaxChildren();
 
         /*
          * We instantiate the two following arrays at full size right away,
@@ -72,13 +78,13 @@ final class CoreNode extends HTNode {
          * "this.nbChildren" will tell us how many relevant entries there are in
          * those tables.
          */
-        this.children = new int[size];
-        this.childStart = new long[size];
+        this.children = new int[maxChildren];
+        this.childStart = new long[maxChildren];
     }
 
     @Override
     protected void readSpecificHeader(ByteBuffer buffer) {
-        int size = getConfig().getMaxChildren();
+        int size = fMaxChildren;
 
         extension = buffer.getInt();
         nbChildren = buffer.getInt();
@@ -102,7 +108,7 @@ final class CoreNode extends HTNode {
 
     @Override
     protected void writeSpecificHeader(ByteBuffer buffer) {
-        int size = getConfig().getMaxChildren();
+        int size = fMaxChildren;
 
         buffer.putInt(extension);
         buffer.putInt(nbChildren);
@@ -214,7 +220,7 @@ final class CoreNode extends HTNode {
     public void linkNewChild(HTNode childNode) {
         rwl.writeLock().lock();
         try {
-            assert (nbChildren < getConfig().getMaxChildren());
+            assert (nbChildren < fMaxChildren);
 
             children[nbChildren] = childNode.getSequenceNumber();
             childStart[nbChildren] = childNode.getNodeStart();
@@ -232,7 +238,7 @@ final class CoreNode extends HTNode {
 
     @Override
     protected int getSpecificHeaderSize() {
-        int maxChildren = getConfig().getMaxChildren();
+        int maxChildren = fMaxChildren;
         int specificSize =
                   SIZE_INT /* 1x int (extension node) */
                 + SIZE_INT /* 1x int (nbChildren) */

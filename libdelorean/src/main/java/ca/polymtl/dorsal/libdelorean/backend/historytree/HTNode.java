@@ -108,8 +108,8 @@ abstract class HTNode {
     // Attributes
     // ------------------------------------------------------------------------
 
-    /* Configuration of the History Tree to which belongs this node */
-    private final HTConfig fConfig;
+    /* Size of the blocks in the history tree */
+    private final int fBlockSize;
 
     /* Time range of this node */
     private final long fNodeStart;
@@ -146,13 +146,13 @@ abstract class HTNode {
      * @param start
      *            The earliest timestamp stored in this node
      */
-    protected HTNode(HTConfig config, int seqNumber, int parentSeqNumber, long start) {
-        fConfig = config;
+    protected HTNode(int blockSize, int seqNumber, int parentSeqNumber, long start) {
+        fBlockSize = blockSize;
         fNodeStart = start;
         fSequenceNumber = seqNumber;
         fParentSequenceNumber = parentSeqNumber;
 
-        fStringSectionOffset = config.getBlockSize();
+        fStringSectionOffset = fBlockSize;
         fSizeOfIntervalSection = 0;
         fIsOnDisk = false;
         fIntervals = new ArrayList<>();
@@ -162,8 +162,12 @@ abstract class HTNode {
      * Reader factory method. Build a Node object (of the right type) by reading
      * a block in the file.
      *
-     * @param config
-     *            Configuration of the History Tree
+     * @param blockSize
+     *            The size of each "block" on disk. One node will always fit in
+     *            one block.
+     * @param maxChildren
+     *            The maximum number of children allowed per core (non-leaf)
+     *            node.
      * @param fc
      *            FileChannel to the history file, ALREADY SEEKED at the start
      *            of the node.
@@ -171,16 +175,16 @@ abstract class HTNode {
      * @throws IOException
      *             If there was an error reading from the file channel
      */
-    public static final @NonNull HTNode readNode(HTConfig config, FileChannel fc)
+    public static final @NonNull HTNode readNode(int blockSize, int maxChildren, FileChannel fc)
             throws IOException {
         HTNode newNode = null;
         int res, i;
 
-        ByteBuffer buffer = ByteBuffer.allocate(config.getBlockSize());
+        ByteBuffer buffer = ByteBuffer.allocate(blockSize);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.clear();
         res = fc.read(buffer);
-        assert (res == config.getBlockSize());
+        assert (res == blockSize);
         buffer.flip();
 
         /* Read the common header part */
@@ -198,13 +202,13 @@ abstract class HTNode {
         switch (type) {
         case CORE:
             /* Core nodes */
-            newNode = new CoreNode(config, seqNb, parentSeqNb, start);
+            newNode = new CoreNode(blockSize, maxChildren, seqNb, parentSeqNb, start);
             newNode.readSpecificHeader(buffer);
             break;
 
         case LEAF:
             /* Leaf nodes */
-            newNode = new LeafNode(config, seqNb, parentSeqNb, start);
+            newNode = new LeafNode(blockSize, seqNb, parentSeqNb, start);
             newNode.readSpecificHeader(buffer);
             break;
 
@@ -247,7 +251,7 @@ abstract class HTNode {
          */
         fRwl.readLock().lock();
         try {
-            final int blockSize = fConfig.getBlockSize();
+            final int blockSize = fBlockSize;
             int curStringsEntryEndPos = blockSize;
 
             ByteBuffer buffer = ByteBuffer.allocate(blockSize);
@@ -310,15 +314,6 @@ abstract class HTNode {
     // ------------------------------------------------------------------------
     // Accessors
     // ------------------------------------------------------------------------
-
-    /**
-     * Retrieve the history tree configuration used for this node.
-     *
-     * @return The history tree config
-     */
-    protected HTConfig getConfig() {
-        return fConfig;
-    }
 
     /**
      * Get the start time of this node.
@@ -591,7 +586,7 @@ abstract class HTNode {
     public long getNodeUsagePercent() {
         fRwl.readLock().lock();
         try {
-            final int blockSize = fConfig.getBlockSize();
+            final int blockSize = fBlockSize;
             float freePercent = (float) getNodeFreeSpace()
                     / (float) (blockSize - getTotalHeaderSize())
                     * 100F;

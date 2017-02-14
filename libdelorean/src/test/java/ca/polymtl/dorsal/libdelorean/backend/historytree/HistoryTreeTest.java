@@ -79,12 +79,11 @@ public class HistoryTreeTest {
         try {
             File newFile = fTempFile;
             assertNotNull(newFile);
-            HTConfig config = new HTConfig(newFile,
+            ht = new HistoryTreeStub(newFile,
                     BLOCK_SIZE,
                     maxChildren, /* Number of children */
                     1, /* Provider version */
                     1); /* Start time */
-            ht = new HistoryTreeStub(config);
 
         } catch (IOException e) {
             fail(e.getMessage());

@@ -98,9 +98,8 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
             int blockSize,
             int maxChildren) throws IOException {
         fSsid = ssid;
-        final HTConfig conf = new HTConfig(newStateFile, blockSize, maxChildren,
+        fSht = new HistoryTree(newStateFile, blockSize, maxChildren,
                 providerVersion, startTime);
-        fSht = new HistoryTree(conf);
     }
 
     /**

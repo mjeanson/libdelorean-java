@@ -32,14 +32,14 @@ import org.eclipse.jdt.annotation.NonNull;
  * HistoryTree must contain 1 and only 1 HT_IO element.
  *
  * @author Alexandre Montplaisir
- *
  */
 class HT_IO {
 
     private static final Logger LOGGER = Logger.getLogger(HT_IO.class.getName());
 
-    /* Configuration of the History Tree */
-    private final HTConfig fConfig;
+    private final File fStateFile;
+    private final int fBlockSize;
+    private final int fMaxChildren;
 
     /* Fields related to the file I/O */
     private final FileInputStream fFileInputStream;
@@ -58,18 +58,25 @@ class HT_IO {
     /**
      * Standard constructor
      *
-     * @param config
-     *            The configuration object for the StateHistoryTree
+     * @param stateFile
+     *            The name of the history file
+     * @param blockSize
+     *            The size of each "block" on disk. One node will always fit in
+     *            one block.
+     * @param maxChildren
+     *            The maximum number of children allowed per core (non-leaf)
+     *            node.
      * @param newFile
      *            Flag indicating that the file must be created from scratch
-     *
      * @throws IOException
      *             An exception can be thrown when file cannot be accessed
      */
-    public HT_IO(HTConfig config, boolean newFile) throws IOException {
-        fConfig = config;
+    public HT_IO(File stateFile, int blockSize, int maxChildren, boolean newFile) throws IOException {
+        fStateFile = stateFile;
+        fBlockSize = blockSize;
+        fMaxChildren = maxChildren;
 
-        File historyTreeFile = config.getStateFile();
+        File historyTreeFile = fStateFile;
         if (newFile) {
             boolean success1 = true;
             /* Create a new empty History Tree file */
@@ -118,7 +125,7 @@ class HT_IO {
         /* Lookup on disk */
         try {
             seekFCToNodePos(fFileChannelIn, seqNumber);
-            readNode = HTNode.readNode(fConfig, fFileChannelIn);
+            readNode = HTNode.readNode(fBlockSize, fMaxChildren, fFileChannelIn);
 
             /* Put the node in the cache. */
             fNodeCache[offset] = readNode;
@@ -178,7 +185,7 @@ class HT_IO {
     public synchronized void deleteFile() {
         closeFile();
 
-        File historyTreeFile = fConfig.getStateFile();
+        File historyTreeFile = fStateFile;
         if (!historyTreeFile.delete()) {
             /* We didn't succeed in deleting the file */
             LOGGER.severe("Failed to delete" + historyTreeFile.getName()); //$NON-NLS-1$
@@ -203,7 +210,7 @@ class HT_IO {
          * doesn't get truncated
          */
         fc.position(HistoryTree.TREE_HEADER_SIZE
-                + ((long) seqNumber) * fConfig.getBlockSize());
+                + ((long) seqNumber) * fBlockSize);
     }
 
 }

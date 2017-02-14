@@ -58,8 +58,11 @@ class HistoryTree {
     // Tree-specific configuration
     // ------------------------------------------------------------------------
 
-    /** Container for all the configuration constants */
-    private final HTConfig fConfig;
+    private final File fStateFile;
+    private final int fBlockSize;
+    private final int fMaxChildren;
+    private final int fProviderVersion;
+    private final long fTreeStart;
 
     /** Reader/writer object */
     private final HT_IO fTreeIO;
@@ -82,34 +85,53 @@ class HistoryTree {
     // ------------------------------------------------------------------------
 
     /**
-     * Create a new State History from scratch, using a {@link HTConfig} object
-     * for configuration.
+     * Create a new State History from scratch.
      *
-     * @param conf
-     *            The config to use for this History Tree.
+     * @param newStateFile
+     *            The name of the history file
+     * @param blockSize
+     *            The size of each "block" on disk. One node will always fit in
+     *            one block.
+     * @param maxChildren
+     *            The maximum number of children allowed per core (non-leaf)
+     *            node.
+     * @param providerVersion
+     *            The version of the state provider. If a file already exists,
+     *            and their versions match, the history file will not be rebuilt
+     *            uselessly.
+     * @param startTime
+     *            The start time of the history
      * @throws IOException
-     *             If an error happens trying to open/write to the file
-     *             specified in the config
+     *             If there is an error creating the history tree
      */
-    public HistoryTree(HTConfig conf) throws IOException {
+    public HistoryTree(File newStateFile,
+            int blockSize,
+            int maxChildren,
+            int providerVersion,
+            long startTime) throws IOException {
         /*
          * Simple check to make sure we have enough place in the 0th block for
          * the tree configuration
          */
-        if (conf.getBlockSize() < TREE_HEADER_SIZE) {
+        if (blockSize < TREE_HEADER_SIZE) {
             throw new IllegalArgumentException();
         }
 
-        fConfig = conf;
-        fTreeEnd = conf.getTreeStart();
+        fStateFile = newStateFile;
+        fBlockSize = blockSize;
+        fMaxChildren = maxChildren;
+        fProviderVersion = providerVersion;
+        fTreeStart = startTime;
+
+        fTreeEnd = startTime;
         fNodeCount = 0;
         fLatestBranch = Collections.synchronizedList(new ArrayList<>());
 
         /* Prepare the IO object */
-        fTreeIO = new HT_IO(fConfig, true);
+        fTreeIO = new HT_IO(fStateFile, fBlockSize, fMaxChildren, true);
 
         /* Add the first node to the tree */
-        LeafNode firstNode = initNewLeafNode(-1, conf.getTreeStart());
+        LeafNode firstNode = initNewLeafNode(-1, fTreeStart);
         fLatestBranch.add(firstNode);
     }
 
@@ -185,7 +207,11 @@ class HistoryTree {
             rootNodeSeqNb = buffer.getInt();
             startTime = buffer.getLong();
 
-            fConfig = new HTConfig(existingStateFile, bs, maxc, expProviderVersion, startTime);
+            fStateFile = existingStateFile;
+            fBlockSize = bs;
+            fMaxChildren = maxc;
+            fProviderVersion = expProviderVersion;
+            fTreeStart = startTime;
         }
 
         /*
@@ -193,7 +219,7 @@ class HistoryTree {
          * file, not extremely elegant. But how to pass the information here to
          * the SHT otherwise?
          */
-        fTreeIO = new HT_IO(fConfig, false);
+        fTreeIO = new HT_IO(fStateFile, fBlockSize, fMaxChildren, false);
 
         fLatestBranch = buildLatestBranch(rootNodeSeqNb);
         fTreeEnd = getRootNode().getNodeEnd();
@@ -271,10 +297,10 @@ class HistoryTree {
                 buffer.putInt(HISTORY_FILE_MAGIC_NUMBER);
 
                 buffer.putInt(FILE_VERSION);
-                buffer.putInt(fConfig.getProviderVersion());
+                buffer.putInt(fProviderVersion);
 
-                buffer.putInt(fConfig.getBlockSize());
-                buffer.putInt(fConfig.getMaxChildren());
+                buffer.putInt(fBlockSize);
+                buffer.putInt(fMaxChildren);
 
                 buffer.putInt(fNodeCount);
 
@@ -309,7 +335,7 @@ class HistoryTree {
      * @return The start time
      */
     public long getTreeStart() {
-        return fConfig.getTreeStart();
+        return fTreeStart;
     }
 
     /**
@@ -370,7 +396,7 @@ class HistoryTree {
      * @return The file to which we will write the attribute tree
      */
     public File supplyATWriterFile() {
-        return fConfig.getStateFile();
+        return fStateFile;
     }
 
     /**
@@ -381,7 +407,7 @@ class HistoryTree {
      */
     public long supplyATWriterFilePos() {
         return HistoryTree.TREE_HEADER_SIZE
-                + ((long) getNodeCount() * fConfig.getBlockSize());
+                + ((long) getNodeCount() * fBlockSize);
     }
 
     /**
@@ -444,8 +470,8 @@ class HistoryTree {
      *             If the start of end time of the interval are invalid
      */
     public void insertInterval(HTInterval interval) throws TimeRangeException {
-        if (interval.getStartTime() < fConfig.getTreeStart()) {
-            throw new TimeRangeException("Interval Start:" + interval.getStartTime() + ", Config Start:" + fConfig.getTreeStart()); //$NON-NLS-1$ //$NON-NLS-2$
+        if (interval.getStartTime() < fTreeStart) {
+            throw new TimeRangeException("Interval Start:" + interval.getStartTime() + ", Config Start:" + fTreeStart); //$NON-NLS-1$ //$NON-NLS-2$
         }
         tryInsertAtNode(interval, fLatestBranch.size() - 1);
     }
@@ -518,7 +544,7 @@ class HistoryTree {
             }
 
             /* Check if we can indeed add a child to the target parent */
-            if (((CoreNode) fLatestBranch.get(indexOfNode - 1)).getNbChildren() == fConfig.getMaxChildren()) {
+            if (((CoreNode) fLatestBranch.get(indexOfNode - 1)).getNbChildren() == fMaxChildren) {
                 /* If not, add a branch starting one level higher instead */
                 addSiblingNode(indexOfNode - 1);
                 return;
@@ -557,7 +583,7 @@ class HistoryTree {
         final long splitTime = fTreeEnd;
 
         HTNode oldRootNode = fLatestBranch.get(0);
-        CoreNode newRootNode = initNewCoreNode(-1, fConfig.getTreeStart());
+        CoreNode newRootNode = initNewCoreNode(-1, fTreeStart);
 
         /* Tell the old root node that it isn't root anymore */
         oldRootNode.setParentSequenceNumber(newRootNode.getSequenceNumber());
@@ -603,7 +629,7 @@ class HistoryTree {
      * @return The newly created node
      */
     private @NonNull CoreNode initNewCoreNode(int parentSeqNumber, long startTime) {
-        CoreNode newNode = new CoreNode(fConfig, fNodeCount, parentSeqNumber,
+        CoreNode newNode = new CoreNode(fBlockSize, fMaxChildren, fNodeCount, parentSeqNumber,
                 startTime);
         fNodeCount++;
         return newNode;
@@ -619,7 +645,7 @@ class HistoryTree {
      * @return The newly created node
      */
     private @NonNull LeafNode initNewLeafNode(int parentSeqNumber, long startTime) {
-        LeafNode newNode = new LeafNode(fConfig, fNodeCount, parentSeqNumber,
+        LeafNode newNode = new LeafNode(fBlockSize, fNodeCount, parentSeqNumber,
                 startTime);
         fNodeCount++;
         return newNode;
@@ -675,7 +701,7 @@ class HistoryTree {
      * @return The history file size
      */
     public long getFileSize() {
-        return fConfig.getStateFile().length();
+        return fStateFile.length();
     }
 
     // ------------------------------------------------------------------------
@@ -778,8 +804,8 @@ class HistoryTree {
     @Override
     public String toString() {
         return "Information on the current tree:\n\n" + "Blocksize: "
-                + fConfig.getBlockSize() + "\n" + "Max nb. of children per node: "
-                + fConfig.getMaxChildren() + "\n" + "Number of nodes: " + fNodeCount
+                + fBlockSize + "\n" + "Max nb. of children per node: "
+                + fMaxChildren + "\n" + "Number of nodes: " + fNodeCount
                 + "\n" + "Depth of the tree: " + fLatestBranch.size() + "\n"
                 + "Size of the treefile: " + getFileSize() + "\n"
                 + "Root node has sequence number: "
