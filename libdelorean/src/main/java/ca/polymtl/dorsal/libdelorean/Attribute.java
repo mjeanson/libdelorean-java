@@ -1,16 +1,13 @@
-/*******************************************************************************
- * Copyright (c) 2012, 2015 Ericsson, EfficiOS Inc.
- * Copyright (c) 2010, 2011 École Polytechnique de Montréal
- * Copyright (c) 2010, 2011 Alexandre Montplaisir <alexandre.montplaisir@gmail.com>
+/*
+ * Copyright (C) 2017 EfficiOS Inc., Alexandre Montplaisir <alexmonthy@efficios.com>
+ * Copyright (C) 2012-2015 Ericsson
+ * Copyright (C) 2010-2011 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     Alexandre Montplaisir - Initial API and implementation
- *******************************************************************************/
+ */
 
 package ca.polymtl.dorsal.libdelorean;
 
@@ -34,7 +31,6 @@ import com.google.common.collect.ImmutableList;
  * access sub-attributes
  *
  * @author Alexandre Montplaisir
- *
  */
 final class Attribute {
 

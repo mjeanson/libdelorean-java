@@ -1,14 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2014, 2015 Ericsson
+/*
+ * Copyright (C) 2017 EfficiOS Inc., Alexandre Montplaisir <alexmonthy@efficios.com>
+ * Copyright (C) 2014-2015 Ericsson
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
  * accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *   Alexandre Montplaisir - Initial API and implementation
- *******************************************************************************/
+ */
 
 package ca.polymtl.dorsal.libdelorean.utils;
 
@@ -126,7 +124,7 @@ public final class NonNullUtils {
             throw new NullPointerException();
         }
         Arrays.stream(array).forEach(elem -> checkNotNull(elem));
-        @NonNull T[] ret = (@NonNull T[]) array;
+        @NonNull T[] ret = array;
         return ret;
     }
 }
