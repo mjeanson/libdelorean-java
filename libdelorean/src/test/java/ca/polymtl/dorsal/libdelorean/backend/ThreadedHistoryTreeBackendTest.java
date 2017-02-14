@@ -36,7 +36,7 @@ public class ThreadedHistoryTreeBackendTest extends HistoryTreeBackendTest {
      *            If we should use the backend as-is, or close it and re-open a
      *            new backend from the file.
      */
-    public ThreadedHistoryTreeBackendTest(Boolean reOpen) {
+    public ThreadedHistoryTreeBackendTest(boolean reOpen) {
         super(reOpen);
     }
 

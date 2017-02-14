@@ -40,6 +40,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
+@SuppressWarnings("nls")
 public class StateSystemPushPopTest {
 
     private ITmfStateSystemBuilder ss;

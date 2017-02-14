@@ -40,7 +40,7 @@ public class HistoryTreeTest {
     private static final int STRING_PADDING = 2;
 
     /* String with 23 characters, interval in file will be 25 bytes long */
-    private static final String TEST_STRING = "abcdefghifklmnopqrstuvw";
+    private static final String TEST_STRING = "abcdefghifklmnopqrstuvw"; //$NON-NLS-1$
     private static final @NonNull TmfStateValue STRING_VALUE = TmfStateValue.newValueString(TEST_STRING);
     private static final @NonNull TmfStateValue LONG_VALUE = TmfStateValue.newValueLong(10L);
     private static final @NonNull TmfStateValue INT_VALUE = TmfStateValue.newValueInt(1);
@@ -53,7 +53,7 @@ public class HistoryTreeTest {
     @Before
     public void setupTest() {
         try {
-            fTempFile = File.createTempFile("tmpStateSystem", null);
+            fTempFile = File.createTempFile("tmpStateSystem", null); //$NON-NLS-1$
         } catch (IOException e) {
             fail(e.getMessage());
         }

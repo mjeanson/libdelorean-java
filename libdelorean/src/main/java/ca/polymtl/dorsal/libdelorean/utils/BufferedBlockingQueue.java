@@ -47,7 +47,7 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 public class BufferedBlockingQueue<T> implements Iterable<T> {
 
-    private static final Logger LOGGER = Logger.getLogger(BufferedBlockingQueue.class.getName());
+    private static final Logger LOGGER = requireNonNull(Logger.getLogger(BufferedBlockingQueue.class.getName()));
 
     private final BlockingDeque<Deque<T>> fInnerQueue;
     private final Lock fInputLock = new ReentrantLock();

@@ -11,7 +11,6 @@ package ca.polymtl.dorsal.libdelorean.statevalue;
 
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.Test;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
@@ -21,7 +20,6 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
  *
  * @author Naser Ezzati
  */
-@NonNullByDefault
 public class StateValueCompareToTest {
 
     // ------------------------------------------------------------------------
@@ -49,9 +47,9 @@ public class StateValueCompareToTest {
     private static final ITmfStateValue POSITIVE_INFINITY = TmfStateValue.newValueDouble(Double.POSITIVE_INFINITY);
     private static final ITmfStateValue NEGATIVE_INFINITY = TmfStateValue.newValueDouble(Double.NEGATIVE_INFINITY);
 
-    private static final ITmfStateValue BASE_STRING_VALUE = TmfStateValue.newValueString("D");
-    private static final ITmfStateValue BIGGER_STRING_VALUE = TmfStateValue.newValueString("Z");
-    private static final ITmfStateValue SMALLER_STRING_VALUE = TmfStateValue.newValueString("A");
+    private static final ITmfStateValue BASE_STRING_VALUE = TmfStateValue.newValueString("D"); //$NON-NLS-1$
+    private static final ITmfStateValue BIGGER_STRING_VALUE = TmfStateValue.newValueString("Z"); //$NON-NLS-1$
+    private static final ITmfStateValue SMALLER_STRING_VALUE = TmfStateValue.newValueString("A"); //$NON-NLS-1$
 
     private static final ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
 

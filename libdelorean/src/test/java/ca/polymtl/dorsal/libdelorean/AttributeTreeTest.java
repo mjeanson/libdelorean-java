@@ -27,6 +27,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
  *
  * @author Patrick Tasse
  */
+@SuppressWarnings("nls")
 public class AttributeTreeTest {
 
     private static final String THREADS = "Threads";

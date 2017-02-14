@@ -45,7 +45,7 @@ public class InMemoryBackendTest {
      */
     @BeforeClass
     public static void init() {
-        fixture = StateHistoryBackendFactory.createInMemoryBackend("test-ss", 0);
+        fixture = StateHistoryBackendFactory.createInMemoryBackend("test-ss", 0); //$NON-NLS-1$
         for (int attribute = 0; attribute < NUMBER_OF_ATTRIBUTES; attribute++) {
             for (int timeStart = 0; timeStart < 1000; timeStart++) {
                 try {

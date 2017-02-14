@@ -35,7 +35,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 public class StateSystemUtilsTest {
 
     private static final long START_TIME = 1000L;
-    private static final @NonNull String DUMMY_STRING = "test";
+    private static final @NonNull String DUMMY_STRING = "test"; //$NON-NLS-1$
 
     private ITmfStateSystemBuilder fStateSystem;
 

@@ -86,6 +86,7 @@ public final class NonNullUtils {
             throw new NullPointerException();
         }
         Arrays.stream(array).forEach(elem -> requireNonNull(elem));
+        @SuppressWarnings("null")
         @NonNull T[] ret = array;
         return ret;
     }

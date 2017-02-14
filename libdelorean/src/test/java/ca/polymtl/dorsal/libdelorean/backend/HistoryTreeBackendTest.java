@@ -37,7 +37,7 @@ import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
 public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
 
     /** State system ID */
-    protected static final @NonNull String SSID = "test";
+    protected static final @NonNull String SSID = "test"; //$NON-NLS-1$
     /** Provider version */
     protected static final int PROVIDER_VERSION = 0;
 
@@ -66,7 +66,7 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
      * @param reOpen
      *            true if the backend should be re-opened before querying
      */
-    public HistoryTreeBackendTest(Boolean reOpen) {
+    public HistoryTreeBackendTest(boolean reOpen) {
         fReOpen = reOpen;
     }
 
@@ -74,7 +74,7 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
     @Before
     public void setup() {
         try {
-            fTempFile = File.createTempFile("HistoryTreeBackendTest", ".ht");
+            fTempFile = File.createTempFile("HistoryTreeBackendTest", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
         } catch (IOException e) {
             fail(e.getMessage());
         }

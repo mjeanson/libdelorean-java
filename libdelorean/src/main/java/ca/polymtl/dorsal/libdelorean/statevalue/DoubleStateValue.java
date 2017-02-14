@@ -54,7 +54,7 @@ final class DoubleStateValue extends TmfStateValue {
 
     @Override
     public @Nullable String toString() {
-        return String.format("%3f", value); //$NON-NLS-1$
+        return String.format("%3f", Double.valueOf(value)); //$NON-NLS-1$
     }
 
     // ------------------------------------------------------------------------
