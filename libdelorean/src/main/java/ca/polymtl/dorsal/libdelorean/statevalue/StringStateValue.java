@@ -18,7 +18,6 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 /**
  * A state value containing a variable-sized string
  *
- * @version 1.0
  * @author Alexandre Montplaisir
  */
 final class StringStateValue extends TmfStateValue {

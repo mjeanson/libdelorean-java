@@ -43,7 +43,6 @@ import org.eclipse.jdt.annotation.Nullable;
  *
  * @param <T>
  *            The data type of the elements contained by the queue
- * @since 1.0
  */
 public class BufferedBlockingQueue<T> implements Iterable<T> {
 
@@ -198,7 +197,6 @@ public class BufferedBlockingQueue<T> implements Iterable<T> {
      * is otherwise manually flushed.
      *
      * @return The head element of this queue, blocking until one is available
-     * @since 1.1
      */
     public T blockingPeek() {
         fOutputLock.lock();
@@ -238,7 +236,6 @@ public class BufferedBlockingQueue<T> implements Iterable<T> {
      * Returns the number of elements in this queue.
      *
      * @return the number of elements in this queue
-     * @since 1.1
      */
     public int size() {
         return fSize.get();

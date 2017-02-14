@@ -36,7 +36,6 @@ public class TimeRangeException extends RuntimeException {
      *
      * @param message
      *            Message to attach to this exception
-     * @since 1.0
      */
     public TimeRangeException(String message) {
         super(message);
@@ -49,7 +48,6 @@ public class TimeRangeException extends RuntimeException {
      *            Message to attach to this exception
      * @param e
      *            Cause of this exception
-     * @since 1.0
      */
     public TimeRangeException(String message, Throwable e) {
         super(message, e);

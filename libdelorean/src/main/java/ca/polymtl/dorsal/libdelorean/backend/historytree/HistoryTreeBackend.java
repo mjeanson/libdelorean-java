@@ -121,7 +121,6 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
      *            The earliest time stamp that will be stored in the history
      * @throws IOException
      *             Thrown if we can't create the file for some reason
-     * @since 1.0
      */
     public HistoryTreeBackend(@NonNull String ssid, File newStateFile, int providerVersion, long startTime)
             throws IOException {

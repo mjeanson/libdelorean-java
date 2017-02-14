@@ -19,7 +19,6 @@ import org.eclipse.jdt.annotation.Nullable;
  *
  * It can also be read either as a String ("nullValue") or an Integer (-1).
  *
- * @version 1.0
  * @author Alexandre Montplaisir
  */
 final class NullStateValue extends TmfStateValue {

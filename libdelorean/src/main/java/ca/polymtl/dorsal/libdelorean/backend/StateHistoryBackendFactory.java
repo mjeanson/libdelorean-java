@@ -23,7 +23,6 @@ import ca.polymtl.dorsal.libdelorean.backend.historytree.ThreadedHistoryTreeBack
  * plugin.
  *
  * @author Alexandre Montplaisir
- * @since 1.0
  */
 @NonNullByDefault
 public final class StateHistoryBackendFactory {

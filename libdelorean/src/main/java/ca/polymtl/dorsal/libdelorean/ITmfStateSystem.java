@@ -258,7 +258,6 @@ public interface ITmfStateSystem {
      * @return The array of path elements
      * @throws IndexOutOfBoundsException
      *             If the attribute quark is out of range
-     * @since 1.0
      */
     String @NonNull [] getFullAttributePathArray(int attributeQuark);
 

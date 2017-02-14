@@ -45,7 +45,6 @@ public class AttributeNotFoundException extends RuntimeException {
      *            Message to attach to this exception
      * @param e
      *            Cause of this exception
-     * @since 1.0
      */
     public AttributeNotFoundException(String message, Throwable e) {
         super(message, e);

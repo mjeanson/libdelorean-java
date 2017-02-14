@@ -44,7 +44,6 @@ public interface IStateHistoryBackend {
      * Get the ID of the state system that populates this backend.
      *
      * @return The state system's ID.
-     * @since 1.0
      */
     @NonNull String getSSID();
 
