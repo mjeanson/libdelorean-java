@@ -23,6 +23,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Iterables;
+
 import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 
 /**
@@ -74,12 +76,12 @@ public class HistoryTreeTest {
      *            The max number of children per node in the tree (tree config
      *            option)
      */
-    private HistoryTreeStub setupSmallTree(int maxChildren) {
-        HistoryTreeStub ht = null;
+    private HistoryTree setupSmallTree(int maxChildren) {
+        HistoryTree ht = null;
         try {
             File newFile = fTempFile;
             assertNotNull(newFile);
-            ht = new HistoryTreeStub(newFile,
+            ht = new HistoryTree(newFile,
                     BLOCK_SIZE,
                     maxChildren, /* Number of children */
                     1, /* Provider version */
@@ -96,7 +98,7 @@ public class HistoryTreeTest {
     /**
      * Setup a history tree with config MAX_CHILDREN = 3.
      */
-    private HistoryTreeStub setupSmallTree() {
+    private HistoryTree setupSmallTree() {
         return setupSmallTree(3);
     }
 
@@ -119,19 +121,19 @@ public class HistoryTreeTest {
      *         greater than or equal to this to make sure the intervals go in
      *         the leaf node.
      */
-    private static long fillNextLeafNode(HistoryTreeStub ht, long leafNodeStart) {
+    private static long fillNextLeafNode(HistoryTree ht, long leafNodeStart) {
         int prevCount = ht.getNodeCount();
-        int prevDepth = ht.getDepth();
+        int prevDepth = getDepth(ht);
 
         /* Fill the following leaf node */
-        HTNode node = ht.getLatestLeaf();
+        HTNode node = getLatestLeaf(ht);
         int nodeFreeSpace = node.getNodeFreeSpace();
         int nbIntervals = nodeFreeSpace / (HTInterval.DATA_ENTRY_SIZE + TEST_STRING.length() + STRING_PADDING);
         long ret = fillValues(ht, STRING_VALUE, nbIntervals, leafNodeStart);
 
         /* Make sure we haven't changed the depth or node count */
         assertEquals(prevCount, ht.getNodeCount());
-        assertEquals(prevDepth, ht.getDepth());
+        assertEquals(prevDepth, getDepth(ht));
 
         return ret;
     }
@@ -144,9 +146,9 @@ public class HistoryTreeTest {
      */
     @Test
     public void testSequentialFill() {
-        HistoryTreeStub ht = setupSmallTree();
+        HistoryTree ht = setupSmallTree();
 
-        HTNode node = ht.getLatestLeaf();
+        HTNode node = getLatestLeaf(ht);
         assertEquals(0, node.getNodeUsagePercent());
 
         /* Add null intervals up to ~10% */
@@ -181,23 +183,23 @@ public class HistoryTreeTest {
      */
     @Test
     public void testDepth() {
-        HistoryTreeStub ht = setupSmallTree();
+        HistoryTree ht = setupSmallTree();
 
         /* Fill a first node */
-        HTNode node = ht.getLatestLeaf();
+        HTNode node = getLatestLeaf(ht);
         int nodeFreeSpace = node.getNodeFreeSpace();
         int nbIntervals = nodeFreeSpace / (HTInterval.DATA_ENTRY_SIZE + TEST_STRING.length() + STRING_PADDING);
         long start = fillValues(ht, STRING_VALUE, nbIntervals, 1);
 
         /* Add intervals that should add a sibling to the node */
         assertEquals(1, ht.getNodeCount());
-        assertEquals(1, ht.getDepth());
+        assertEquals(1, getDepth(ht));
         start = fillValues(ht, STRING_VALUE, 1, start);
         assertEquals(3, ht.getNodeCount());
-        assertEquals(2, ht.getDepth());
+        assertEquals(2, getDepth(ht));
 
         /* Fill the latest leaf node (2nd child) */
-        node = ht.getLatestLeaf();
+        node = getLatestLeaf(ht);
         nodeFreeSpace = node.getNodeFreeSpace();
         nbIntervals = nodeFreeSpace / (HTInterval.DATA_ENTRY_SIZE + TEST_STRING.length() + STRING_PADDING);
         start = fillValues(ht, STRING_VALUE, nbIntervals, start);
@@ -207,10 +209,10 @@ public class HistoryTreeTest {
          */
         start = fillValues(ht, STRING_VALUE, 1, start);
         assertEquals(4, ht.getNodeCount());
-        assertEquals(2, ht.getDepth());
+        assertEquals(2, getDepth(ht));
 
         /* Fill the latest leaf node (3rd and last child) */
-        node = ht.getLatestLeaf();
+        node = getLatestLeaf(ht);
         nodeFreeSpace = node.getNodeFreeSpace();
         nbIntervals = nodeFreeSpace / (HTInterval.DATA_ENTRY_SIZE + TEST_STRING.length() + STRING_PADDING);
         start = fillValues(ht, STRING_VALUE, nbIntervals, start);
@@ -218,7 +220,7 @@ public class HistoryTreeTest {
         /* The new node created here should generate a new branch */
         start = fillValues(ht, STRING_VALUE, 1, start);
         assertEquals(7, ht.getNodeCount());
-        assertEquals(3, ht.getDepth());
+        assertEquals(3, getDepth(ht));
     }
 
     /**
@@ -250,7 +252,7 @@ public class HistoryTreeTest {
         /* Represents the start time of the current leaf node */
         long start = 1;
 
-        HistoryTreeStub ht = setupSmallTree(2);
+        HistoryTree ht = setupSmallTree(2);
         start = fillNextLeafNode(ht, start);
 
         List<HTNode> branch = ht.getLatestBranch();
@@ -262,7 +264,7 @@ public class HistoryTreeTest {
         start = fillValues(ht, STRING_VALUE, 1, start);
         start = fillNextLeafNode(ht, start);
         assertEquals(3, ht.getNodeCount());
-        assertEquals(2, ht.getDepth());
+        assertEquals(2, getDepth(ht));
 
         /* Make sure the first node's parent was updated */
         HTNode node = ht.readNode(0);
@@ -281,7 +283,7 @@ public class HistoryTreeTest {
         start = fillValues(ht, STRING_VALUE, 1, start);
         start = fillNextLeafNode(ht, start);
         assertEquals(6, ht.getNodeCount());
-        assertEquals(3, ht.getDepth());
+        assertEquals(3, getDepth(ht));
 
         /* Make sure all previous nodes are still correct */
         node = ht.readNode(0);
@@ -303,5 +305,14 @@ public class HistoryTreeTest {
         assertEquals( 3, branch.get(1).getParentSequenceNumber());
         assertEquals( 5, branch.get(2).getSequenceNumber());
         assertEquals( 4, branch.get(2).getParentSequenceNumber());
+    }
+
+    private static HTNode getLatestLeaf(HistoryTree ht) {
+        List<HTNode> latest = ht.getLatestBranch();
+        return Iterables.getLast(latest);
+    }
+
+    private static int getDepth(HistoryTree ht) {
+        return ht.getLatestBranch().size();
     }
 }
