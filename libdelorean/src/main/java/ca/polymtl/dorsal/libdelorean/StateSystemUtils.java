@@ -166,10 +166,6 @@ public final class StateSystemUtils {
      *            history.
      * @param resolution
      *            The "step" of this query
-     * @param monitor
-     *            A progress monitor. If the monitor is canceled during a query,
-     *            we will return what has been found up to that point. You can
-     *            use "null" if you do not want to use one.
      * @return The List of states that happened between t1 and t2
      * @throws TimeRangeException
      *             If t1 is invalid, if t2 <= t1, or if the resolution isn't

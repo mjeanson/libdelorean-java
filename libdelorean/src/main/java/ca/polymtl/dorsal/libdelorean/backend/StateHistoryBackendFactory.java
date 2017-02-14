@@ -72,11 +72,6 @@ public final class StateHistoryBackendFactory {
      *            framework.
      * @param startTime
      *            The earliest time stamp that will be stored in the history
-     * @param queueSize
-     *            The size of the interval insertion queue between the receiver
-     *            and writer threads. 2000 - 10000 usually works well. If 0 is
-     *            specified, no queue is used and the writes happen in the same
-     *            thread.
      * @return The state system backend
      * @throws IOException
      *             Thrown if we can't create the file for some reason

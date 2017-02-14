@@ -14,7 +14,7 @@ package ca.polymtl.dorsal.libdelorean.backend.historytree;
 import java.io.File;
 
 /**
- * Configuration object for the {@link HistoryTree}.
+ * Configuration object for the HistoryTree.
  *
  * @author Alexandre Montplaisir
  */

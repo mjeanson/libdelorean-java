@@ -11,6 +11,8 @@
 
 package ca.polymtl.dorsal.libdelorean.exceptions;
 
+import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+
 /**
  * The StateValue is a wrapper around the different type of values that can be
  * used and stored in the state system and history. "Unboxing" the value means
@@ -20,8 +22,7 @@ package ca.polymtl.dorsal.libdelorean.exceptions;
  * incorrect type (for example, tries to read a String value as an Int).
  *
  * To avoid it, always check for the state value's type before attempting to
- * unbox it, via
- * {@link ca.polymtl.dorsal.statesys.statevalue.ITmfStateValue#getType()}.
+ * unbox it, via {@link ITmfStateValue#getType()}.
  *
  * @author Alexandre Montplaisir
  */

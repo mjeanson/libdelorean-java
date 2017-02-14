@@ -23,7 +23,7 @@ import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 
 /**
- * Test the {@link AttributeTree} class
+ * Test the AttributeTree class
  *
  * @author Patrick Tasse
  */
@@ -84,8 +84,8 @@ public class AttributeTreeTest {
      * <p>
      * Tests that an attribute tree written to file is read back correctly.
      * <p>
-     * Tests {@link AttributeTree#writeSelf(File, long)} and
-     * {@link AttributeTree#AttributeTree(StateSystem, FileInputStream)}.
+     * Tests AttributeTree#writeSelf(File, long) and
+     * AttributeTree#AttributeTree(StateSystem, FileInputStream).
      *
      * @throws IOException
      *             if there is an error accessing the test file
