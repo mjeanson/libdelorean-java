@@ -16,7 +16,6 @@ import java.io.IOException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
-import ca.polymtl.dorsal.libdelorean.backend.historytree.ThreadedHistoryTreeBackend;
 
 /**
  * Factory for the various types {@link IStateHistoryBackend} supplied by this
@@ -83,10 +82,7 @@ public final class StateHistoryBackendFactory {
      *             Thrown if we can't create the file for some reason
      */
     public static IStateHistoryBackend createHistoryTreeBackendNewFile(String ssid,
-            File stateFile, int providerVersion, long startTime, int queueSize) throws IOException {
-        if (queueSize > 0) {
-            return new ThreadedHistoryTreeBackend(ssid, stateFile, providerVersion, startTime, queueSize);
-        }
+            File stateFile, int providerVersion, long startTime) throws IOException {
         return new HistoryTreeBackend(ssid, stateFile, providerVersion, startTime);
     }
 

@@ -79,7 +79,7 @@ public class StateSystemPushPopTest {
         testHtFile = File.createTempFile("test", ".ht");
 
         IStateHistoryBackend backend = StateHistoryBackendFactory.createHistoryTreeBackendNewFile(
-                "push-pop-test", requireNonNull(testHtFile), 0, 0, 0);
+                "push-pop-test", requireNonNull(testHtFile), 0, 0);
         ss = new StateSystem(backend, true);
 
         /* Build the thing */
