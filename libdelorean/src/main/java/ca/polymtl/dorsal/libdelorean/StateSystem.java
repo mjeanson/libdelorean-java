@@ -17,6 +17,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -24,6 +26,7 @@ import java.util.logging.Logger;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
@@ -55,6 +58,12 @@ class StateSystem implements ITmfStateSystemBuilder {
     private final AttributeTree attributeTree;
     private final TransientState transState;
     private final IStateHistoryBackend backend;
+
+    /**
+     * Map to store the state aggregation rules. The key the quark, effectively
+     * limiting each quark to one rule.
+     */
+    private final @NonNull Map<@NonNull Integer, @NonNull IStateAggregationRule> aggregationRules = new ConcurrentHashMap<>();
 
     /* Latch tracking if the state history is done building or not */
     private final CountDownLatch finishedLatch = new CountDownLatch(1);
@@ -519,14 +528,21 @@ class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     @Override
-    public ITmfStateValue queryOngoingState(int attributeQuark)
-            throws AttributeNotFoundException {
+    public ITmfStateValue queryOngoingState(int attributeQuark) throws AttributeNotFoundException {
+        /* Check if the attribute is an aggregate */
+        ITmfStateValue aggregatedValue = getOngoingAggregatedState(attributeQuark);
+        if (aggregatedValue != null) {
+            return aggregatedValue;
+        }
         return transState.getOngoingStateValue(attributeQuark);
     }
 
     @Override
-    public long getOngoingStartTime(int attribute)
-            throws AttributeNotFoundException {
+    public long getOngoingStartTime(int attribute) throws AttributeNotFoundException {
+        if (aggregationRules.containsKey(attribute)) {
+            throw new IllegalArgumentException("Cannot get the ongoing start time of aggregate attributes " + //$NON-NLS-1$
+                    "(Attribute #" + attribute); //$NON-NLS-1$
+        }
         return transState.getOngoingStartTime(attribute);
     }
 
@@ -579,6 +595,16 @@ class StateSystem implements ITmfStateSystemBuilder {
         backend.doQuery(stateInfo, t);
 
         /*
+         * Replace the values of aggregated attributes with their correct ones.
+         * TODO Find a way to do this in one pass?
+         */
+        aggregationRules.values().forEach(rule -> {
+            int quark = rule.getTargetQuark();
+            ITmfStateInterval newValue = rule.getAggregatedState(t);
+            stateInfo.set(quark, newValue);
+        });
+
+        /*
          * We should have previously inserted an interval for every attribute.
          */
         for (ITmfStateInterval interval : stateInfo) {
@@ -591,13 +617,18 @@ class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     public ITmfStateInterval querySingleState(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateSystemDisposedException {
+            throws AttributeNotFoundException, TimeRangeException, StateSystemDisposedException {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
-        ITmfStateInterval ret = transState.getIntervalAt(t, attributeQuark);
+        /* First check if the target quark is an aggregate */
+        ITmfStateInterval ret = getAggregatedState(attributeQuark, t);
+        if (ret != null) {
+            return ret;
+        }
+
+        ret = transState.getIntervalAt(t, attributeQuark);
         if (ret == null) {
             /*
              * The transient state did not have the information, let's look into
@@ -614,6 +645,34 @@ class StateSystem implements ITmfStateSystemBuilder {
             throw new IllegalStateException("Incoherent interval storage"); //$NON-NLS-1$
         }
         return ret;
+    }
+
+    // --------------------------------------------------------------------------
+    // State aggregation methods
+    // --------------------------------------------------------------------------
+
+    @Override
+    public void addAggregationRule(@NonNull IStateAggregationRule rule) {
+        if (rule.getStateSystem() != this) {
+            throw new IllegalArgumentException();
+        }
+        aggregationRules.put(Integer.valueOf(rule.getTargetQuark()), rule);
+    }
+
+    private @Nullable ITmfStateValue getOngoingAggregatedState(int quark) {
+        IStateAggregationRule rule = aggregationRules.get(Integer.valueOf(quark));
+        if (rule == null) {
+            return null;
+        }
+        return rule.getOngoingAggregatedState();
+    }
+
+    private @Nullable ITmfStateInterval getAggregatedState(int quark, long timestamp) {
+        IStateAggregationRule rule = aggregationRules.get(Integer.valueOf(quark));
+        if (rule == null) {
+            return null;
+        }
+        return rule.getAggregatedState(timestamp);
     }
 
     //--------------------------------------------------------------------------

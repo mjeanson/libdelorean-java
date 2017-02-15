@@ -12,6 +12,7 @@ package ca.polymtl.dorsal.libdelorean;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
@@ -231,4 +232,17 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             know how to handle it.
      */
     void closeHistory(long endTime);
+
+    /**
+     * Register an aggregation rule to this state system.
+     *
+     * Even though aggregation rules are technically read-only operations, only
+     * owners of an {@link ITmfStateSystemBuilder} should be able to setup
+     * aggregation rules, which is why this method is in this class.
+     *
+     * @param rule
+     *            Aggregation rule to add
+     * @see IStateAggregationRule
+     */
+    void addAggregationRule(@NonNull IStateAggregationRule rule);
 }
