@@ -83,8 +83,8 @@ final class LongStateValue extends TmfStateValue {
             return Long.compare(this.value, otherLongValue);
         case NULL:
             return Long.compare(this.value, other.unboxLong());
+        case BOOLEAN:
         case STRING:
-            throw new StateValueTypeException("A Long state value cannot be compared to a String state value."); //$NON-NLS-1$
         default:
             throw new StateValueTypeException("A Long state value cannot be compared to the type " + other.getType()); //$NON-NLS-1$
         }

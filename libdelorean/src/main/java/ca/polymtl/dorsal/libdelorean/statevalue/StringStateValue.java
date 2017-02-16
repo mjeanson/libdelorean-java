@@ -71,14 +71,7 @@ final class StringStateValue extends TmfStateValue {
         if (other == null) {
             throw new IllegalArgumentException();
         }
-
         switch (other.getType()) {
-        case DOUBLE:
-            throw new StateValueTypeException("A String state value cannot be compared to a Double state value."); //$NON-NLS-1$
-        case INTEGER:
-            throw new StateValueTypeException("A String state value cannot be compared to an Integer state value."); //$NON-NLS-1$
-        case LONG:
-            throw new StateValueTypeException("A String state value cannot be compared to a Long state value."); //$NON-NLS-1$
         case NULL:
             /*
              * We assume that every string state value is greater than a null
@@ -88,6 +81,10 @@ final class StringStateValue extends TmfStateValue {
         case STRING:
             StringStateValue otherStringValue = (StringStateValue) other;
             return value.compareTo(otherStringValue.value);
+        case BOOLEAN:
+        case DOUBLE:
+        case INTEGER:
+        case LONG:
         default:
             throw new StateValueTypeException("A String state value cannot be compared to the type " + other.getType()); //$NON-NLS-1$
         }

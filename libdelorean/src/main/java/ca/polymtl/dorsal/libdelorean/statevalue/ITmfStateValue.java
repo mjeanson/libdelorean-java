@@ -26,6 +26,8 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
     public enum Type {
         /** Null value, for an interval not carrying any information */
         NULL,
+        /** Boolean value */
+        BOOLEAN,
         /** 32-bit integer value */
         INTEGER,
         /** 64-bit integer value */
@@ -52,6 +54,18 @@ public interface ITmfStateValue extends Comparable<ITmfStateValue> {
      *         contains a real value.
      */
     boolean isNull();
+
+    /**
+     * Read the contained value as a 'boolean' primitive.
+     *
+     * @return The boolean contained in the state value
+     * @throws StateValueTypeException
+     *             If the contained value cannot be read as a boolean
+     */
+    default boolean unboxBoolean() {
+        throw new StateValueTypeException("Type " + getClass().getSimpleName() + //$NON-NLS-1$
+                " cannot be unboxed into a boolean value."); //$NON-NLS-1$
+    }
 
     /**
      * Read the contained value as an 'int' primitive

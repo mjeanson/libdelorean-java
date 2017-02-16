@@ -37,6 +37,8 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     private static final byte TYPE_STRING = 1;
     private static final byte TYPE_LONG = 2;
     private static final byte TYPE_DOUBLE = 3;
+    private static final byte TYPE_BOOLEAN_TRUE = 4;
+    private static final byte TYPE_BOOLEAN_FALSE = 5;
 
     private final long start;
     private final long end;
@@ -92,6 +94,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
         switch (sv.getType()) {
         case NULL:
+        case BOOLEAN:
             return minSize;
         case INTEGER:
             return (minSize + Integer.BYTES);
@@ -161,6 +164,14 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             value = TmfStateValue.nullValue();
             break;
 
+        case TYPE_BOOLEAN_TRUE:
+            value = TmfStateValue.newValueBoolean(true);
+            break;
+
+        case TYPE_BOOLEAN_FALSE:
+            value = TmfStateValue.newValueBoolean(false);
+            break;
+
         case TYPE_INTEGER:
             value = TmfStateValue.newValueInt(buffer.getInt());
             break;
@@ -214,7 +225,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     public void writeInterval(ByteBuffer buffer) {
         int startPos = buffer.position();
 
-        final byte typeByte = getByteFromType(sv.getType());
+        final byte typeByte = getByteFromType(sv);
 
         buffer.putLong(start);
         buffer.putLong(end);
@@ -223,6 +234,8 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
 
         switch (typeByte) {
         case TYPE_NULL:
+        case TYPE_BOOLEAN_TRUE:
+        case TYPE_BOOLEAN_FALSE:
             /* Nothing else to write, 'typeByte' carries all the information */
             break;
         case TYPE_INTEGER:
@@ -341,13 +354,15 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     }
 
     /**
-     * Here we determine how state values "types" are written in the 8-bit
-     * field that indicates the value type in the file.
+     * Here we determine how state values "types" are written in the 8-bit field
+     * that indicates the value type in the file.
      */
-    private static byte getByteFromType(ITmfStateValue.Type type) {
-        switch(type) {
+    private static byte getByteFromType(ITmfStateValue sv) {
+        switch(sv.getType()) {
         case NULL:
             return TYPE_NULL;
+        case BOOLEAN:
+            return (sv.unboxBoolean() ? TYPE_BOOLEAN_TRUE : TYPE_BOOLEAN_FALSE);
         case INTEGER:
             return TYPE_INTEGER;
         case STRING:

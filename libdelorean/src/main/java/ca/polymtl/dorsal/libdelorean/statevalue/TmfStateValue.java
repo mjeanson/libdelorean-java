@@ -45,6 +45,9 @@ public abstract class TmfStateValue implements ITmfStateValue {
     private static final LongStateValue longCache[] = new LongStateValue[LONG_CACHE_SIZE];
     private static final DoubleStateValue doubleCache[] = new DoubleStateValue[DOUBLE_CACHE_SIZE];
 
+    private static final BooleanStateValue BOOLEAN_VALUE_TRUE = new BooleanStateValue(true);
+    private static final BooleanStateValue BOOLEAN_VALUE_FALSE = new BooleanStateValue(false);
+
     // ------------------------------------------------------------------------
     // Factory methods to instantiate new state values
     // ------------------------------------------------------------------------
@@ -53,7 +56,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * Since all "null state values" are the same, we only need one copy in
      * memory.
      */
-    private static TmfStateValue nullValue = new NullStateValue();
+    private static final TmfStateValue NULL_VALUE = new NullStateValue();
 
     /**
      * Return an instance of a "null" value. Only one copy exists in memory.
@@ -61,7 +64,18 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * @return A null value
      */
     public static final TmfStateValue nullValue() {
-        return nullValue;
+        return NULL_VALUE;
+    }
+
+    /**
+     * Factory constructor for boolean state values
+     *
+     * @param boolValue
+     *            The boolean value to wrap
+     * @return The corresponding state value object
+     */
+    public static TmfStateValue newValueBoolean(boolean boolValue) {
+        return (boolValue ? BOOLEAN_VALUE_TRUE : BOOLEAN_VALUE_FALSE);
     }
 
     /**

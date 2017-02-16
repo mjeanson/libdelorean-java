@@ -90,8 +90,8 @@ final class IntegerStateValue extends TmfStateValue {
             return Long.compare(this.value, otherLongValue);
         case NULL:
             return Integer.compare(this.value, other.unboxInt());
+        case BOOLEAN:
         case STRING:
-            throw new StateValueTypeException("An Integer state value cannot be compared to a String state value."); //$NON-NLS-1$
         default:
             throw new StateValueTypeException("An Integer state value cannot be compared to the type " + other.getType()); //$NON-NLS-1$
         }
