@@ -13,6 +13,7 @@ package ca.polymtl.dorsal.libdelorean;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.FutureTask;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -166,6 +167,10 @@ public final class StateSystemUtils {
      *            history.
      * @param resolution
      *            The "step" of this query
+     * @param task
+     *            Optional {@link FutureTask} reference that can be used to
+     *            indicate if a task calling this method has been cancelled, to
+     *            exit early.
      * @return The List of states that happened between t1 and t2
      * @throws TimeRangeException
      *             If t1 is invalid, if t2 <= t1, or if the resolution isn't
@@ -176,7 +181,7 @@ public final class StateSystemUtils {
      *             If the query is sent after the state system has been disposed
      */
     public static List<ITmfStateInterval> queryHistoryRange(ITmfStateSystem ss,
-            int attributeQuark, long t1, long t2, long resolution)
+            int attributeQuark, long t1, long t2, long resolution, @Nullable FutureTask<?> task)
             throws AttributeNotFoundException, StateSystemDisposedException {
         List<ITmfStateInterval> intervals = new LinkedList<>();
         ITmfStateInterval currentInterval = null;
@@ -199,6 +204,9 @@ public final class StateSystemUtils {
          * case the current interval is longer than the resolution.
          */
         for (ts = t1; ts <= tEnd; ts += ((currentInterval.getEndTime() - ts) / resolution + 1) * resolution) {
+            if (task != null && task.isCancelled()) {
+                return intervals;
+            }
             currentInterval = ss.querySingleState(ts, attributeQuark);
             intervals.add(currentInterval);
         }
