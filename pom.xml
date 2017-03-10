@@ -19,18 +19,32 @@
 
   <groupId>ca.polymtl.dorsal.libdelorean</groupId>
   <artifactId>libdelorean-parent</artifactId>
-  <version>0.6.2</version>
+  <version>0.6.3</version>
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven-deploy-destination>file:///var/www/html/libdelorean/maven/</maven-deploy-destination>
-    <p2-deploy-destination>/var/www/html/libdelorean/repository/latest/</p2-deploy-destination>
   </properties>
+
+  <distributionManagement>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>efficios-releases-repo</id>
+      <name>EfficiOS Releases</name>
+      <url>https://mvn.efficios.com/maven/releases/</url>
+      <layout>default</layout>
+    </repository>
+    <snapshotRepository>
+      <uniqueVersion>true</uniqueVersion>
+      <id>efficios-snapshots-repo</id>
+      <name>EfficiOS Snapshots</name>
+      <url>https://mvn.efficios.com/maven/snapshots/</url>
+      <layout>default</layout>
+    </snapshotRepository>
+  </distributionManagement>
 
   <modules>
     <module>libdelorean</module>
-    <module>p2-update-site</module>
   </modules>
 
   <build>
@@ -61,14 +75,32 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
-
-  <distributionManagement>
-    <repository>
-      <id>libdelorean-maven-repo</id>
-      <url>${maven-deploy-destination}</url>
-    </repository>
-  </distributionManagement>
-
 </project>
