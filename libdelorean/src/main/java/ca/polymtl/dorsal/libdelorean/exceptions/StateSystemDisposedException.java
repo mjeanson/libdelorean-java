@@ -16,7 +16,7 @@ package ca.polymtl.dorsal.libdelorean.exceptions;
  *
  * @author Alexandre Montplaisir
  */
-public class StateSystemDisposedException extends Exception {
+public class StateSystemDisposedException extends RuntimeException {
 
     private static final long serialVersionUID = 7896041701818620084L;
 
