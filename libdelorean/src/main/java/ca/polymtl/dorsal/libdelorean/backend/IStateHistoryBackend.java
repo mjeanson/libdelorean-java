@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
@@ -38,6 +40,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
+@NonNullByDefault
 public interface IStateHistoryBackend {
 
     /**
@@ -45,7 +48,7 @@ public interface IStateHistoryBackend {
      *
      * @return The state system's ID.
      */
-    @NonNull String getSSID();
+    String getSSID();
 
     /**
      * Get the start time of this state history. This is usually the same as the
@@ -79,7 +82,7 @@ public interface IStateHistoryBackend {
      */
     // FIXME change to IStateInterval?
     void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, @NonNull ITmfStateValue value) throws TimeRangeException;
+            int quark, ITmfStateValue value) throws TimeRangeException;
 
     /**
      * Indicate to the provider that we are done building the history (so it can
@@ -104,7 +107,7 @@ public interface IStateHistoryBackend {
      * @return A FileInputStream object pointing to the correct file/location in
      *         the file where to read the attribute tree information.
      */
-    FileInputStream supplyAttributeTreeReader();
+    @Nullable FileInputStream supplyAttributeTreeReader();
 
     // FIXME change to FOS too?
     /**
@@ -113,7 +116,7 @@ public interface IStateHistoryBackend {
      *
      * @return The target File
      */
-    File supplyAttributeTreeWriterFile();
+    @Nullable File supplyAttributeTreeWriterFile();
 
     /**
      * Supply the position in the file where we should write the attribute tree
@@ -159,7 +162,7 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    void doQuery(@NonNull List<@Nullable ITmfStateInterval> currentStateInfo, long t)
+    void doQuery(List<@Nullable ITmfStateInterval> currentStateInfo, long t)
             throws TimeRangeException, StateSystemDisposedException;
 
     /**
@@ -180,9 +183,33 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    @Nullable ITmfStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException;
+
+    /**
+     * Do a query for the specified quarks only. The results will be inserted
+     * into the 'results' map passed in parameter.
+     *
+     * The default implementation simply does successive calls to
+     * {@link #doSingularQuery}, but backends that might provide it more
+     * efficiently are welcome to do so.
+     *
+     * @param t
+     *            The timestamp of the query
+     * @param quarks
+     *            The quarks to query
+     * @param results
+     *            The results will be written in this map, with quarks as keys
+     */
+    default void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, ITmfStateInterval> results) {
+        quarks.forEach(quark -> {
+            ITmfStateInterval interval = doSingularQuery(t, quark);
+            if (interval != null) {
+                results.put(quark, interval);
+            }
+        });
+    }
 
     /**
      * Debug method to print the contents of the history backend.

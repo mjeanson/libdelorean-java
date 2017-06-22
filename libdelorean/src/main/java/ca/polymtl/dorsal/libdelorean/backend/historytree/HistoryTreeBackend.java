@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -250,6 +252,55 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     public ITmfStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, StateSystemDisposedException {
         return getRelevantInterval(t, attributeQuark);
+    }
+
+    @Override
+    public void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, ITmfStateInterval> results) {
+        checkValidTime(t);
+
+        int remaining = quarks.size();
+
+        /* We start by reading the information in the root node. */
+        HTNode currentNode = fSht.getRootNode();
+        currentNode.takeReadLock();
+        try {
+            for (ITmfStateInterval interval : currentNode.getIntervals()) {
+                if (interval == null) {
+                    continue;
+                }
+                int quark = interval.getAttribute();
+                if (quarks.contains(quark) && interval.intersects(t)) {
+                    results.put(quark, interval);
+                    remaining--;
+                }
+            }
+        } finally {
+            currentNode.releaseReadLock();
+        }
+
+        /* Then we follow the branch down in the relevant children. */
+        try {
+            while (remaining > 0 && currentNode.getNodeType() == HTNode.NodeType.CORE) {
+                currentNode = fSht.selectNextChild((CoreNode) currentNode, t);
+                currentNode.takeReadLock();
+                try {
+                    for (ITmfStateInterval interval : currentNode.getIntervals()) {
+                        if (interval == null) {
+                            continue;
+                        }
+                        int quark = interval.getAttribute();
+                        if (quarks.contains(quark) && interval.intersects(t)) {
+                            results.put(quark, interval);
+                            remaining--;
+                        }
+                    }
+                } finally {
+                    currentNode.releaseReadLock();
+                }
+            }
+        } catch (ClosedChannelException e) {
+            throw new StateSystemDisposedException(e);
+        }
     }
 
     private void checkValidTime(long t) {

@@ -15,15 +15,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
@@ -645,6 +650,42 @@ class StateSystem implements ITmfStateSystemBuilder {
             throw new IllegalStateException("Incoherent interval storage"); //$NON-NLS-1$
         }
         return ret;
+    }
+
+    @Override
+    @NonNullByDefault
+    public Map<Integer, ITmfStateInterval> queryStates(long t, Set<Integer> quarks) {
+        if (isDisposed) {
+            throw new StateSystemDisposedException();
+        }
+
+        Map<Integer, ITmfStateInterval> results = new HashMap<>(quarks.size());
+        Set<Integer> remainingQuarks = new HashSet<>(quarks);
+
+        /*
+         * First filter out the quarks we can manage at the core state system
+         * level. This includes aggregate attributes, and quarks for which the
+         * state is part of the ongoing state.
+         */
+        Iterator<Integer> iter = remainingQuarks.iterator();
+        while (iter.hasNext()) {
+            int quark = iter.next();
+            /* Check if it's an aggregate. */
+            ITmfStateInterval interval = getAggregatedState(quark, t);
+            if (interval == null) {
+                /* Check if it's in the transient state. */
+                interval = transState.getIntervalAt(t, quark);
+            }
+            if (interval != null) {
+                results.put(quark, interval);
+                iter.remove();
+            }
+        }
+
+        /* Remaining quarks will be sent to the backend. */
+        backend.doPartialQuery(t, remainingQuarks, results);
+
+        return results;
     }
 
     // --------------------------------------------------------------------------

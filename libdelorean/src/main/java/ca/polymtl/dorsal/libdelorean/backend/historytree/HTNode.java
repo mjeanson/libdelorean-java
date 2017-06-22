@@ -446,6 +446,22 @@ abstract class HTNode {
         }
     }
 
+    void takeReadLock() {
+        fRwl.readLock().lock();
+    }
+
+    void releaseReadLock() {
+        fRwl.readLock().unlock();
+    }
+
+    /**
+     * Iteration should *always* be done with the read-lock taken, using
+     * {@link #takeReadLock()} and {@link #releaseReadLock()}.
+     */
+    Iterable<? extends ITmfStateInterval> getIntervals() {
+        return fIntervals;
+    }
+
     /**
      * Get a single Interval from the information in this node If the
      * key/timestamp pair cannot be found, we return null.

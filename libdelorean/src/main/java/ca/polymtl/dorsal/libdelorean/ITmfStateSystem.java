@@ -11,8 +11,11 @@
 package ca.polymtl.dorsal.libdelorean;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
@@ -28,6 +31,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
  * @noimplement Only the internal StateSystem class should implement this
  *              interface.
  */
+@NonNullByDefault
 public interface ITmfStateSystem {
 
     /** Quark representing the root attribute */
@@ -173,7 +177,7 @@ public interface ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the quark was not existing or invalid.
      */
-    @NonNull List<@NonNull Integer> getSubAttributes(int quark, boolean recursive)
+     List<Integer> getSubAttributes(int quark, boolean recursive)
             throws AttributeNotFoundException;
 
     /**
@@ -196,7 +200,7 @@ public interface ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the 'quark' was not existing or invalid.
      */
-    @NonNull List<@NonNull Integer> getSubAttributes(int quark, boolean recursive, String pattern)
+     List<Integer> getSubAttributes(int quark, boolean recursive, String pattern)
             throws AttributeNotFoundException;
 
     /**
@@ -223,7 +227,7 @@ public interface ITmfStateSystem {
      *         the pattern. If no attribute matched, the list will be empty (but
      *         not null).
      */
-    @NonNull List<@NonNull Integer> getQuarks(String... pattern);
+    List<Integer> getQuarks(String... pattern);
 
     /**
      * Return the name assigned to this quark. This returns only the "basename",
@@ -235,7 +239,7 @@ public interface ITmfStateSystem {
      * @throws IndexOutOfBoundsException
      *             If the attribute quark is out of range
      */
-    @NonNull String getAttributeName(int attributeQuark);
+    String getAttributeName(int attributeQuark);
 
     /**
      * This returns the slash-separated path of an attribute by providing its
@@ -247,7 +251,7 @@ public interface ITmfStateSystem {
      * @throws IndexOutOfBoundsException
      *             If the attribute quark is out of range
      */
-    @NonNull String getFullAttributePath(int attributeQuark);
+    String getFullAttributePath(int attributeQuark);
 
     /**
      * Return the full attribute path, as an array of strings representing each
@@ -259,7 +263,7 @@ public interface ITmfStateSystem {
      * @throws IndexOutOfBoundsException
      *             If the attribute quark is out of range
      */
-    String @NonNull [] getFullAttributePathArray(int attributeQuark);
+    String [] getFullAttributePathArray(int attributeQuark);
 
     /**
      * Returns the parent quark of the attribute.
@@ -291,7 +295,7 @@ public interface ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the requested attribute is invalid
      */
-    @NonNull ITmfStateValue queryOngoingState(int attributeQuark)
+    ITmfStateValue queryOngoingState(int attributeQuark)
             throws AttributeNotFoundException;
 
     /**
@@ -327,7 +331,7 @@ public interface ITmfStateSystem {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    @NonNull List<@NonNull ITmfStateInterval> queryFullState(long t)
+    List<@NonNull ITmfStateInterval> queryFullState(long t)
             throws StateSystemDisposedException;
 
     /**
@@ -352,6 +356,22 @@ public interface ITmfStateSystem {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    @NonNull ITmfStateInterval querySingleState(long t, int attributeQuark)
+    ITmfStateInterval querySingleState(long t, int attributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException;
+
+    /**
+     * Query for the specified quarks. Instead of doing several single queries,
+     * it is usually faster than doing one call to this method when you want the
+     * state for several quarks at the same timestamp.
+     *
+     * @param t
+     *            The timestamp of the query
+     * @param quarks
+     *            The quarks to query.
+     * @return The map of matching intervals, quarks as keys.
+     * @throws StateSystemDisposedException
+     *             If the query is sent after the state system has been
+     *             disposed.
+     */
+    Map<Integer, ITmfStateInterval> queryStates(long t, Set<Integer> quarks);
 }
