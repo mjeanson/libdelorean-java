@@ -16,7 +16,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -27,6 +30,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
+import com.google.common.collect.ImmutableSet;
 
 import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
@@ -48,13 +53,23 @@ public abstract class StateHistoryBackendTestBase {
     /** The backend fixture to use in tests */
     protected IStateHistoryBackend fBackend;
 
+    /** Test case name */
     @Parameter(0)
     public String fName;
+
+    /** Test interval set */
     @Parameter(1)
     public List<ITmfStateInterval> fIntervals;
+
+    /** Number of attributes */
     @Parameter(2)
     public int fNbAttributes;
 
+    /**
+     * Test parameters
+     *
+     * @return Parameter arrays
+     */
     @Parameters(name = "Intervals={0}")
     public static Iterable<Object[]> parameters() {
         /**
@@ -181,7 +196,83 @@ public abstract class StateHistoryBackendTestBase {
 
         assertEquals(START_TIME, backend.getStartTime());
         assertEquals(END_TIME, backend.getEndTime());
+    }
 
+    /**
+     * Test the partial query method (@link IStateHistoryBackend#doPartialQuery}
+     * with one quark into the passed Set.
+     */
+    @Test
+    public void testPartialQueryOneQuark() {
+        IStateHistoryBackend backend = fBackend;
+        assertNotNull(backend);
+
+        final int quark = 0;
+        final Set<Integer> quarks = ImmutableSet.of(quark);
+
+        for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
+            Map<Integer, ITmfStateInterval> results = new HashMap<>();
+            backend.doPartialQuery(t, quarks, results);
+
+            assertEquals(1, results.size());
+            ITmfStateInterval interval = results.get(quark);
+            assertNotNull(interval);
+            assertTrue(interval.toString() + " does not intersect timestamp " + t, interval.intersects(t)); //$NON-NLS-1$
+        }
+    }
+
+    /**
+     * Test the partial query method (@link IStateHistoryBackend#doPartialQuery}
+     * with some but not all quarks into the requested set.
+     */
+    @Test
+    public void testPartialQuerySomeQuarks() {
+        IStateHistoryBackend backend = fBackend;
+        assertNotNull(backend);
+
+        /* Take only half the quarks, using even numbers. */
+        final Set<Integer> quarks = IntStream.iterate(0, i -> i + 2).limit(fNbAttributes / 2)
+                .mapToObj(Integer::valueOf)
+                .collect(ImmutableSet.toImmutableSet());
+
+        for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
+            final long ts = t;
+            Map<Integer, ITmfStateInterval> results = new HashMap<>();
+            backend.doPartialQuery(t, quarks, results);
+
+            assertEquals(quarks.size(), results.size());
+            results.values().forEach(interval -> {
+                assertNotNull(interval);
+                assertTrue(interval.toString() + " does not intersect timestamp " + ts, interval.intersects(ts)); //$NON-NLS-1$
+            });
+        }
+    }
+
+    /**
+     * Test the partial query method (@link IStateHistoryBackend#doPartialQuery}
+     * with all quarks into the requested set.
+     */
+    @Test
+    public void testPartialQueryAllQuarks() {
+        IStateHistoryBackend backend = fBackend;
+        assertNotNull(backend);
+
+        /* Generate a set of all the existing quarks. */
+        final Set<Integer> quarks = IntStream.range(0, fNbAttributes)
+                .mapToObj(Integer::valueOf)
+                .collect(ImmutableSet.toImmutableSet());
+
+        for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
+            final long ts = t;
+            Map<Integer, ITmfStateInterval> results = new HashMap<>();
+            backend.doPartialQuery(t, quarks, results);
+
+            assertEquals(quarks.size(), results.size());
+            results.values().forEach(interval -> {
+                assertNotNull(interval);
+                assertTrue(interval.toString() + " does not intersect timestamp " + ts, interval.intersects(ts)); //$NON-NLS-1$
+            });
+        }
     }
 
     /**
