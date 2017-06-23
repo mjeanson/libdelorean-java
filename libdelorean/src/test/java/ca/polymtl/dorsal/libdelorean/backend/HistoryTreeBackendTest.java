@@ -14,18 +14,14 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
 
 /**
  * Test the {@link HistoryTreeBackend} class.
@@ -42,39 +38,18 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
     protected static final int PROVIDER_VERSION = 0;
 
     /** Default maximum number of children nodes */
-    protected static final int MAX_CHILDREN = 2;
+    private static final int MAX_CHILDREN = 2;
     /** Default block size */
-    protected static final int BLOCK_SIZE = 4096;
-
-    /** ReOpen test parameter */
-    protected final boolean fReOpen;
+    private static final int BLOCK_SIZE = 4096;
 
     /** History tree file */
     protected File fTempFile;
-
-    /**
-     * @return the test parameters
-     */
-    @Parameters(name = "ReOpen={0}")
-    public static Collection<Boolean> parameters() {
-        return Arrays.asList(Boolean.FALSE, Boolean.TRUE);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param reOpen
-     *            true if the backend should be re-opened before querying
-     */
-    public HistoryTreeBackendTest(boolean reOpen) {
-        fReOpen = reOpen;
-    }
 
     @Override
     @Before
     public void setup() {
         try {
-            fTempFile = File.createTempFile("HistoryTreeBackendTest", ".ht"); //$NON-NLS-1$ //$NON-NLS-2$
+            fTempFile = File.createTempFile(getClass().getSimpleName(), ".ht"); //$NON-NLS-1$
         } catch (IOException e) {
             fail(e.getMessage());
         }
@@ -96,30 +71,15 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
     }
 
     @Override
-    protected void prepareBackend(long startTime, long endTime, Collection<ITmfStateInterval> intervals) {
+    protected IStateHistoryBackend instantiateBackend(long startTime) {
         try {
-            final IStateHistoryBackend backend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION, startTime,
-                    BLOCK_SIZE, MAX_CHILDREN);
-
-            intervals.forEach(interval -> backend.insertPastState(interval.getStartTime(), interval.getEndTime(),
-                    interval.getAttribute(), interval.getStateValue()));
-
-            backend.finishedBuilding(Math.max(endTime, backend.getEndTime()));
-
-            if (fReOpen) {
-                /*
-                 * Close the existing backend, and instantiate a new one that
-                 * will re-read the same file.
-                 */
-                backend.dispose();
-                fBackend = new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION);
-            } else {
-                fBackend = backend;
-            }
-
+            return new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION, startTime, BLOCK_SIZE, MAX_CHILDREN);
         } catch (IOException e) {
             fail(e.getMessage());
+            return null;
         }
     }
 
+    @Override
+    protected void afterInsertionCb() {}
 }
