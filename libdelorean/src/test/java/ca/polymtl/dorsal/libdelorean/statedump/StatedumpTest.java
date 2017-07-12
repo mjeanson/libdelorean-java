@@ -45,7 +45,7 @@ public class StatedumpTest {
         try {
             dir = requireNonNull(Files.createTempDirectory("ss-serialization-test"));
             String ssid = "test-ssid";
-            final int nbAttributes = 6;
+            final int nbAttributes = 7;
             final int version = 0;
 
             List<String @NonNull []> initialAttributes = Arrays.asList(
@@ -54,7 +54,8 @@ public class StatedumpTest {
                     new String[] { "Threads", "1000", "Status" },
                     new String[] { "Threads", "2000" },
                     new String[] { "Threads", "2000", "Status" },
-                    new String[] { "Threads", "2000", "PPID" });
+                    new String[] { "Threads", "2000", "PPID" },
+                    new String[] { "Threads", "2000", "Active" });
 
             List<@NonNull ITmfStateValue> initialValues = Arrays.asList(
                     TmfStateValue.nullValue(),
@@ -62,7 +63,8 @@ public class StatedumpTest {
                     TmfStateValue.newValueString("Running"),
                     TmfStateValue.nullValue(),
                     TmfStateValue.newValueInt(1),
-                    TmfStateValue.newValueLong(1000L));
+                    TmfStateValue.newValueLong(1000L),
+                    TmfStateValue.newValueBoolean(true));
 
             Statedump statedump = new Statedump(initialAttributes, initialValues, version);
             statedump.dumpState(dir, ssid);
@@ -77,9 +79,11 @@ public class StatedumpTest {
             assertEquals(nbAttributes, newAttributes.size());
             assertEquals(nbAttributes, newValues.size());
 
-            for (int i = 0; i < nbAttributes; i++) {
-                assertArrayEquals(initialAttributes.get(i), newAttributes.get(i));
-                assertEquals(initialValues.get(i), newValues.get(i));
+            for (int initialIdx = 0; initialIdx < nbAttributes; initialIdx++) {
+                String[] attribute = initialAttributes.get(initialIdx);
+                int newIdx = indexOfArray(newAttributes, attribute);
+                assertArrayEquals(attribute, newAttributes.get(newIdx));
+                assertEquals(initialValues.get(initialIdx), newValues.get(newIdx));
             }
 
         } catch (IOException e) {
@@ -93,5 +97,17 @@ public class StatedumpTest {
                 }
             }
         }
+    }
+
+    /**
+     * Util method to replace {@link List#indexOf} for a list of arrays.
+     * {@link Object#equals} doesn't work with arrays, unfortunately.
+     */
+    private static <T> int indexOfArray(List<T[]> list, T[] o) {
+        for (int i = 0; i < list.size(); i++)
+            if (Arrays.equals(o, list.get(i))) {
+                return i;
+            }
+        return -1;
     }
 }

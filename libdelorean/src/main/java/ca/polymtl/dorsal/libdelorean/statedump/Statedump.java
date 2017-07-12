@@ -260,6 +260,7 @@ public class Statedump {
         private static final String ID_KEY = "id"; //$NON-NLS-1$
         private static final String FORMAT_VERSION_KEY = "format-version"; //$NON-NLS-1$
         private static final String STATEDUMP_VERSION_KEY = "statedump-version"; //$NON-NLS-1$
+        private static final String BOOLEAN_TYPE = "boolean"; //$NON-NLS-1$
         private static final String DOUBLE_TYPE = "double"; //$NON-NLS-1$
         private static final String INT_TYPE = "int"; //$NON-NLS-1$
         private static final String LONG_TYPE = "long"; //$NON-NLS-1$
@@ -276,6 +277,10 @@ public class Statedump {
             Object value;
 
             switch (stateValue.getType()) {
+            case BOOLEAN:
+                type = BOOLEAN_TYPE;
+                value = stateValue.unboxBoolean();
+                break;
             case DOUBLE:
                 type = DOUBLE_TYPE;
                 double doubleValue = stateValue.unboxDouble();
@@ -357,6 +362,17 @@ public class Statedump {
             switch (type) {
             case NULL_TYPE:
                 stateValue = TmfStateValue.nullValue();
+                break;
+
+            case BOOLEAN_TYPE:
+                boolean boolValue;
+                try {
+                    boolValue = node.getBoolean(VALUE_KEY);
+                } catch (JSONException e) {
+                    LOGGER.warning(() -> String.format("Invalid or missing \"%s\" property (expecting a boolean) in state node object", VALUE_KEY)); //$NON-NLS-1$
+                    return null;
+                }
+                stateValue = TmfStateValue.newValueBoolean(boolValue);
                 break;
 
             case INT_TYPE:
