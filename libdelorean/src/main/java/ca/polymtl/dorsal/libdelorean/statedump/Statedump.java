@@ -293,9 +293,9 @@ public class Statedump {
                     } else {
                         value = DOUBLE_POS_INF;
                     }
+                } else {
+                    value = doubleValue;
                 }
-
-                value = doubleValue;
                 break;
             case INTEGER:
                 type = INT_TYPE;

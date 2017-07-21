@@ -164,13 +164,16 @@ class HistoryTree {
         }
 
         try (FileInputStream fis = new FileInputStream(existingStateFile);
-                FileChannel fc = fis.getChannel();) {
+                FileChannel fc = fis.getChannel()) {
 
             ByteBuffer buffer = ByteBuffer.allocate(TREE_HEADER_SIZE);
 
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             buffer.clear();
-            fc.read(buffer);
+            int bytesRead = fc.read(buffer);
+            if (bytesRead != TREE_HEADER_SIZE) {
+                throw new IOException("Invalid tree file header");
+            }
             buffer.flip();
 
             /*
@@ -244,7 +247,7 @@ class HistoryTree {
      *            start
      * @throws ClosedChannelException
      */
-    private @NonNull List<@NonNull HTNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
+    private synchronized @NonNull List<@NonNull HTNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
         List<@NonNull HTNode> list = new ArrayList<>();
 
         HTNode nextChildNode = fTreeIO.readNode(rootNodeSeqNb);
@@ -837,12 +840,7 @@ class HistoryTree {
         case CORE:
             try {
                 final CoreNode node = (CoreNode) currentNode;
-                /* Print the extensions, if any */
-                int extension = node.getExtensionSequenceNumber();
-                while (extension != -1) {
-                    HTNode nextNode = fTreeIO.readNode(extension);
-                    preOrderPrint(writer, printIntervals, nextNode, curDepth);
-                }
+                // NYI Print extension nodes here
 
                 /* Print the child nodes */
                 for (int i = 0; i < node.getNbChildren(); i++) {

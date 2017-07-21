@@ -377,12 +377,12 @@ class TransientState {
      *            change)
      */
     public void closeTransientState(long endTime) {
-        if (!this.fIsActive) {
-            return;
-        }
-
         fRWLock.writeLock().lock();
         try {
+            if (!this.fIsActive) {
+                return;
+            }
+
             for (int i = 0; i < fOngoingStateInfo.size(); i++) {
                 if (fOngoingStateStartTimes.get(i) > endTime) {
                     /*
@@ -440,21 +440,26 @@ class TransientState {
      */
     public void debugPrint(PrintWriter writer) {
         /* Only used for debugging, shouldn't be externalized */
-        writer.println("------------------------------"); //$NON-NLS-1$
-        writer.println("Info stored in the Builder:"); //$NON-NLS-1$
-        if (!this.fIsActive) {
-            writer.println("Builder is currently inactive"); //$NON-NLS-1$
+        fRWLock.readLock().lock();
+        try {
+            writer.println("------------------------------"); //$NON-NLS-1$
+            writer.println("Info stored in the Builder:"); //$NON-NLS-1$
+            if (!this.fIsActive) {
+                writer.println("Builder is currently inactive"); //$NON-NLS-1$
+                writer.println('\n');
+                return;
+            }
+            writer.println("\nAttribute\tStateValue\tValid since time"); //$NON-NLS-1$
+            for (int i = 0; i < fOngoingStateInfo.size(); i++) {
+                writer.format("%d\t\t", i); //$NON-NLS-1$
+                writer.print(fOngoingStateInfo.get(i).toString() + "\t\t"); //$NON-NLS-1$
+                writer.println(fOngoingStateStartTimes.get(i).toString());
+            }
             writer.println('\n');
-            return;
+
+        } finally {
+            fRWLock.readLock().unlock();
         }
-        writer.println("\nAttribute\tStateValue\tValid since time"); //$NON-NLS-1$
-        for (int i = 0; i < fOngoingStateInfo.size(); i++) {
-            writer.format("%d\t\t", i); //$NON-NLS-1$
-            writer.print(fOngoingStateInfo.get(i).toString() + "\t\t"); //$NON-NLS-1$
-            writer.println(fOngoingStateStartTimes.get(i).toString());
-        }
-        writer.println('\n');
-        return;
     }
 
 }
