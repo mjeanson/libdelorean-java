@@ -1,0 +1,225 @@
+/*
+ * Copyright (C) 2017 EfficiOS Inc., Alexandre Montplaisir <alexmonthy@efficios.com>
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
+
+package ca.polymtl.dorsal.libdelorean
+
+import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException
+import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException
+import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval
+import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue
+import com.google.common.collect.ImmutableSet
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.fail
+
+class StateSystemUtils2DTest {
+
+    companion object {
+        private const val START_TIME = 1000L
+        private const val END_TIME = 2200L
+        private const val DUMMY_STRING = "test"
+    }
+
+    private lateinit var stateSystem: ITmfStateSystem
+    private var quark1 = -1
+    private var quark2 = -1
+    private var quark3 = -1
+    private var quark4 = -1
+
+    @Before
+    fun setup() {
+        try {
+            val backend = StateHistoryBackendFactory.createInMemoryBackend(DUMMY_STRING, START_TIME)
+            val ssb = StateSystemFactory.newStateSystem(backend)
+            quark1 = ssb.getQuarkAbsoluteAndAdd(DUMMY_STRING + "1")
+            quark2 = ssb.getQuarkAbsoluteAndAdd(DUMMY_STRING + "2")
+            quark3 = ssb.getQuarkAbsoluteAndAdd(DUMMY_STRING + "3")
+            quark4 = ssb.getQuarkAbsoluteAndAdd(DUMMY_STRING + "4")
+
+            ssb.modifyAttribute(1200L, TmfStateValue.newValueInt(10), quark1)
+            ssb.modifyAttribute(1500L, TmfStateValue.newValueInt(20), quark1)
+
+            (START_TIME until END_TIME step 500).forEachIndexed { index, i ->
+                ssb.modifyAttribute(i.toLong(), TmfStateValue.newValueInt(index), quark2)
+            }
+
+            (START_TIME until END_TIME step 200).forEachIndexed { index, i ->
+                ssb.modifyAttribute(i.toLong(), TmfStateValue.newValueInt(index), quark3)
+            }
+
+            (START_TIME until END_TIME step 100).forEachIndexed { index, i ->
+                ssb.modifyAttribute(i.toLong(), TmfStateValue.newValueInt(index), quark4)
+            }
+
+            ssb.closeHistory(END_TIME);
+
+            stateSystem = ssb
+
+        } catch (e: StateValueTypeException) {
+            fail(e.message);
+        } catch (e: AttributeNotFoundException) {
+            fail(e.message);
+        }
+    }
+
+    @After
+    fun tearDown() {
+        stateSystem.dispose();
+    }
+
+    @Test
+    fun testDetermineNextQueryTs() {
+        val ts1 = StateIterator.determineNextQueryTs(
+                intervalFrom(0, 199, 1, null),
+                0, 0, 50)
+        assertEquals(200, ts1)
+
+        val ts2 = StateIterator.determineNextQueryTs(
+                intervalFrom(200, 230, 1, 1),
+                0, 200, 50)
+        assertEquals(250, ts2)
+
+        val ts3 = StateIterator.determineNextQueryTs(
+                intervalFrom(231, 400, 1, 2),
+                0, 250, 50)
+        assertEquals(450, ts3)
+    }
+
+    @Test
+    fun testDetermineNextQueryTsWithRangeStart() {
+        val ts1 = StateIterator.determineNextQueryTs(
+                intervalFrom(100, 199, 1, null),
+                100, 100, 50)
+        assertEquals(200, ts1)
+
+        val ts2 = StateIterator.determineNextQueryTs(
+                intervalFrom(200, 230, 1, 1),
+                100, 200, 50)
+        assertEquals(250, ts2)
+
+        val ts3 = StateIterator.determineNextQueryTs(
+                intervalFrom(231, 400, 1, 2),
+                100, 250, 50)
+        assertEquals(450, ts3)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun testInvalidRangeStart() {
+        stateSystem.iterator2D(START_TIME - 10, START_TIME + 10, 1, emptySet())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun testInvalidRangeEnd() {
+        stateSystem.iterator2D(END_TIME - 10, END_TIME + 10, 1, emptySet())
+    }
+
+    @Test
+    fun testEmptySet() {
+        val iter = stateSystem.iterator2D(START_TIME + 10, END_TIME - 10, 1, emptySet())
+        assertFalse(iter.hasNext())
+    }
+
+    @Test
+    fun test2DIteratorFullRange() {
+        val iter = stateSystem.iterator2D(START_TIME, END_TIME, 1, setOf(quark1, quark2, quark3, quark4))
+        val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
+
+        /* We should have all the intervals in the state system */
+        val expectedIntervals = listOf(
+                intervalFrom(START_TIME, 1199, quark1, null),
+                intervalFrom(1200, 1499, quark1, 10),
+                intervalFrom(1500, END_TIME, quark1, 20),
+
+                intervalFrom(START_TIME, 1499, quark2, 0),
+                intervalFrom(1500, 1999, quark2, 1),
+                intervalFrom(2000, END_TIME, quark2, 2),
+
+                intervalFrom(START_TIME, 1199, quark3, 0),
+                intervalFrom(1200, 1399, quark3, 1),
+                intervalFrom(1400, 1599, quark3, 2),
+                intervalFrom(1600, 1799, quark3, 3),
+                intervalFrom(1800, 1999, quark3, 4),
+                intervalFrom(2000, END_TIME, quark3, 5),
+
+                intervalFrom(START_TIME, 1099, quark4, 0),
+                intervalFrom(1100, 1199, quark4, 1),
+                intervalFrom(1200, 1299, quark4, 2),
+                intervalFrom(1300, 1399, quark4, 3),
+                intervalFrom(1400, 1499, quark4, 4),
+                intervalFrom(1500, 1599, quark4, 5),
+                intervalFrom(1600, 1699, quark4, 6),
+                intervalFrom(1700, 1799, quark4, 7),
+                intervalFrom(1800, 1899, quark4, 8),
+                intervalFrom(1900, 1999, quark4, 9),
+                intervalFrom(2000, 2099, quark4, 10),
+                intervalFrom(2100, END_TIME, quark4, 11)
+        )
+        assertEquals(expectedIntervals, actualIntervals)
+    }
+
+    @Test
+    fun test2DIteratorRange() {
+        val rangeStart: Long = 1100
+        val rangeEnd:Long = 1900
+        val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 1, setOf(quark1, quark2, quark3))
+        val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
+
+        /* Only quark 1, 2 and 3, and only intervals inside the time range */
+        val expectedIntervals = listOf(
+                intervalFrom(START_TIME, 1199, quark1, null),
+                intervalFrom(1200, 1499, quark1, 10),
+                intervalFrom(1500, END_TIME, quark1, 20),
+
+                intervalFrom(START_TIME, 1499, quark2, 0),
+                intervalFrom(1500, 1999, quark2, 1),
+
+                intervalFrom(START_TIME, 1199, quark3, 0),
+                intervalFrom(1200, 1399, quark3, 1),
+                intervalFrom(1400, 1599, quark3, 2),
+                intervalFrom(1600, 1799, quark3, 3),
+                intervalFrom(1800, 1999, quark3, 4)
+        )
+        assertEquals(expectedIntervals, actualIntervals)
+    }
+
+    @Test
+    fun test2DIteratorResolution() {
+        val rangeStart: Long = 1100
+        val rangeEnd:Long = 1900
+        val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 400, setOf(quark1, quark2, quark3, quark4))
+        val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
+
+        /* Only keep intervals that cross 1100, 1500 or 1900 */
+        val expectedIntervals = listOf(
+                intervalFrom(START_TIME, 1199, quark1, null),
+                intervalFrom(1500, END_TIME, quark1, 20),
+
+                intervalFrom(START_TIME, 1499, quark2, 0),
+                intervalFrom(1500, 1999, quark2, 1),
+
+                intervalFrom(START_TIME, 1199, quark3, 0),
+                intervalFrom(1400, 1599, quark3, 2),
+                intervalFrom(1800, 1999, quark3, 4),
+
+                intervalFrom(1100, 1199, quark4, 1),
+                intervalFrom(1500, 1599, quark4, 5),
+                intervalFrom(1900, 1999, quark4, 9)
+        )
+        assertEquals(expectedIntervals, actualIntervals)
+    }
+
+    private fun intervalFrom(start: Long, end: Long, quark: Int, intStateValue: Int?): ITmfStateInterval =
+            TmfStateInterval(start, end, quark,
+                    if (intStateValue == null) TmfStateValue.nullValue() else TmfStateValue.newValueInt(intStateValue))
+}

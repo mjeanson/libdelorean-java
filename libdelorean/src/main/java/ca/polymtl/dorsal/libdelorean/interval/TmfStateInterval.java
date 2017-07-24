@@ -17,6 +17,8 @@ import com.google.common.base.MoreObjects;
 
 import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
 
+import java.util.Objects;
+
 /**
  * The StateInterval represents the "state" a particular attribute was in, at a
  * given time. It is the main object being returned from queries to the state
@@ -79,6 +81,23 @@ public final class TmfStateInterval implements ITmfStateInterval {
             }
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(start, end, attribute, sv);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TmfStateInterval that = (TmfStateInterval) o;
+        return (start == that.start
+                && end == that.end
+                && attribute == that.attribute
+                && Objects.equals(sv, that.sv));
     }
 
     @Override
