@@ -14,7 +14,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <prerequisites>
-    <maven>3.0</maven>
+    <maven>${required-maven-version}</maven>
   </prerequisites>
 
   <groupId>ca.polymtl.dorsal.libdelorean</groupId>
@@ -23,6 +23,7 @@
   <packaging>pom</packaging>
 
   <properties>
+    <required-maven-version>3.0.5</required-maven-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -51,6 +52,11 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
 
@@ -70,6 +76,31 @@
             <source>1.8</source>
             <target>1.8</target>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.4.1</version>
+          <executions>
+            <execution>
+              <id>enforce-maven-version</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <requireMavenVersion>
+                    <version>${required-maven-version}</version>
+                  </requireMavenVersion>
+                  <requireJavaVersion>
+                    <version>1.8</version>
+                  </requireJavaVersion>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
 
         <plugin>
