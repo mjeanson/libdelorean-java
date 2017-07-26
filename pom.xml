@@ -24,6 +24,14 @@
   <version>0.6.8-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <repositories>
+    <repository>
+      <id>efficios-releases-repo</id>
+      <name>EfficiOS Releases</name>
+      <url>https://mvn.efficios.com/maven/releases/</url>
+    </repository>
+  </repositories>
+
   <modules>
     <module>libdelorean</module>
   </modules>
