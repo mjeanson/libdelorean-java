@@ -16,7 +16,7 @@
   <parent>
     <groupId>ca.polymtl.dorsal.libdelorean</groupId>
     <artifactId>libdelorean-parent</artifactId>
-    <version>0.6.7-SNAPSHOT</version>
+    <version>0.6.8-SNAPSHOT</version>
   </parent>
 
   <artifactId>libdelorean</artifactId>
