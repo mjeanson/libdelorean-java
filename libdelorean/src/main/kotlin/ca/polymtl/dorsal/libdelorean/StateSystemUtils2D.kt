@@ -27,83 +27,91 @@ fun ITmfStateSystem.iterator2D(rangeStart: Long, rangeEnd: Long, resolution: Lon
     if (rangeStart < this.startTime || rangeEnd > this.currentEndTime) {
         throw IllegalArgumentException()
     }
-
-    /* Start with a partial query of the requested quarks */
-    val initialStates = queryStates(rangeStart, quarks)
-    if (initialStates.values.isEmpty()) {
+    if (quarks.isEmpty()) {
         return Collections.emptyIterator()
     }
 
-    return StateIterator(this, rangeStart, rangeEnd, resolution, initialStates.values)
+    val initialTargets = quarks.map { Pair(it, rangeStart) }
+    return StateIterator(this, rangeStart, rangeEnd, resolution, initialTargets)
 }
 
 @VisibleForTesting
 internal class StateIterator(private val ss: ITmfStateSystem,
-                            private val rangeStart: Long,
-                            private val rangeEnd: Long,
-                            private val resolution: Long,
-                            initialIntervals: Collection<ITmfStateInterval>): AbstractIterator<ITmfStateInterval>() {
+                             private val rangeStart: Long,
+                             private val rangeEnd: Long,
+                             private val resolution: Long,
+                             initialTargets: Collection<Pair<Int, Long>>): AbstractIterator<ITmfStateInterval>() {
 
-    companion object {
-
-        @VisibleForTesting
-        internal fun determineNextQueryTs(interval: ITmfStateInterval, rangeStart: Long,
-                                          currentQueryTs: Long, resolution: Long): Long {
-            if (!interval.intersects(currentQueryTs)) {
-                /* Logic error! */
-                throw IllegalStateException()
-            }
-
-            val nextResolutionPoint = currentQueryTs + resolution
-            return if (nextResolutionPoint > interval.endTime) {
-                nextResolutionPoint
-            } else {
-                val base = interval.endTime - rangeStart + 1
-                val newBase = roundToClosestHigherMultiple(base, resolution)
-                newBase + rangeStart
-            }
-        }
-
-        /**
-         * Find the multiple of 'multipleOf' that is greater but closest to
-         * 'number'. If 'number' is already a multiple of 'multipleOf', the same
-         * value will be returned.
-         *
-         * @param number
-         *            The starting number
-         * @param multipleOf
-         *            We want the returned value to be a multiple of this number
-         * @return The closest, greater multiple
-         */
-        private fun roundToClosestHigherMultiple(number: Long, multipleOf: Long): Long {
-            return (Math.ceil(number.toDouble() / multipleOf) * multipleOf).toLong()
-        }
-    }
-
-    /* Prio queue of Pair<Interval, nextQueryTimestamp> */
-    private val prio = PriorityQueue<Pair<ITmfStateInterval, Long>>(initialIntervals.size, compareBy { it.first.endTime } )
+    /* Prio queue of Pair<Interval, nextResolutionPoint> */
+    private val prio = PriorityQueue<QueryTarget>(initialTargets.size, compareBy { it.ts } )
     init {
         /* Populate the queue from the initial intervals */
-        prio.addAll(initialIntervals.map { interval -> Pair(interval, determineNextQueryTs(interval, rangeStart, rangeStart, resolution)) })
+        prio.addAll(initialTargets.map { QueryTarget(it.first, it.second) })
     }
 
     override fun computeNext() {
-        val currentIntervalPair = prio.poll() ?: return done()
-
-        /*
-         * Fetch the replacement interval (if there is one) and place
-         * it into the queue.
-         */
-        val quark = currentIntervalPair.first.attribute
-        val queryTs = currentIntervalPair.second
-        if (queryTs <= rangeEnd) {
-            val replacementInterval = ss.querySingleState(queryTs, quark)
-            val nextQueryTs = determineNextQueryTs(replacementInterval, rangeStart, queryTs, resolution)
-            prio.offer(Pair(replacementInterval, nextQueryTs))
+        var target = prio.poll() ?: return done()
+        var interval = ss.querySingleState(target.ts, target.quark)
+        var nextResolutionPoint = target.ts + resolution
+        while (!(interval.intersects(target.ts) && interval.intersects(nextResolutionPoint))) {
+            if (nextResolutionPoint <= rangeEnd) {
+                prio.offer(QueryTarget(target.quark, nextResolutionPoint))
+            }
+            target = prio.poll() ?: return done()
+            interval = ss.querySingleState(target.ts, target.quark)
+            nextResolutionPoint = target.ts + resolution
         }
+        /* "interval" is now one we will want the iteration to return */
+        setNext(interval)
+        nextResolutionPoint = determineNextQueryTs(interval, rangeStart, target.ts, resolution)
+        if (nextResolutionPoint <= rangeEnd) {
+            prio.offer(QueryTarget(target.quark, nextResolutionPoint))
+        }
+    }
 
-        return setNext(currentIntervalPair.first)
+    inner class QueryTarget(val quark: Int, val ts: Long) {
+        init {
+            /* "ts" should always be a multiple of the resolution */
+            if ((ts - rangeStart) % resolution != 0L) {
+                throw IllegalArgumentException()
+            }
+        }
     }
 
 }
 
+@VisibleForTesting
+internal fun determineNextQueryTs(interval: ITmfStateInterval,
+                                  rangeStart: Long,
+                                  currentQueryTs: Long,
+                                  resolution: Long): Long {
+
+    if (!interval.intersects(currentQueryTs)) {
+        /* Logic error! */
+        throw IllegalStateException()
+    }
+
+    val nextResolutionPoint = currentQueryTs + resolution
+    return if (nextResolutionPoint > interval.endTime) {
+        nextResolutionPoint
+    } else {
+        val base = interval.endTime - rangeStart + 1
+        val newBase = roundToClosestHigherMultiple(base, resolution)
+        newBase + rangeStart
+    }
+}
+
+/**
+ * Find the multiple of 'multipleOf' that is greater but closest to
+ * 'number'. If 'number' is already a multiple of 'multipleOf', the same
+ * value will be returned.
+ *
+ * @param number
+ *            The starting number
+ * @param multipleOf
+ *            We want the returned value to be a multiple of this number
+ * @return The closest, greater multiple
+ */
+private fun roundToClosestHigherMultiple(number: Long, multipleOf: Long): Long {
+    return (Math.ceil(number.toDouble() / multipleOf) * multipleOf).toLong()
+}

@@ -51,46 +51,46 @@ class StateSystemUtils2DTest {
             ssb.modifyAttribute(1500L, TmfStateValue.newValueInt(20), quark1)
 
             (START_TIME until END_TIME step 500).forEachIndexed { index, i ->
-                ssb.modifyAttribute(i.toLong(), TmfStateValue.newValueInt(index), quark2)
+                ssb.modifyAttribute(i, TmfStateValue.newValueInt(index), quark2)
             }
 
             (START_TIME until END_TIME step 200).forEachIndexed { index, i ->
-                ssb.modifyAttribute(i.toLong(), TmfStateValue.newValueInt(index), quark3)
+                ssb.modifyAttribute(i, TmfStateValue.newValueInt(index), quark3)
             }
 
             (START_TIME until END_TIME step 100).forEachIndexed { index, i ->
-                ssb.modifyAttribute(i.toLong(), TmfStateValue.newValueInt(index), quark4)
+                ssb.modifyAttribute(i, TmfStateValue.newValueInt(index), quark4)
             }
 
-            ssb.closeHistory(END_TIME);
+            ssb.closeHistory(END_TIME)
 
             stateSystem = ssb
 
         } catch (e: StateValueTypeException) {
-            fail(e.message);
+            fail(e.message)
         } catch (e: AttributeNotFoundException) {
-            fail(e.message);
+            fail(e.message)
         }
     }
 
     @After
     fun tearDown() {
-        stateSystem.dispose();
+        stateSystem.dispose()
     }
 
     @Test
     fun testDetermineNextQueryTs() {
-        val ts1 = StateIterator.determineNextQueryTs(
+        val ts1 = determineNextQueryTs(
                 intervalFrom(0, 199, 1, null),
                 0, 0, 50)
         assertEquals(200, ts1)
 
-        val ts2 = StateIterator.determineNextQueryTs(
+        val ts2 = determineNextQueryTs(
                 intervalFrom(200, 230, 1, 1),
                 0, 200, 50)
         assertEquals(250, ts2)
 
-        val ts3 = StateIterator.determineNextQueryTs(
+        val ts3 = determineNextQueryTs(
                 intervalFrom(231, 400, 1, 2),
                 0, 250, 50)
         assertEquals(450, ts3)
@@ -98,17 +98,17 @@ class StateSystemUtils2DTest {
 
     @Test
     fun testDetermineNextQueryTsWithRangeStart() {
-        val ts1 = StateIterator.determineNextQueryTs(
+        val ts1 = determineNextQueryTs(
                 intervalFrom(100, 199, 1, null),
                 100, 100, 50)
         assertEquals(200, ts1)
 
-        val ts2 = StateIterator.determineNextQueryTs(
+        val ts2 = determineNextQueryTs(
                 intervalFrom(200, 230, 1, 1),
                 100, 200, 50)
         assertEquals(250, ts2)
 
-        val ts3 = StateIterator.determineNextQueryTs(
+        val ts3 = determineNextQueryTs(
                 intervalFrom(231, 400, 1, 2),
                 100, 250, 50)
         assertEquals(450, ts3)
@@ -197,24 +197,24 @@ class StateSystemUtils2DTest {
     fun test2DIteratorResolution() {
         val rangeStart: Long = 1100
         val rangeEnd:Long = 1900
-        val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 400, setOf(quark1, quark2, quark3, quark4))
+        val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 100, setOf(quark1, quark2, quark3, quark4))
         val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
 
-        /* Only keep intervals that cross 1100, 1500 or 1900 */
+        /*
+         * Only keep intervals that cross TWO consecutive points between the following:
+         * 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900
+         */
         val expectedIntervals = listOf(
-                intervalFrom(START_TIME, 1199, quark1, null),
+                intervalFrom(1200, 1499, quark1, 10),
                 intervalFrom(1500, END_TIME, quark1, 20),
 
                 intervalFrom(START_TIME, 1499, quark2, 0),
                 intervalFrom(1500, 1999, quark2, 1),
 
-                intervalFrom(START_TIME, 1199, quark3, 0),
+                intervalFrom(1200, 1399, quark3, 1),
                 intervalFrom(1400, 1599, quark3, 2),
-                intervalFrom(1800, 1999, quark3, 4),
-
-                intervalFrom(1100, 1199, quark4, 1),
-                intervalFrom(1500, 1599, quark4, 5),
-                intervalFrom(1900, 1999, quark4, 9)
+                intervalFrom(1600, 1799, quark3, 3),
+                intervalFrom(1800, 1999, quark3, 4)
         )
         assertEquals(expectedIntervals, actualIntervals)
     }
