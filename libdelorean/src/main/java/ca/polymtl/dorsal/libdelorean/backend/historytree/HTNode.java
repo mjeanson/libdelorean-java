@@ -26,8 +26,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import com.google.common.collect.Iterables;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * The base class for all the types of nodes that go in the History Tree.
@@ -421,7 +421,7 @@ abstract class HTNode {
      * @throws TimeRangeException
      *             If 't' is invalid
      */
-    public void writeInfoFromNode(List<ITmfStateInterval> stateInfo, long t)
+    public void writeInfoFromNode(List<IStateInterval> stateInfo, long t)
             throws TimeRangeException {
         /* This is from a state system query, we are "reading" this node */
         fRwl.readLock().lock();
@@ -435,7 +435,7 @@ abstract class HTNode {
                  * been created after stateInfo was instantiated (they would be
                  * null anyway).
                  */
-                ITmfStateInterval interval = fIntervals.get(i);
+                IStateInterval interval = fIntervals.get(i);
                 if (interval.getStartTime() <= t &&
                         interval.getAttribute() < stateInfo.size()) {
                     stateInfo.set(interval.getAttribute(), interval);
@@ -458,7 +458,7 @@ abstract class HTNode {
      * Iteration should *always* be done with the read-lock taken, using
      * {@link #takeReadLock()} and {@link #releaseReadLock()}.
      */
-    Iterable<? extends ITmfStateInterval> getIntervals() {
+    Iterable<? extends IStateInterval> getIntervals() {
         return fIntervals;
     }
 
@@ -506,7 +506,7 @@ abstract class HTNode {
          * at the beginning whose end times are smaller than 't'. Java does
          * provides a .binarySearch method, but its API is quite weird...
          */
-        HTInterval dummy = new HTInterval(0, t, 0, TmfStateValue.nullValue());
+        HTInterval dummy = new HTInterval(0, t, 0, StateValue.nullValue());
         int index = Collections.binarySearch(fIntervals, dummy);
 
         if (index < 0) {

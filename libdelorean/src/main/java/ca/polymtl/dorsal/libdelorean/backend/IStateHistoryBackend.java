@@ -24,8 +24,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * The main difference between StateSystem and StateHistorySystem is that SHS
@@ -82,7 +82,7 @@ public interface IStateHistoryBackend {
      */
     // FIXME change to IStateInterval?
     void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, ITmfStateValue value) throws TimeRangeException;
+            int quark, IStateValue value) throws TimeRangeException;
 
     /**
      * Indicate to the provider that we are done building the history (so it can
@@ -162,7 +162,7 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    void doQuery(List<@Nullable ITmfStateInterval> currentStateInfo, long t)
+    void doQuery(List<@Nullable IStateInterval> currentStateInfo, long t)
             throws TimeRangeException, StateSystemDisposedException;
 
     /**
@@ -183,7 +183,7 @@ public interface IStateHistoryBackend {
      * @throws StateSystemDisposedException
      *             If the state system is disposed while a request is ongoing.
      */
-    @Nullable ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    @Nullable IStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateSystemDisposedException;
 
@@ -202,9 +202,9 @@ public interface IStateHistoryBackend {
      * @param results
      *            The results will be written in this map, with quarks as keys
      */
-    default void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, ITmfStateInterval> results) {
+    default void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, IStateInterval> results) {
         quarks.forEach(quark -> {
-            ITmfStateInterval interval = doSingularQuery(t, quark);
+            IStateInterval interval = doSingularQuery(t, quark);
             if (interval != null) {
                 results.put(quark, interval);
             }

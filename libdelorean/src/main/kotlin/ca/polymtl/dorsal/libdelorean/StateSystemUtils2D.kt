@@ -9,7 +9,7 @@
 
 package ca.polymtl.dorsal.libdelorean
 
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
 import com.google.common.annotations.VisibleForTesting
 import java.util.*
 
@@ -21,7 +21,7 @@ import java.util.*
  * intervals. These interval have no ordering guarantees according to
  * their quarks, but should be sorted time-wise.
  */
-fun ITmfStateSystem.iterator2D(rangeStart: Long, rangeEnd: Long, resolution: Long, quarks: Set<Int>): Iterator<ITmfStateInterval> {
+fun IStateSystemReader.iterator2D(rangeStart: Long, rangeEnd: Long, resolution: Long, quarks: Set<Int>): Iterator<IStateInterval> {
     
     /* Check parameters */
     if (rangeStart < this.startTime || rangeEnd > this.currentEndTime) {
@@ -36,11 +36,11 @@ fun ITmfStateSystem.iterator2D(rangeStart: Long, rangeEnd: Long, resolution: Lon
 }
 
 @VisibleForTesting
-internal class StateIterator(private val ss: ITmfStateSystem,
+internal class StateIterator(private val ss: IStateSystemReader,
                              private val rangeStart: Long,
                              private val rangeEnd: Long,
                              private val resolution: Long,
-                             initialTargets: Collection<Pair<Int, Long>>): AbstractIterator<ITmfStateInterval>() {
+                             initialTargets: Collection<Pair<Int, Long>>): AbstractIterator<IStateInterval>() {
 
     /* Prio queue of Pair<Interval, nextResolutionPoint> */
     private val prio = PriorityQueue<QueryTarget>(initialTargets.size, compareBy { it.ts } )
@@ -81,7 +81,7 @@ internal class StateIterator(private val ss: ITmfStateSystem,
 }
 
 @VisibleForTesting
-internal fun determineNextQueryTs(interval: ITmfStateInterval,
+internal fun determineNextQueryTs(interval: IStateInterval,
                                   rangeStart: Long,
                                   currentQueryTs: Long,
                                   resolution: Long): Long {

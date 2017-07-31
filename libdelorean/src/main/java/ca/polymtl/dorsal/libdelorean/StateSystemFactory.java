@@ -19,8 +19,8 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 /**
  * Factory to create state systems.
  *
- * Since state system are meant to be accessed using the {@link ITmfStateSystem}
- * and {@link ITmfStateSystemBuilder} interfaces, you can use this factory to
+ * Since state system are meant to be accessed using the {@link IStateSystemReader}
+ * and {@link IStateSystemWriter} interfaces, you can use this factory to
  * instantiate new ones.
  *
  * @author Alexandre Montplaisir
@@ -38,7 +38,7 @@ public final class StateSystemFactory {
      *            Back-end plugin to use
      * @return The new state system
      */
-   public static ITmfStateSystemBuilder newStateSystem(IStateHistoryBackend backend) {
+   public static IStateSystemWriter newStateSystem(IStateHistoryBackend backend) {
        return new StateSystem(backend);
    }
 
@@ -55,8 +55,8 @@ public final class StateSystemFactory {
      * @throws IOException
      *             If there was a problem creating the new history file
      */
-    public static ITmfStateSystemBuilder newStateSystem(IStateHistoryBackend backend,
-            boolean newFile) throws IOException {
+    public static IStateSystemWriter newStateSystem(IStateHistoryBackend backend,
+                                                    boolean newFile) throws IOException {
         return new StateSystem(backend, newFile);
     }
 

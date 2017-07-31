@@ -27,9 +27,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * History Tree backend for storing a state history. This is the basic version
@@ -175,9 +175,9 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
     @Override
     public void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, ITmfStateValue value) throws TimeRangeException {
+            int quark, IStateValue value) throws TimeRangeException {
         HTInterval interval = new HTInterval(stateStartTime, stateEndTime,
-                quark, (TmfStateValue) value);
+                quark, (StateValue) value);
 
         /* Start insertions at the "latest leaf" */
         fSht.insertInterval(interval);
@@ -224,7 +224,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public void doQuery(List<ITmfStateInterval> stateInfo, long t)
+    public void doQuery(List<IStateInterval> stateInfo, long t)
             throws TimeRangeException, StateSystemDisposedException {
         checkValidTime(t);
 
@@ -249,13 +249,13 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    public IStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, StateSystemDisposedException {
         return getRelevantInterval(t, attributeQuark);
     }
 
     @Override
-    public void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, ITmfStateInterval> results) {
+    public void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, IStateInterval> results) {
         checkValidTime(t);
 
         int remaining = quarks.size();
@@ -264,7 +264,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         HTNode currentNode = fSht.getRootNode();
         currentNode.takeReadLock();
         try {
-            for (ITmfStateInterval interval : currentNode.getIntervals()) {
+            for (IStateInterval interval : currentNode.getIntervals()) {
                 if (interval == null) {
                     continue;
                 }
@@ -284,7 +284,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
                 currentNode = fSht.selectNextChild((CoreNode) currentNode, t);
                 currentNode.takeReadLock();
                 try {
-                    for (ITmfStateInterval interval : currentNode.getIntervals()) {
+                    for (IStateInterval interval : currentNode.getIntervals()) {
                         if (interval == null) {
                             continue;
                         }

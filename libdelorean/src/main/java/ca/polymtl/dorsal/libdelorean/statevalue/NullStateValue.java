@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.Nullable;
  *
  * @author Alexandre Montplaisir
  */
-final class NullStateValue extends TmfStateValue {
+final class NullStateValue extends StateValue {
 
     private final String value = "nullValue"; //$NON-NLS-1$
 
@@ -75,7 +75,7 @@ final class NullStateValue extends TmfStateValue {
     }
 
     @Override
-    public int compareTo(@Nullable ITmfStateValue other) {
+    public int compareTo(@Nullable IStateValue other) {
         if (other == null) {
             throw new IllegalArgumentException();
         }

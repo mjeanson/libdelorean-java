@@ -26,9 +26,9 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Test cases for the in-memory backend
@@ -51,9 +51,9 @@ public class InMemoryBackendTest {
                 try {
                     final int stateEndTime = (timeStart * 100) + 90 + attribute;
                     final int stateStartTime = timeStart * 100 + attribute;
-                    fixture.insertPastState(stateStartTime, stateEndTime, attribute, TmfStateValue.newValueInt(timeStart % 100));
+                    fixture.insertPastState(stateStartTime, stateEndTime, attribute, StateValue.newValueInt(timeStart % 100));
                     if (timeStart != 999) {
-                        fixture.insertPastState(stateEndTime + 1, stateEndTime + 9, attribute, TmfStateValue.nullValue());
+                        fixture.insertPastState(stateEndTime + 1, stateEndTime + 9, attribute, StateValue.nullValue());
                     }
                 } catch (TimeRangeException e) {
                     /* Should not happen here */
@@ -63,8 +63,8 @@ public class InMemoryBackendTest {
         }
     }
 
-    private static void testInterval(ITmfStateInterval interval, int startTime,
-            int endTime, int value) {
+    private static void testInterval(IStateInterval interval, int startTime,
+                                     int endTime, int value) {
         assertNotNull(interval);
         assertEquals(startTime, interval.getStartTime());
         assertEquals(endTime, interval.getEndTime());
@@ -97,7 +97,7 @@ public class InMemoryBackendTest {
      */
     @Test
     public void testDoQuery() {
-        List<@Nullable ITmfStateInterval> interval = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
+        List<@Nullable IStateInterval> interval = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
         for (int i = 0; i < NUMBER_OF_ATTRIBUTES; i++) {
             interval.add(null);
         }
@@ -127,7 +127,7 @@ public class InMemoryBackendTest {
     @Test
     public void testQueryAttribute() {
         try {
-            ITmfStateInterval interval[] = new TmfStateInterval[10];
+            IStateInterval interval[] = new StateInterval[10];
             for (int i = 0; i < 10; i++) {
                 interval[i] = fixture.doSingularQuery(950, i);
             }
@@ -143,13 +143,13 @@ public class InMemoryBackendTest {
             testInterval(interval[8], 908, 998, 9);
             testInterval(interval[9], 909, 999, 9);
 
-            List<@Nullable ITmfStateInterval> intervalQuery = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
+            List<@Nullable IStateInterval> intervalQuery = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
             for (int i = 0; i < NUMBER_OF_ATTRIBUTES; i++) {
                 intervalQuery.add(null);
             }
 
             fixture.doQuery(intervalQuery, 950);
-            ITmfStateInterval ref[] = intervalQuery.toArray(new ITmfStateInterval[0]);
+            IStateInterval ref[] = intervalQuery.toArray(new IStateInterval[0]);
             assertArrayEquals(ref, interval);
 
         } catch (TimeRangeException | AttributeNotFoundException | StateSystemDisposedException e) {
@@ -163,9 +163,9 @@ public class InMemoryBackendTest {
     @Test
     public void testQueryAttributeEmpty() {
         try {
-            ITmfStateInterval interval = fixture.doSingularQuery(999, 0);
+            IStateInterval interval = fixture.doSingularQuery(999, 0);
             assertNotNull(interval);
-            assertEquals(TmfStateValue.nullValue(), interval.getStateValue());
+            assertEquals(StateValue.nullValue(), interval.getStateValue());
 
         } catch (TimeRangeException | AttributeNotFoundException | StateSystemDisposedException e) {
             fail(e.getMessage());
@@ -178,7 +178,7 @@ public class InMemoryBackendTest {
     @Test
     public void testBegin() {
         try {
-            ITmfStateInterval interval = fixture.doSingularQuery(0, 0);
+            IStateInterval interval = fixture.doSingularQuery(0, 0);
             assertNotNull(interval);
             assertEquals(0, interval.getStartTime());
             assertEquals(90, interval.getEndTime());
@@ -195,7 +195,7 @@ public class InMemoryBackendTest {
     @Test
     public void testEnd() {
         try {
-            ITmfStateInterval interval = fixture.doSingularQuery(99998, 9);
+            IStateInterval interval = fixture.doSingularQuery(99998, 9);
             testInterval(interval, 99909, 99999, 99);
 
         } catch (TimeRangeException | AttributeNotFoundException | StateSystemDisposedException e) {
@@ -212,7 +212,7 @@ public class InMemoryBackendTest {
     @Test(expected = TimeRangeException.class)
     public void testOutOfRange_1() throws TimeRangeException {
         try {
-            ITmfStateInterval interval = fixture.doSingularQuery(-1, 0);
+            IStateInterval interval = fixture.doSingularQuery(-1, 0);
             assertNull(interval);
 
         } catch (AttributeNotFoundException | StateSystemDisposedException e) {
@@ -229,7 +229,7 @@ public class InMemoryBackendTest {
     @Test(expected = TimeRangeException.class)
     public void testOutOfRange_2() throws TimeRangeException {
         try {
-            ITmfStateInterval interval = fixture.doSingularQuery(100000, 0);
+            IStateInterval interval = fixture.doSingularQuery(100000, 0);
             assertNull(interval);
 
         } catch (AttributeNotFoundException | StateSystemDisposedException e) {

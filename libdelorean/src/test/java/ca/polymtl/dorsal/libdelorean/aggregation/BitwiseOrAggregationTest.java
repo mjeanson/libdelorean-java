@@ -19,11 +19,11 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Tests for {@link BitwiseOrAggregationRule}.
@@ -34,7 +34,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 public class BitwiseOrAggregationTest extends AggregationTestBase {
 
     @Override
-    protected IStateAggregationRule createRuleWithParameters(ITmfStateSystemBuilder ssb,
+    protected IStateAggregationRule createRuleWithParameters(IStateSystemWriter ssb,
             int targetQuark, List<String @NonNull []> patterns) {
         return new BitwiseOrAggregationRule(ssb, targetQuark, patterns);
     }
@@ -58,20 +58,20 @@ public class BitwiseOrAggregationTest extends AggregationTestBase {
      */
     @Test
     public void fullTest() {
-        ITmfStateSystemBuilder ss = getStateSystem();
+        IStateSystemWriter ss = getStateSystem();
         assertNotNull(ss);
 
         /* State values and attributes that will be used */
         int SOFTIRQ_RAISED = (1 << 1);
         int SOFTIRQ_ACTIVE = (1 << 0);
 
-        ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
-        ITmfStateValue SOFTIRQ_RAISED_VALUE = TmfStateValue.newValueInt(SOFTIRQ_RAISED);
-        ITmfStateValue SOFTIRQ_ACTIVE_VALUE = TmfStateValue.newValueInt(SOFTIRQ_ACTIVE);
+        IStateValue NULL_VALUE = StateValue.nullValue();
+        IStateValue SOFTIRQ_RAISED_VALUE = StateValue.newValueInt(SOFTIRQ_RAISED);
+        IStateValue SOFTIRQ_ACTIVE_VALUE = StateValue.newValueInt(SOFTIRQ_ACTIVE);
 
         /* This one will never be inserted directly */
-        ITmfStateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
-                TmfStateValue.newValueInt(SOFTIRQ_ACTIVE | SOFTIRQ_RAISED);
+        IStateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
+                StateValue.newValueInt(SOFTIRQ_ACTIVE | SOFTIRQ_RAISED);
 
         int quarkSoftirq = ss.getQuarkAbsoluteAndAdd("softirq");
         int quarkRaised = ss.getQuarkAbsoluteAndAdd("softirq", "raised");

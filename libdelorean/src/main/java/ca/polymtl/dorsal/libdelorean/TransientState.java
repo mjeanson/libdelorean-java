@@ -23,18 +23,18 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue.Type;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue.Type;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * The Transient State is used to build intervals from punctual state changes.
  * It contains a "state info" vector similar to the "current state", except here
  * we also record the start time of every state stored in it.
  *
- * We can then build {@link ITmfStateInterval}'s, to be inserted in a
+ * We can then build {@link IStateInterval}'s, to be inserted in a
  * {@link IStateHistoryBackend} when we detect state changes : the "start time"
  * of the interval will be the recorded time we have here, and the "end time"
  * will be the timestamp of the new state-changing event we just read.
@@ -53,7 +53,7 @@ class TransientState {
     private volatile long fLatestTime;
 
     /* A method accessing these arrays will have to go through the lock */
-    private List<ITmfStateValue> fOngoingStateInfo;
+    private List<IStateValue> fOngoingStateInfo;
     private List<Long> fOngoingStateStartTimes;
     private List<Type> fStateValueTypes;
 
@@ -91,7 +91,7 @@ class TransientState {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    public ITmfStateValue getOngoingStateValue(int quark) throws AttributeNotFoundException {
+    public IStateValue getOngoingStateValue(int quark) throws AttributeNotFoundException {
         fRWLock.readLock().lock();
         try {
             checkValidAttribute(quark);
@@ -131,7 +131,7 @@ class TransientState {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    public void changeOngoingStateValue(int quark, ITmfStateValue newValue)
+    public void changeOngoingStateValue(int quark, IStateValue newValue)
             throws AttributeNotFoundException {
         fRWLock.writeLock().lock();
         try {
@@ -153,11 +153,11 @@ class TransientState {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    public ITmfStateInterval getOngoingInterval(int quark) throws AttributeNotFoundException {
+    public IStateInterval getOngoingInterval(int quark) throws AttributeNotFoundException {
         fRWLock.readLock().lock();
         try {
             checkValidAttribute(quark);
-            return new TmfStateInterval(fOngoingStateStartTimes.get(quark), fLatestTime,
+            return new StateInterval(fOngoingStateStartTimes.get(quark), fLatestTime,
                     quark, fOngoingStateInfo.get(quark));
         } finally {
             fRWLock.readLock().unlock();
@@ -176,14 +176,14 @@ class TransientState {
      * @return The corresponding TmfStateInterval object if we could find it in
      *         this transient state, or null if we couldn't.
      */
-    public @Nullable ITmfStateInterval getIntervalAt(long time, int quark) {
+    public @Nullable IStateInterval getIntervalAt(long time, int quark) {
         fRWLock.readLock().lock();
         try {
             checkValidAttribute(quark);
             if (!isActive() || time < fOngoingStateStartTimes.get(quark)) {
                 return null;
             }
-            return new TmfStateInterval(fOngoingStateStartTimes.get(quark),
+            return new StateInterval(fOngoingStateStartTimes.get(quark),
                     fLatestTime, quark, fOngoingStateInfo.get(quark));
         } catch (AttributeNotFoundException e) {
             return null;
@@ -209,7 +209,7 @@ class TransientState {
      *            "ongoing state". Their end times don't matter, we will only
      *            check their value and start times.
      */
-    public void replaceOngoingState(List<ITmfStateInterval> newStateIntervals) {
+    public void replaceOngoingState(List<IStateInterval> newStateIntervals) {
         final int size = newStateIntervals.size();
 
         fRWLock.writeLock().lock();
@@ -218,7 +218,7 @@ class TransientState {
             fOngoingStateStartTimes = new ArrayList<>(size);
             fStateValueTypes = new ArrayList<>(size);
 
-            for (ITmfStateInterval interval : newStateIntervals) {
+            for (IStateInterval interval : newStateIntervals) {
                 fOngoingStateInfo.add(interval.getStateValue());
                 fOngoingStateStartTimes.add(interval.getStartTime());
                 fStateValueTypes.add(interval.getStateValue().getType());
@@ -242,7 +242,7 @@ class TransientState {
              * covering for all timestamps). A null interval will then get added
              * at the first state change.
              */
-            fOngoingStateInfo.add(TmfStateValue.nullValue());
+            fOngoingStateInfo.add(StateValue.nullValue());
             fStateValueTypes.add(Type.NULL);
 
             fOngoingStateStartTimes.add(fBackend.getStartTime());
@@ -268,7 +268,7 @@ class TransientState {
      *             If the state value to be inserted is of a different type of
      *             what was inserted so far for this attribute.
      */
-    public void processStateChange(long eventTime, ITmfStateValue value, int quark)
+    public void processStateChange(long eventTime, IStateValue value, int quark)
             throws TimeRangeException, AttributeNotFoundException, StateValueTypeException {
         if (!this.fIsActive) {
             return;
@@ -340,7 +340,7 @@ class TransientState {
      * @param t
      *            The requested timestamp
      */
-    public void doQuery(List<@Nullable ITmfStateInterval> stateInfo, long t) {
+    public void doQuery(List<@Nullable IStateInterval> stateInfo, long t) {
         fRWLock.readLock().lock();
         try {
             if (!this.fIsActive) {
@@ -356,7 +356,7 @@ class TransientState {
                  * "current transient state end time" to put in the answer to
                  * the query.
                  */
-                final ITmfStateInterval interval = getIntervalAt(t, i);
+                final IStateInterval interval = getIntervalAt(t, i);
                 if (interval != null) {
                     stateInfo.set(i, interval);
                 }

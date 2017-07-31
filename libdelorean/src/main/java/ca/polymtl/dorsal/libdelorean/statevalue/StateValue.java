@@ -29,9 +29,9 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
  *
  * @author Alexandre Montplaisir
  */
-public abstract class TmfStateValue implements ITmfStateValue {
+public abstract class StateValue implements IStateValue {
 
-    private static final Logger LOGGER = Logger.getLogger(TmfStateValue.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StateValue.class.getName());
 
     // ------------------------------------------------------------------------
     // State value caches (sizes must be powers of 2)
@@ -56,14 +56,14 @@ public abstract class TmfStateValue implements ITmfStateValue {
      * Since all "null state values" are the same, we only need one copy in
      * memory.
      */
-    private static final TmfStateValue NULL_VALUE = new NullStateValue();
+    private static final StateValue NULL_VALUE = new NullStateValue();
 
     /**
      * Return an instance of a "null" value. Only one copy exists in memory.
      *
      * @return A null value
      */
-    public static final TmfStateValue nullValue() {
+    public static final StateValue nullValue() {
         return NULL_VALUE;
     }
 
@@ -74,7 +74,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The boolean value to wrap
      * @return The corresponding state value object
      */
-    public static TmfStateValue newValueBoolean(boolean boolValue) {
+    public static StateValue newValueBoolean(boolean boolValue) {
         return (boolValue ? BOOLEAN_VALUE_TRUE : BOOLEAN_VALUE_FALSE);
     }
 
@@ -85,7 +85,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The integer value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueInt(int intValue) {
+    public static StateValue newValueInt(int intValue) {
         /* Lookup in cache for the existence of the same value. */
         int offset = intValue & (INT_CACHE_SIZE - 1);
         IntegerStateValue cached = intCache[offset];
@@ -106,7 +106,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The long value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueLong(long longValue) {
+    public static StateValue newValueLong(long longValue) {
         /* Lookup in cache for the existence of the same value. */
         int offset = (int) longValue & (LONG_CACHE_SIZE - 1);
         LongStateValue cached = longCache[offset];
@@ -127,7 +127,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The double value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueDouble(double value) {
+    public static StateValue newValueDouble(double value) {
         /* Lookup in cache for the existence of the same value. */
         int offset = (int) Double.doubleToLongBits(value) & (DOUBLE_CACHE_SIZE - 1);
         DoubleStateValue cached = doubleCache[offset];
@@ -153,7 +153,7 @@ public abstract class TmfStateValue implements ITmfStateValue {
      *            The string value to contain
      * @return The newly-created TmfStateValue object
      */
-    public static TmfStateValue newValueString(@Nullable String strValue) {
+    public static StateValue newValueString(@Nullable String strValue) {
         if (strValue == null) {
             return nullValue();
         }

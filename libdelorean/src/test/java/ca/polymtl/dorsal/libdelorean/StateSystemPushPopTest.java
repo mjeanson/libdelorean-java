@@ -30,9 +30,9 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Unit tests for stack-attributes in the Generic State System (using
@@ -43,7 +43,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 @SuppressWarnings("nls")
 public class StateSystemPushPopTest {
 
-    private ITmfStateSystemBuilder ss;
+    private IStateSystemWriter ss;
     private int attribute;
 
     private File testHtFile;
@@ -52,11 +52,11 @@ public class StateSystemPushPopTest {
 
     /* State values that will be used */
     //private final static ITmfStateValue nullValue = TmfStateValue.nullValue();
-    private final static ITmfStateValue value1 = TmfStateValue.newValueString("A");
-    private final static ITmfStateValue value2 = TmfStateValue.newValueInt(10);
-    private final static ITmfStateValue value3 = TmfStateValue.nullValue();
-    private final static ITmfStateValue value4 = TmfStateValue.newValueString("D");
-    private final static ITmfStateValue value5 = TmfStateValue.newValueLong(Long.MAX_VALUE);
+    private final static IStateValue value1 = StateValue.newValueString("A");
+    private final static IStateValue value2 = StateValue.newValueInt(10);
+    private final static IStateValue value3 = StateValue.nullValue();
+    private final static IStateValue value4 = StateValue.newValueString("D");
+    private final static IStateValue value5 = StateValue.newValueLong(Long.MAX_VALUE);
 
     /**
      * Initialization. We run the checks for the return values of
@@ -75,7 +75,7 @@ public class StateSystemPushPopTest {
     @Before
     public void setUp() throws IOException, TimeRangeException,
             AttributeNotFoundException, StateValueTypeException {
-        ITmfStateValue value;
+        IStateValue value;
         testHtFile = File.createTempFile("test", ".ht");
 
         IStateHistoryBackend backend = StateHistoryBackendFactory.createHistoryTreeBackendNewFile(
@@ -142,7 +142,7 @@ public class StateSystemPushPopTest {
     @Test
     public void testBeginEnd() {
         try {
-            ITmfStateInterval interval = ss.querySingleState(0, attribute);
+            IStateInterval interval = ss.querySingleState(0, attribute);
             assertEquals(0, interval.getStartTime());
             assertEquals(1, interval.getEndTime());
             assertTrue(interval.getStateValue().isNull());
@@ -167,7 +167,7 @@ public class StateSystemPushPopTest {
             final int subAttribute2 = ss.getQuarkRelative(attribute, "2");
 
             /* Test the stack attributes themselves */
-            ITmfStateInterval interval = ss.querySingleState(11, attribute);
+            IStateInterval interval = ss.querySingleState(11, attribute);
             assertEquals(4, interval.getStateValue().unboxInt());
 
             interval = ss.querySingleState(24, attribute);
@@ -193,11 +193,11 @@ public class StateSystemPushPopTest {
      */
     @Test
     public void testStackTop() {
-        final ITmfStateSystemBuilder ss2 = ss;
+        final IStateSystemWriter ss2 = ss;
         assertNotNull(ss2);
 
         try {
-            ITmfStateInterval interval = StateSystemUtils.querySingleStackTop(ss2, 10, attribute);
+            IStateInterval interval = StateSystemUtils.querySingleStackTop(ss2, 10, attribute);
             assertNotNull(interval);
             assertEquals(value5, interval.getStateValue());
 
@@ -227,12 +227,12 @@ public class StateSystemPushPopTest {
      */
     @Test
     public void testEmptyStack() {
-        final ITmfStateSystemBuilder ss2 = ss;
+        final IStateSystemWriter ss2 = ss;
         assertNotNull(ss2);
 
         try {
             /* At the start */
-            ITmfStateInterval interval = ss.querySingleState(1, attribute);
+            IStateInterval interval = ss.querySingleState(1, attribute);
             assertTrue(interval.getStateValue().isNull());
             interval = StateSystemUtils.querySingleStackTop(ss2, 1, attribute);
             assertEquals(null, interval);
@@ -259,7 +259,7 @@ public class StateSystemPushPopTest {
      */
     @Test
     public void testFullQueries() {
-        List<ITmfStateInterval> state;
+        List<IStateInterval> state;
         try {
             final int subAttrib1 = ss.getQuarkRelative(attribute, "1");
             final int subAttrib2 = ss.getQuarkRelative(attribute, "2");

@@ -20,7 +20,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
  *
  * @author Alexandre Montplaisir
  */
-final class BooleanStateValue extends TmfStateValue {
+final class BooleanStateValue extends StateValue {
 
     private final boolean value;
 
@@ -67,7 +67,7 @@ final class BooleanStateValue extends TmfStateValue {
     }
 
     @Override
-    public int compareTo(@Nullable ITmfStateValue other) {
+    public int compareTo(@Nullable IStateValue other) {
         if (other == null) {
             throw new IllegalArgumentException("Cannot compare against null reference."); //$NON-NLS-1$
         }

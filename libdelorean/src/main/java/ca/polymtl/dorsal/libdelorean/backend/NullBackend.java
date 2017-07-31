@@ -17,8 +17,8 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * An implement of a state history back-end to simply discards *all* the
@@ -62,7 +62,7 @@ class NullBackend implements IStateHistoryBackend {
      */
     @Override
     public void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, ITmfStateValue value) {
+            int quark, IStateValue value) {
         /* The interval is always discarded. */
     }
 
@@ -101,7 +101,7 @@ class NullBackend implements IStateHistoryBackend {
      * currentStateInfo.
      */
     @Override
-    public void doQuery(List<ITmfStateInterval> currentStateInfo, long t) {
+    public void doQuery(List<IStateInterval> currentStateInfo, long t) {
         /* Cannot do past queries */
     }
 
@@ -111,7 +111,7 @@ class NullBackend implements IStateHistoryBackend {
      * @return Always returns null.
      */
     @Override
-    public ITmfStateInterval doSingularQuery(long t, int attributeQuark) {
+    public IStateInterval doSingularQuery(long t, int attributeQuark) {
         /* Cannot do past queries */
         return null;
     }

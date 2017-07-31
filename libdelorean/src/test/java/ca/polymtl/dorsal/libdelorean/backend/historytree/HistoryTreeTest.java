@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Iterables;
 
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Tests the history tree
@@ -37,17 +37,17 @@ public class HistoryTreeTest {
     /* Minimal allowed blocksize */
     private static final int BLOCK_SIZE = HistoryTree.TREE_HEADER_SIZE;
 
-    private static final int NULL_INTERVAL_SIZE = (new HTInterval(0, 1, 1, TmfStateValue.nullValue())).getSizeOnDisk();
+    private static final int NULL_INTERVAL_SIZE = (new HTInterval(0, 1, 1, StateValue.nullValue())).getSizeOnDisk();
 
     /* String with 23 characters, interval in file will be 25 bytes long */
     private static final String TEST_STRING = "abcdefghifklmnopqrstuvw"; //$NON-NLS-1$
-    private static final @NonNull TmfStateValue STRING_VALUE = TmfStateValue.newValueString(TEST_STRING);
+    private static final @NonNull StateValue STRING_VALUE = StateValue.newValueString(TEST_STRING);
     private static final int STRING_INTERVAL_SIZE = (new HTInterval(0, 1, 1, STRING_VALUE)).getSizeOnDisk();
 
-    private static final @NonNull TmfStateValue LONG_VALUE = TmfStateValue.newValueLong(10L);
+    private static final @NonNull StateValue LONG_VALUE = StateValue.newValueLong(10L);
     private static final int LONG_INTERVAL_SIZE = (new HTInterval(0, 1, 1, LONG_VALUE)).getSizeOnDisk();
 
-    private static final @NonNull TmfStateValue INT_VALUE = TmfStateValue.newValueInt(1);
+    private static final @NonNull StateValue INT_VALUE = StateValue.newValueInt(1);
     private static final int INT_INTERVAL_SIZE = (new HTInterval(0, 1, 1, INT_VALUE)).getSizeOnDisk();
 
     private File fTempFile;
@@ -105,7 +105,7 @@ public class HistoryTreeTest {
         return setupSmallTree(3);
     }
 
-    private static long fillValues(HistoryTree ht, @NonNull TmfStateValue value, int nbValues, long start) {
+    private static long fillValues(HistoryTree ht, @NonNull StateValue value, int nbValues, long start) {
         for (int i = 0; i < nbValues; i++) {
             ht.insertInterval(new HTInterval(start + i, start + i + 1, 1, value));
         }
@@ -157,7 +157,7 @@ public class HistoryTreeTest {
         /* Add null intervals up to ~10% */
         int nodeFreeSpace = node.getNodeFreeSpace();
         int nbIntervals = nodeFreeSpace / 10 / NULL_INTERVAL_SIZE;
-        long start = fillValues(ht, TmfStateValue.nullValue(), nbIntervals, 1);
+        long start = fillValues(ht, StateValue.nullValue(), nbIntervals, 1);
         assertEquals(nodeFreeSpace - nbIntervals * NULL_INTERVAL_SIZE, node.getNodeFreeSpace());
 
         /* Add integer intervals up to ~20% */

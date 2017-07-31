@@ -15,7 +15,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import com.google.common.base.MoreObjects;
 
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 import java.util.Objects;
 
@@ -26,12 +26,12 @@ import java.util.Objects;
  *
  * @author Alexandre Montplaisir
  */
-public final class TmfStateInterval implements ITmfStateInterval {
+public final class StateInterval implements IStateInterval {
 
     private final long start;
     private final long end;
     private final int attribute;
-    private final @NonNull ITmfStateValue sv;
+    private final @NonNull IStateValue sv;
 
     /**
      * Construct an interval from its given parameters
@@ -45,8 +45,8 @@ public final class TmfStateInterval implements ITmfStateInterval {
      * @param sv
      *            State value this interval will contain
      */
-    public TmfStateInterval(long start, long end, int attribute,
-            @NonNull ITmfStateValue sv) {
+    public StateInterval(long start, long end, int attribute,
+                         @NonNull IStateValue sv) {
         this.start = start;
         this.end = end;
         this.attribute = attribute;
@@ -69,7 +69,7 @@ public final class TmfStateInterval implements ITmfStateInterval {
     }
 
     @Override
-    public ITmfStateValue getStateValue() {
+    public IStateValue getStateValue() {
         return sv;
     }
 
@@ -93,7 +93,7 @@ public final class TmfStateInterval implements ITmfStateInterval {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TmfStateInterval that = (TmfStateInterval) o;
+        StateInterval that = (StateInterval) o;
         return (start == that.start
                 && end == that.end
                 && attribute == that.attribute

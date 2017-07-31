@@ -12,7 +12,7 @@ package ca.polymtl.dorsal.libdelorean.interval;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * This is the basic interface for accessing state intervals. See
@@ -23,7 +23,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-public interface ITmfStateInterval {
+public interface IStateInterval {
 
     /**
      * Retrieve the start time of the interval
@@ -51,7 +51,7 @@ public interface ITmfStateInterval {
      *
      * @return the state value represented by this interval
      */
-    @NonNull ITmfStateValue getStateValue();
+    @NonNull IStateValue getStateValue();
 
     /**
      * Test if this interval intersects another timestamp, inclusively.
@@ -60,5 +60,7 @@ public interface ITmfStateInterval {
      *            The target timestamp
      * @return True if the interval and timestamp intersect, false if they don't
      */
-    boolean intersects(long timestamp);
+    default boolean intersects(long timestamp) {
+        return ((getStartTime() <= timestamp) && (timestamp <= getEndTime()));
+    }
 }

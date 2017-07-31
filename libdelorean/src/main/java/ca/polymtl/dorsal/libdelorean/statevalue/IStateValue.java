@@ -18,7 +18,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
  *
  * @author Alexandre Montplaisir
  */
-public interface ITmfStateValue extends Comparable<ITmfStateValue> {
+public interface IStateValue extends Comparable<IStateValue> {
 
     /**
      * The supported types of state values

@@ -29,7 +29,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import com.google.common.collect.ImmutableList;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 
 /**
@@ -192,7 +192,7 @@ class HistoryTree {
 
             res = buffer.getInt(); /* Event handler's version number */
             if (res != expProviderVersion &&
-                    expProviderVersion != ITmfStateSystemBuilder.IGNORE_PROVIDER_VERSION) {
+                    expProviderVersion != IStateSystemWriter.IGNORE_PROVIDER_VERSION) {
                 /*
                  * The existing history was built using an event handler that
                  * doesn't match the current one in the framework.

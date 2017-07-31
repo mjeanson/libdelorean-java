@@ -14,13 +14,13 @@ import java.util.OptionalInt;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Aggregation rule that does bitwise-OR operations of all specified attributes.
@@ -35,7 +35,7 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
      * Constructor
      *
      * Don't forget to also register this rule to the provided state system,
-     * using {@link ITmfStateSystemBuilder#addAggregationRule}.
+     * using {@link IStateSystemWriter#addAggregationRule}.
      *
      * @param ssb
      *            The state system on which this rule will be associated.
@@ -46,14 +46,14 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
      *            populate the aggregate. The order of the elements is not
      *            important.
      */
-    public BitwiseOrAggregationRule(ITmfStateSystemBuilder ssb,
+    public BitwiseOrAggregationRule(IStateSystemWriter ssb,
             int targetQuark,
             List<String[]> attributePatterns) {
         super(ssb, targetQuark, attributePatterns);
     }
 
     @Override
-    public ITmfStateValue getOngoingAggregatedState() {
+    public IStateValue getOngoingAggregatedState() {
         OptionalInt value = getQuarkStream()
                 /* Query the value of each quark in the rule */
                 .map(quark -> {
@@ -68,17 +68,17 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
                 .reduce((a, b) -> a | b);
 
         if (value.isPresent()) {
-            return TmfStateValue.newValueInt(value.getAsInt());
+            return StateValue.newValueInt(value.getAsInt());
         }
-        return TmfStateValue.nullValue();
+        return StateValue.nullValue();
     }
 
     @Override
-    public ITmfStateInterval getAggregatedState(long timestamp) {
-        ITmfStateSystemBuilder ss = getStateSystem();
+    public IStateInterval getAggregatedState(long timestamp) {
+        IStateSystemWriter ss = getStateSystem();
 
         /* We first need to get all the valid state intervals */
-        Supplier<Stream<ITmfStateInterval>> intervals = () -> (getQuarkStream()
+        Supplier<Stream<IStateInterval>> intervals = () -> (getQuarkStream()
                 .map(quark -> {
                         try {
                             return ss.querySingleState(timestamp, quark.intValue());
@@ -94,21 +94,21 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
                 .mapToInt(stateInterval -> stateInterval.getStateValue().unboxInt())
                 .reduce((a, b) -> a | b);
 
-        ITmfStateValue value = (possibleValue.isPresent() ?
-                TmfStateValue.newValueInt(possibleValue.getAsInt()) :
-                TmfStateValue.nullValue());
+        IStateValue value = (possibleValue.isPresent() ?
+                StateValue.newValueInt(possibleValue.getAsInt()) :
+                StateValue.nullValue());
 
         /* Calculate the dummy interval start (the latest one) */
         long start = intervals.get()
-                .mapToLong(ITmfStateInterval::getStartTime)
+                .mapToLong(IStateInterval::getStartTime)
                 .max().orElse(ss.getStartTime());
 
         /* Calculate the dummy interval end (the earliest one) */
         long end = intervals.get()
-                .mapToLong(ITmfStateInterval::getEndTime)
+                .mapToLong(IStateInterval::getEndTime)
                 .min().orElse(ss.getCurrentEndTime());
 
-        return new TmfStateInterval(start, end, getTargetQuark(), value);
+        return new StateInterval(start, end, getTargetQuark(), value);
     }
 
 }

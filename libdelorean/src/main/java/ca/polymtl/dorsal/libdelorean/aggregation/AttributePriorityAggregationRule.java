@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Aggregation rule based on attribute priority.
@@ -41,7 +41,7 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
      * Constructor
      *
      * Don't forget to also register this rule to the provided state system,
-     * using {@link ITmfStateSystemBuilder#addAggregationRule}.
+     * using {@link IStateSystemWriter#addAggregationRule}.
      *
      * @param ssb
      *            The state system on which this rule will be associated.
@@ -53,15 +53,15 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
      *            list are prioritized over the later ones if several are
      *            non-null.
      */
-    public AttributePriorityAggregationRule(ITmfStateSystemBuilder ssb,
+    public AttributePriorityAggregationRule(IStateSystemWriter ssb,
             int targetQuark,
             List<String[]> attributePatterns) {
         super(ssb, targetQuark, attributePatterns);
     }
 
     @Override
-    public ITmfStateValue getOngoingAggregatedState() {
-        Optional<ITmfStateValue> possibleValue = getQuarkStream()
+    public IStateValue getOngoingAggregatedState() {
+        Optional<IStateValue> possibleValue = getQuarkStream()
                 /* Query the value of each quark in the rule */
                 .map(quark -> {
                     try {
@@ -77,12 +77,12 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
                 .filter(value -> !value.isNull())
                 .findFirst();
 
-        return possibleValue.orElse(TmfStateValue.nullValue());
+        return possibleValue.orElse(StateValue.nullValue());
     }
 
     @Override
-    public ITmfStateInterval getAggregatedState(long timestamp) {
-        ITmfStateSystemBuilder ss = getStateSystem();
+    public IStateInterval getAggregatedState(long timestamp) {
+        IStateSystemWriter ss = getStateSystem();
 
         /* First we need all the currently valid quarks */
         List<Integer> quarks = getQuarkStream().collect(Collectors.toList());
@@ -97,15 +97,15 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
          * state, so they are ignored.
          */
 
-        List<ITmfStateInterval> intervalsToUse = new ArrayList<>();
-        ITmfStateValue value = TmfStateValue.nullValue();
+        List<IStateInterval> intervalsToUse = new ArrayList<>();
+        IStateValue value = StateValue.nullValue();
 
         try {
             for (Integer quark : quarks) {
-                ITmfStateInterval interval = ss.querySingleState(timestamp, quark);
+                IStateInterval interval = ss.querySingleState(timestamp, quark);
                 intervalsToUse.add(interval);
 
-                ITmfStateValue sv = interval.getStateValue();
+                IStateValue sv = interval.getStateValue();
                 if (!sv.isNull()) {
                     value = sv;
                     break;
@@ -113,14 +113,14 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
             }
 
             long start = intervalsToUse.stream()
-                    .mapToLong(ITmfStateInterval::getStartTime)
+                    .mapToLong(IStateInterval::getStartTime)
                     .max().orElse(ss.getStartTime());
 
             long end = intervalsToUse.stream()
-                    .mapToLong(ITmfStateInterval::getEndTime)
+                    .mapToLong(IStateInterval::getEndTime)
                     .min().orElse(ss.getCurrentEndTime());
 
-            return new TmfStateInterval(start, end, getTargetQuark(), value);
+            return new StateInterval(start, end, getTargetQuark(), value);
 
         } catch (AttributeNotFoundException | StateSystemDisposedException e) {
             throw new IllegalStateException("Bad aggregation rule"); //$NON-NLS-1$

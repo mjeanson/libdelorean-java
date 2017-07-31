@@ -9,9 +9,10 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * Interface for state aggregation rules.
@@ -36,7 +37,7 @@ public interface IStateAggregationRule {
      *
      * @return The state system
      */
-    ITmfStateSystemBuilder getStateSystem();
+    IStateSystemWriter getStateSystem();
 
     /**
      * Get the quark to which this rule is "mounted".
@@ -47,11 +48,11 @@ public interface IStateAggregationRule {
 
     /**
      * Get the ongoing state of the aggregate quark. This will make use of
-     * {@link ca.polymtl.dorsal.libdelorean.ITmfStateSystem#queryOngoingState}
+     * {@link IStateSystemReader#queryOngoingState}
      *
      * @return The ongoing state of the mounted quark
      */
-    ITmfStateValue getOngoingAggregatedState();
+    IStateValue getOngoingAggregatedState();
 
     /**
      * Get the state of the aggregate quark.
@@ -60,5 +61,5 @@ public interface IStateAggregationRule {
      *            The timestamp of the query
      * @return The corresponding state interval
      */
-    ITmfStateInterval getAggregatedState(long timestamp);
+    IStateInterval getAggregatedState(long timestamp);
 }

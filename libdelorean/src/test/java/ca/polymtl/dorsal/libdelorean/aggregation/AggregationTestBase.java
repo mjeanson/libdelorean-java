@@ -23,16 +23,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystem;
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.StateSystemFactory;
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Base class for aggregation tests.
@@ -42,7 +42,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 @SuppressWarnings("nls")
 public abstract class AggregationTestBase {
 
-    private @Nullable ITmfStateSystemBuilder fStateSystem;
+    private @Nullable IStateSystemWriter fStateSystem;
 
     /**
      * Test setup
@@ -66,7 +66,7 @@ public abstract class AggregationTestBase {
     /**
      * @return The state system test fixture
      */
-    protected final ITmfStateSystemBuilder getStateSystem() {
+    protected final IStateSystemWriter getStateSystem() {
         return requireNonNull(fStateSystem);
     }
 
@@ -88,17 +88,17 @@ public abstract class AggregationTestBase {
     protected final void verifyInterval(long timestamp, int quark,
             long expectedStartTime,
             long expectedEndTime,
-            ITmfStateValue expectedValue) {
+            IStateValue expectedValue) {
 
-        ITmfStateSystem ss = getStateSystem();
+        IStateSystemReader ss = getStateSystem();
         try {
-            ITmfStateInterval interval1 = ss.querySingleState(timestamp, quark);
+            IStateInterval interval1 = ss.querySingleState(timestamp, quark);
             assertEquals(expectedStartTime, interval1.getStartTime());
             assertEquals(expectedEndTime, interval1.getEndTime());
             assertEquals(quark, interval1.getAttribute());
             assertEquals(expectedValue, interval1.getStateValue());
 
-            ITmfStateInterval interval2 = ss.queryFullState(timestamp).get(quark);
+            IStateInterval interval2 = ss.queryFullState(timestamp).get(quark);
             assertEquals(expectedStartTime, interval2.getStartTime());
             assertEquals(expectedEndTime, interval2.getEndTime());
             assertEquals(quark, interval2.getAttribute());
@@ -120,7 +120,7 @@ public abstract class AggregationTestBase {
      *            Same as the constructor parameter
      * @return The test rule
      */
-    protected abstract IStateAggregationRule createRuleWithParameters(ITmfStateSystemBuilder ssb,
+    protected abstract IStateAggregationRule createRuleWithParameters(IStateSystemWriter ssb,
             int targetQuark,
             List<String[]> patterns);
 
@@ -142,12 +142,12 @@ public abstract class AggregationTestBase {
      */
     @Test
     public void testNonExistingQuark() {
-        ITmfStateSystemBuilder ss = getStateSystem();
+        IStateSystemWriter ss = getStateSystem();
         assertNotNull(ss);
 
         int targetQuark = ss.getQuarkAbsoluteAndAdd("quarks", "target_quark");
 
-        ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
+        IStateValue NULL_VALUE = StateValue.nullValue();
 
         IStateAggregationRule rule = createRuleWithParameters(ss, targetQuark,
                 Collections.singletonList(new String [] { "quarks", "invalid_quark" }));
@@ -179,14 +179,14 @@ public abstract class AggregationTestBase {
      */
     @Test
     public void testExistingAndNonExistingQuarks() {
-        ITmfStateSystemBuilder ss = getStateSystem();
+        IStateSystemWriter ss = getStateSystem();
         assertNotNull(ss);
 
         int validQuark = ss.getQuarkAbsoluteAndAdd("quarks", "valid_quark");
         int targetQuark = ss.getQuarkAbsoluteAndAdd("quarks", "target_quark");
 
-        ITmfStateValue STATE_VALUE = TmfStateValue.newValueInt(1);
-        ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
+        IStateValue STATE_VALUE = StateValue.newValueInt(1);
+        IStateValue NULL_VALUE = StateValue.nullValue();
 
         IStateAggregationRule rule = createRuleWithParameters(ss, targetQuark,
                 Arrays.asList(

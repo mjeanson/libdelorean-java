@@ -23,9 +23,9 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Test the {@link StateSystemUtils} class
@@ -37,7 +37,7 @@ public class StateSystemUtilsTest {
     private static final long START_TIME = 1000L;
     private static final @NonNull String DUMMY_STRING = "test"; //$NON-NLS-1$
 
-    private ITmfStateSystemBuilder fStateSystem;
+    private IStateSystemWriter fStateSystem;
 
     /**
      * Build a small test state system in memory
@@ -49,8 +49,8 @@ public class StateSystemUtilsTest {
             fStateSystem = StateSystemFactory.newStateSystem(backend);
             int quark = fStateSystem.getQuarkAbsoluteAndAdd(DUMMY_STRING);
 
-            fStateSystem.modifyAttribute(1200L, TmfStateValue.newValueInt(10), quark);
-            fStateSystem.modifyAttribute(1500L, TmfStateValue.newValueInt(20), quark);
+            fStateSystem.modifyAttribute(1200L, StateValue.newValueInt(10), quark);
+            fStateSystem.modifyAttribute(1500L, StateValue.newValueInt(20), quark);
             fStateSystem.closeHistory(2000L);
         } catch (StateValueTypeException | AttributeNotFoundException e) {
             fail(e.getMessage());
@@ -70,7 +70,7 @@ public class StateSystemUtilsTest {
      */
     @Test
     public void testQueryUntilNonNullValue() {
-        ITmfStateSystem ss = fStateSystem;
+        IStateSystemReader ss = fStateSystem;
         assertNotNull(ss);
 
         int quark;
@@ -91,29 +91,29 @@ public class StateSystemUtilsTest {
              * Should return the right interval if an interval is within range,
              * even if the range starts or ends outside state system range
              */
-            ITmfStateInterval interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1000L, 1300L);
+            IStateInterval interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1000L, 1300L);
             assertNotNull(interval);
-            assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
+            assertEquals(IStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(10, interval.getStateValue().unboxInt());
 
             interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 800L, 2500L);
             assertNotNull(interval);
-            assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
+            assertEquals(IStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(10, interval.getStateValue().unboxInt());
 
             interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1300L, 1800L);
             assertNotNull(interval);
-            assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
+            assertEquals(IStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(10, interval.getStateValue().unboxInt());
 
             interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1500L, 1800L);
             assertNotNull(interval);
-            assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
+            assertEquals(IStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(20, interval.getStateValue().unboxInt());
 
             interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1800L, 2500L);
             assertNotNull(interval);
-            assertEquals(ITmfStateValue.Type.INTEGER, interval.getStateValue().getType());
+            assertEquals(IStateValue.Type.INTEGER, interval.getStateValue().getType());
             assertEquals(20, interval.getStateValue().unboxInt());
 
         } catch (AttributeNotFoundException e) {

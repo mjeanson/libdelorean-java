@@ -18,11 +18,11 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Tests for {@link SymbolicLinkRule}.
@@ -34,7 +34,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 public class SymbolicLinkTest extends AggregationTestBase {
 
     @Override
-    protected IStateAggregationRule createRuleWithParameters(ITmfStateSystemBuilder ssb,
+    protected IStateAggregationRule createRuleWithParameters(IStateSystemWriter ssb,
             int targetQuark, List<String @NonNull []> patterns) {
         /* Will only work for tests that use one 'pattern'. */
         if (patterns.size() > 1) {
@@ -62,13 +62,13 @@ public class SymbolicLinkTest extends AggregationTestBase {
      */
     @Test
     public void fullTest() {
-        ITmfStateSystemBuilder ss = getStateSystem();
+        IStateSystemWriter ss = getStateSystem();
         assertNotNull(ss);
 
         /* State values and attributes that will be used */
-        ITmfStateValue VALUE_1 = TmfStateValue.newValueInt(1);
-        ITmfStateValue VALUE_2 = TmfStateValue.newValueInt(2);
-        ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
+        IStateValue VALUE_1 = StateValue.newValueInt(1);
+        IStateValue VALUE_2 = StateValue.newValueInt(2);
+        IStateValue NULL_VALUE = StateValue.nullValue();
 
         int quarkAttributeA = ss.getQuarkAbsoluteAndAdd("attributeA");
         int quarkAttributeB = ss.getQuarkAbsoluteAndAdd("attributeB");

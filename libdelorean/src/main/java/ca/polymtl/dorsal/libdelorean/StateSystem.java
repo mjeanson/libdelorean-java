@@ -37,10 +37,10 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue.Type;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue.Type;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -55,7 +55,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
  * @author alexmont
  *
  */
-class StateSystem implements ITmfStateSystemBuilder {
+class StateSystem implements IStateSystemWriter {
 
     private static final Logger LOGGER = Logger.getLogger(StateSystem.class.getName());
 
@@ -381,7 +381,7 @@ class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     @Override
-    public void modifyAttribute(long t, ITmfStateValue value, int attributeQuark)
+    public void modifyAttribute(long t, IStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
         if (value == null) {
@@ -398,23 +398,23 @@ class StateSystem implements ITmfStateSystemBuilder {
     public void incrementAttribute(long t, int attributeQuark)
             throws StateValueTypeException, TimeRangeException,
             AttributeNotFoundException {
-        ITmfStateValue stateValue = queryOngoingState(attributeQuark);
+        IStateValue stateValue = queryOngoingState(attributeQuark);
         int prevValue = 0;
         /* if the attribute was previously null, start counting at 0 */
         if (!stateValue.isNull()) {
             prevValue = stateValue.unboxInt();
         }
-        modifyAttribute(t, TmfStateValue.newValueInt(prevValue + 1),
+        modifyAttribute(t, StateValue.newValueInt(prevValue + 1),
                 attributeQuark);
     }
 
     @Override
-    public void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
+    public void pushAttribute(long t, IStateValue value, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException,
             StateValueTypeException {
         int stackDepth;
         int subAttributeQuark;
-        ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
+        IStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
             /*
@@ -442,16 +442,16 @@ class StateSystem implements ITmfStateSystemBuilder {
         stackDepth++;
         subAttributeQuark = getQuarkRelativeAndAdd(attributeQuark, String.valueOf(stackDepth));
 
-        modifyAttribute(t, TmfStateValue.newValueInt(stackDepth), attributeQuark);
+        modifyAttribute(t, StateValue.newValueInt(stackDepth), attributeQuark);
         modifyAttribute(t, value, subAttributeQuark);
     }
 
     @Override
-    public ITmfStateValue popAttribute(long t, int attributeQuark)
+    public IStateValue popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException,
             StateValueTypeException {
         /* These are the state values of the stack-attribute itself */
-        ITmfStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
+        IStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
             /*
@@ -479,15 +479,15 @@ class StateSystem implements ITmfStateSystemBuilder {
 
         /* The attribute should already exist at this point */
         int subAttributeQuark = getQuarkRelative(attributeQuark, String.valueOf(stackDepth));
-        ITmfStateValue poppedValue = queryOngoingState(subAttributeQuark);
+        IStateValue poppedValue = queryOngoingState(subAttributeQuark);
 
         /* Update the state value of the stack-attribute */
-        ITmfStateValue nextSV;
+        IStateValue nextSV;
         if (--stackDepth == 0) {
             /* Store a null state value */
-            nextSV = TmfStateValue.nullValue();
+            nextSV = StateValue.nullValue();
         } else {
-            nextSV = TmfStateValue.newValueInt(stackDepth);
+            nextSV = StateValue.newValueInt(stackDepth);
         }
         modifyAttribute(t, nextSV, attributeQuark);
 
@@ -518,7 +518,7 @@ class StateSystem implements ITmfStateSystemBuilder {
         }
         /* Nullify ourselves */
         try {
-            transState.processStateChange(t, TmfStateValue.nullValue(), attributeQuark);
+            transState.processStateChange(t, StateValue.nullValue(), attributeQuark);
         } catch (StateValueTypeException e) {
             /*
              * Will not happen since we're inserting null values only, but poor
@@ -533,9 +533,9 @@ class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     @Override
-    public ITmfStateValue queryOngoingState(int attributeQuark) throws AttributeNotFoundException {
+    public IStateValue queryOngoingState(int attributeQuark) throws AttributeNotFoundException {
         /* Check if the attribute is an aggregate */
-        ITmfStateValue aggregatedValue = getOngoingAggregatedState(attributeQuark);
+        IStateValue aggregatedValue = getOngoingAggregatedState(attributeQuark);
         if (aggregatedValue != null) {
             return aggregatedValue;
         }
@@ -552,7 +552,7 @@ class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public void updateOngoingState(ITmfStateValue newValue, int attributeQuark)
+    public void updateOngoingState(IStateValue newValue, int attributeQuark)
             throws AttributeNotFoundException {
         transState.changeOngoingStateValue(attributeQuark, newValue);
     }
@@ -565,7 +565,7 @@ class StateSystem implements ITmfStateSystemBuilder {
      * @param newStateIntervals
      *            The new List of state values to use as ongoing state info
      */
-    protected void replaceOngoingState(@NonNull List<@NonNull ITmfStateInterval> newStateIntervals) {
+    protected void replaceOngoingState(@NonNull List<@NonNull IStateInterval> newStateIntervals) {
         transState.replaceOngoingState(newStateIntervals);
     }
 
@@ -574,14 +574,14 @@ class StateSystem implements ITmfStateSystemBuilder {
     //--------------------------------------------------------------------------
 
     @Override
-    public synchronized List<ITmfStateInterval> queryFullState(long t)
+    public synchronized List<IStateInterval> queryFullState(long t)
             throws TimeRangeException, StateSystemDisposedException {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
         final int nbAttr = getNbAttributes();
-        List<@Nullable ITmfStateInterval> stateInfo = new ArrayList<>(nbAttr);
+        List<@Nullable IStateInterval> stateInfo = new ArrayList<>(nbAttr);
 
         /* Bring the size of the array to the current number of attributes */
         for (int i = 0; i < nbAttr; i++) {
@@ -605,14 +605,14 @@ class StateSystem implements ITmfStateSystemBuilder {
          */
         aggregationRules.values().forEach(rule -> {
             int quark = rule.getTargetQuark();
-            ITmfStateInterval newValue = rule.getAggregatedState(t);
+            IStateInterval newValue = rule.getAggregatedState(t);
             stateInfo.set(quark, newValue);
         });
 
         /*
          * We should have previously inserted an interval for every attribute.
          */
-        for (ITmfStateInterval interval : stateInfo) {
+        for (IStateInterval interval : stateInfo) {
             if (interval == null) {
                 throw new IllegalStateException("Incoherent interval storage"); //$NON-NLS-1$
             }
@@ -621,14 +621,14 @@ class StateSystem implements ITmfStateSystemBuilder {
     }
 
     @Override
-    public ITmfStateInterval querySingleState(long t, int attributeQuark)
+    public IStateInterval querySingleState(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException, StateSystemDisposedException {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
         /* First check if the target quark is an aggregate */
-        ITmfStateInterval ret = getAggregatedState(attributeQuark, t);
+        IStateInterval ret = getAggregatedState(attributeQuark, t);
         if (ret != null) {
             return ret;
         }
@@ -654,12 +654,12 @@ class StateSystem implements ITmfStateSystemBuilder {
 
     @Override
     @NonNullByDefault
-    public Map<Integer, ITmfStateInterval> queryStates(long t, Set<Integer> quarks) {
+    public Map<Integer, IStateInterval> queryStates(long t, Set<Integer> quarks) {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
-        Map<Integer, ITmfStateInterval> results = new HashMap<>(quarks.size());
+        Map<Integer, IStateInterval> results = new HashMap<>(quarks.size());
         Set<Integer> remainingQuarks = new HashSet<>(quarks);
 
         /*
@@ -671,7 +671,7 @@ class StateSystem implements ITmfStateSystemBuilder {
         while (iter.hasNext()) {
             int quark = iter.next();
             /* Check if it's an aggregate. */
-            ITmfStateInterval interval = getAggregatedState(quark, t);
+            IStateInterval interval = getAggregatedState(quark, t);
             if (interval == null) {
                 /* Check if it's in the transient state. */
                 interval = transState.getIntervalAt(t, quark);
@@ -700,7 +700,7 @@ class StateSystem implements ITmfStateSystemBuilder {
         aggregationRules.put(Integer.valueOf(rule.getTargetQuark()), rule);
     }
 
-    private @Nullable ITmfStateValue getOngoingAggregatedState(int quark) {
+    private @Nullable IStateValue getOngoingAggregatedState(int quark) {
         IStateAggregationRule rule = aggregationRules.get(Integer.valueOf(quark));
         if (rule == null) {
             return null;
@@ -708,7 +708,7 @@ class StateSystem implements ITmfStateSystemBuilder {
         return rule.getOngoingAggregatedState();
     }
 
-    private @Nullable ITmfStateInterval getAggregatedState(int quark, long timestamp) {
+    private @Nullable IStateInterval getAggregatedState(int quark, long timestamp) {
         IStateAggregationRule rule = aggregationRules.get(Integer.valueOf(quark));
         if (rule == null) {
             return null;

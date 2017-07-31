@@ -20,7 +20,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
  *
  * @author Alexandre Montplaisir
  */
-final class StringStateValue extends TmfStateValue {
+final class StringStateValue extends StateValue {
 
     private final String value;
 
@@ -67,7 +67,7 @@ final class StringStateValue extends TmfStateValue {
     }
 
     @Override
-    public int compareTo(@Nullable ITmfStateValue other) {
+    public int compareTo(@Nullable IStateValue other) {
         if (other == null) {
             throw new IllegalArgumentException();
         }

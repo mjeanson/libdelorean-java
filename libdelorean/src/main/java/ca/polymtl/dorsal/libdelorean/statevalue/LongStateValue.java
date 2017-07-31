@@ -19,7 +19,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
  *
  * @author François Rajotte
  */
-final class LongStateValue extends TmfStateValue {
+final class LongStateValue extends StateValue {
 
     private final long value;
 
@@ -66,7 +66,7 @@ final class LongStateValue extends TmfStateValue {
     }
 
     @Override
-    public int compareTo(@Nullable ITmfStateValue other) {
+    public int compareTo(@Nullable IStateValue other) {
         if (other == null) {
             throw new IllegalArgumentException();
         }

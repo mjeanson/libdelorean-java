@@ -19,11 +19,11 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Tests for {@link AttributePriorityAggregationRule}.
@@ -35,7 +35,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 public class AttributePriorityAggregationTest extends AggregationTestBase {
 
     @Override
-    protected IStateAggregationRule createRuleWithParameters(ITmfStateSystemBuilder ssb,
+    protected IStateAggregationRule createRuleWithParameters(IStateSystemWriter ssb,
             int targetQuark, List<String @NonNull []> patterns) {
         return new AttributePriorityAggregationRule(ssb, targetQuark, patterns);
     }
@@ -59,15 +59,15 @@ public class AttributePriorityAggregationTest extends AggregationTestBase {
      */
     @Test
     public void fullTest() {
-        ITmfStateSystemBuilder ss = getStateSystem();
+        IStateSystemWriter ss = getStateSystem();
         assertNotNull(ss);
 
         /* State values and attributes that will be used */
-        ITmfStateValue PROCESS_USER = TmfStateValue.newValueInt(0);
-        ITmfStateValue PROCESS_SYSCALL = TmfStateValue.newValueInt(1);
-        ITmfStateValue SOFTIRQ_ACTIVE = TmfStateValue.newValueInt(2);
-        ITmfStateValue IRQ_ACTIVE = TmfStateValue.newValueInt(3);
-        ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
+        IStateValue PROCESS_USER = StateValue.newValueInt(0);
+        IStateValue PROCESS_SYSCALL = StateValue.newValueInt(1);
+        IStateValue SOFTIRQ_ACTIVE = StateValue.newValueInt(2);
+        IStateValue IRQ_ACTIVE = StateValue.newValueInt(3);
+        IStateValue NULL_VALUE = StateValue.nullValue();
 
         int quark0 = ss.getQuarkAbsoluteAndAdd("CPUs", "0");
         int quarkProcess = ss.getQuarkAbsoluteAndAdd("CPUs", "0", "process");

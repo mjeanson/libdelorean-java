@@ -11,7 +11,7 @@
 
 package ca.polymtl.dorsal.libdelorean.exceptions;
 
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * The StateValue is a wrapper around the different type of values that can be
@@ -22,7 +22,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
  * incorrect type (for example, tries to read a String value as an Int).
  *
  * To avoid it, always check for the state value's type before attempting to
- * unbox it, via {@link ITmfStateValue#getType()}.
+ * unbox it, via {@link IStateValue#getType()}.
  *
  * @author Alexandre Montplaisir
  */

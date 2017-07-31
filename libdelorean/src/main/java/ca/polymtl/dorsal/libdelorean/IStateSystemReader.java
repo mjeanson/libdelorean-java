@@ -20,19 +20,17 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * This is the read-only interface to the generic state system. It contains all
  * the read-only quark-getting methods, as well as the history-querying ones.
  *
  * @author Alexandre Montplaisir
- * @noimplement Only the internal StateSystem class should implement this
- *              interface.
  */
 @NonNullByDefault
-public interface ITmfStateSystem {
+public interface IStateSystemReader {
 
     /** Quark representing the root attribute */
     int ROOT_ATTRIBUTE = -1;
@@ -295,7 +293,7 @@ public interface ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the requested attribute is invalid
      */
-    ITmfStateValue queryOngoingState(int attributeQuark)
+    IStateValue queryOngoingState(int attributeQuark)
             throws AttributeNotFoundException;
 
     /**
@@ -331,7 +329,7 @@ public interface ITmfStateSystem {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    List<@NonNull ITmfStateInterval> queryFullState(long t)
+    List<@NonNull IStateInterval> queryFullState(long t)
             throws StateSystemDisposedException;
 
     /**
@@ -356,7 +354,7 @@ public interface ITmfStateSystem {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    ITmfStateInterval querySingleState(long t, int attributeQuark)
+    IStateInterval querySingleState(long t, int attributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException;
 
     /**
@@ -373,5 +371,5 @@ public interface ITmfStateSystem {
      *             If the query is sent after the state system has been
      *             disposed.
      */
-    Map<Integer, ITmfStateInterval> queryStates(long t, Set<Integer> quarks);
+    Map<Integer, IStateInterval> queryStates(long t, Set<Integer> quarks);
 }

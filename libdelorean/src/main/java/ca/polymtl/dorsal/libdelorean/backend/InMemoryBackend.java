@@ -23,10 +23,10 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * State history back-end that stores its intervals in RAM only. It cannot be
@@ -47,10 +47,10 @@ class InMemoryBackend implements IStateHistoryBackend {
      * intervals with the same end time (for different attributes). And TreeSet
      * needs a unique "key" per element.
      */
-    private static final Comparator<ITmfStateInterval> END_COMPARATOR =
-            new Comparator<ITmfStateInterval>() {
+    private static final Comparator<IStateInterval> END_COMPARATOR =
+            new Comparator<IStateInterval>() {
                 @Override
-                public int compare(ITmfStateInterval o1, ITmfStateInterval o2) {
+                public int compare(IStateInterval o1, IStateInterval o2) {
                     final long e1 = o1.getEndTime();
                     final long e2 = o2.getEndTime();
                     final int a1 = o1.getAttribute();
@@ -71,7 +71,7 @@ class InMemoryBackend implements IStateHistoryBackend {
             };
 
     private final @NonNull String ssid;
-    private final TreeSet<ITmfStateInterval> intervals;
+    private final TreeSet<IStateInterval> intervals;
     private final long startTime;
 
     private volatile long latestTime;
@@ -108,13 +108,13 @@ class InMemoryBackend implements IStateHistoryBackend {
 
     @Override
     public void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, ITmfStateValue value) throws TimeRangeException {
+            int quark, IStateValue value) throws TimeRangeException {
         /* Make sure the passed start/end times make sense */
         if (stateStartTime > stateEndTime || stateStartTime < startTime) {
             throw new TimeRangeException(ssid + " Interval Start:" + stateStartTime + ", Interval End:" + stateEndTime + ", Backend Start:" + startTime); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
 
-        ITmfStateInterval interval = new TmfStateInterval(stateStartTime, stateEndTime, quark, value);
+        IStateInterval interval = new StateInterval(stateStartTime, stateEndTime, quark, value);
 
         /* Add the interval into the tree */
         synchronized (intervals) {
@@ -128,7 +128,7 @@ class InMemoryBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public void doQuery(List<ITmfStateInterval> currentStateInfo, long t)
+    public void doQuery(List<IStateInterval> currentStateInfo, long t)
             throws TimeRangeException {
         if (!checkValidTime(t)) {
             throw new TimeRangeException(ssid + " Time:" + t + ", Start:" + startTime + ", End:" + latestTime); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -139,9 +139,9 @@ class InMemoryBackend implements IStateHistoryBackend {
          * the first possible interval, then only compare their start times.
          */
         synchronized (intervals) {
-            Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+            Iterator<IStateInterval> iter = serachforEndTime(intervals, t);
             for (int modCount = 0; iter.hasNext() && modCount < currentStateInfo.size();) {
-                ITmfStateInterval entry = iter.next();
+                IStateInterval entry = iter.next();
                 final long entryStartTime = entry.getStartTime();
                 if (entryStartTime <= t) {
                     /* Add this interval to the returned values */
@@ -153,7 +153,7 @@ class InMemoryBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public ITmfStateInterval doSingularQuery(long t, int attributeQuark)
+    public IStateInterval doSingularQuery(long t, int attributeQuark)
             throws TimeRangeException, AttributeNotFoundException {
         if (!checkValidTime(t)) {
             throw new TimeRangeException(ssid + " Time:" + t + ", Start:" + startTime + ", End:" + latestTime); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -164,9 +164,9 @@ class InMemoryBackend implements IStateHistoryBackend {
          * the first possible interval, then only compare their start times.
          */
         synchronized (intervals) {
-            Iterator<ITmfStateInterval> iter = serachforEndTime(intervals, t);
+            Iterator<IStateInterval> iter = serachforEndTime(intervals, t);
             while (iter.hasNext()) {
-                ITmfStateInterval entry = iter.next();
+                IStateInterval entry = iter.next();
                 final boolean attributeMatches = (entry.getAttribute() == attributeQuark);
                 final long entryStartTime = entry.getStartTime();
                 if (attributeMatches) {
@@ -227,14 +227,14 @@ class InMemoryBackend implements IStateHistoryBackend {
         }
     }
 
-    private static Iterator<ITmfStateInterval> serachforEndTime(TreeSet<ITmfStateInterval> tree, long time) {
-        ITmfStateInterval dummyInterval = new TmfStateInterval(-1, time, -1, TmfStateValue.nullValue());
-        ITmfStateInterval myInterval = tree.lower(dummyInterval);
+    private static Iterator<IStateInterval> serachforEndTime(TreeSet<IStateInterval> tree, long time) {
+        IStateInterval dummyInterval = new StateInterval(-1, time, -1, StateValue.nullValue());
+        IStateInterval myInterval = tree.lower(dummyInterval);
         if (myInterval == null) {
             return tree.iterator();
         }
-        final SortedSet<ITmfStateInterval> tailSet = tree.tailSet(myInterval);
-        Iterator<ITmfStateInterval> retVal = tailSet.iterator();
+        final SortedSet<IStateInterval> tailSet = tree.tailSet(myInterval);
+        Iterator<IStateInterval> retVal = tailSet.iterator();
         retVal.next();
         return retVal;
     }

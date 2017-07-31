@@ -33,9 +33,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.google.common.collect.ImmutableSet;
 
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Abstract class to test implementations of the {@link IStateHistoryBackend}
@@ -59,7 +59,7 @@ public abstract class StateHistoryBackendTestBase {
 
     /** Test interval set */
     @Parameter(1)
-    public List<ITmfStateInterval> fIntervals;
+    public List<IStateInterval> fIntervals;
 
     /** Number of attributes */
     @Parameter(2)
@@ -84,16 +84,16 @@ public abstract class StateHistoryBackendTestBase {
          * |      ...      |
          * </pre>
          */
-        List<ITmfStateInterval> cascadingIntervals = new ArrayList<>();
+        List<IStateInterval> cascadingIntervals = new ArrayList<>();
         int cacadingNbAttributes = 10;
         {
             long duration = 10;
             for (long t = START_TIME + 1; t <= END_TIME + duration; t++) {
-                cascadingIntervals.add(new TmfStateInterval(
+                cascadingIntervals.add(new StateInterval(
                         Math.max(START_TIME, t - duration),
                         Math.min(END_TIME, t - 1),
                         (int) t % cacadingNbAttributes,
-                        TmfStateValue.newValueLong(t)));
+                        StateValue.newValueLong(t)));
             }
         }
 
@@ -109,19 +109,19 @@ public abstract class StateHistoryBackendTestBase {
          * |      ...      |
          * </pre>
          */
-        List<ITmfStateInterval> fullWidthIntervals = new ArrayList<>();
+        List<IStateInterval> fullWidthIntervals = new ArrayList<>();
         int fullWidthNbdAttributes = 1000;
         {
             for (int attr = 0; attr < fullWidthNbdAttributes; attr++) {
-                fullWidthIntervals.add(new TmfStateInterval(
+                fullWidthIntervals.add(new StateInterval(
                         START_TIME,
                         END_TIME,
                         attr,
-                        TmfStateValue.newValueLong(attr)));
+                        StateValue.newValueLong(attr)));
             }
         }
 
-        List<ITmfStateInterval> oneInterval = Arrays.asList(new TmfStateInterval(START_TIME, END_TIME, 0, TmfStateValue.nullValue()));
+        List<IStateInterval> oneInterval = Arrays.asList(new StateInterval(START_TIME, END_TIME, 0, StateValue.nullValue()));
 
         return Arrays.asList(
                 new Object[] {"one-interval", oneInterval, 1 }, //$NON-NLS-1$
@@ -184,7 +184,7 @@ public abstract class StateHistoryBackendTestBase {
         for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
             final long ts = t;
 
-            List<@Nullable ITmfStateInterval> stateInfo = new ArrayList<>(fNbAttributes);
+            List<@Nullable IStateInterval> stateInfo = new ArrayList<>(fNbAttributes);
             IntStream.range(0, fNbAttributes).forEach(i -> stateInfo.add(null));
             backend.doQuery(stateInfo, t);
 
@@ -211,11 +211,11 @@ public abstract class StateHistoryBackendTestBase {
         final Set<Integer> quarks = ImmutableSet.of(quark);
 
         for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
-            Map<Integer, ITmfStateInterval> results = new HashMap<>();
+            Map<Integer, IStateInterval> results = new HashMap<>();
             backend.doPartialQuery(t, quarks, results);
 
             assertEquals(1, results.size());
-            ITmfStateInterval interval = results.get(quark);
+            IStateInterval interval = results.get(quark);
             assertNotNull(interval);
             assertTrue(interval.toString() + " does not intersect timestamp " + t, interval.intersects(t)); //$NON-NLS-1$
         }
@@ -237,7 +237,7 @@ public abstract class StateHistoryBackendTestBase {
 
         for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
             final long ts = t;
-            Map<Integer, ITmfStateInterval> results = new HashMap<>();
+            Map<Integer, IStateInterval> results = new HashMap<>();
             backend.doPartialQuery(t, quarks, results);
 
             assertEquals(quarks.size(), results.size());
@@ -264,7 +264,7 @@ public abstract class StateHistoryBackendTestBase {
 
         for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
             final long ts = t;
-            Map<Integer, ITmfStateInterval> results = new HashMap<>();
+            Map<Integer, IStateInterval> results = new HashMap<>();
             backend.doPartialQuery(t, quarks, results);
 
             assertEquals(quarks.size(), results.size());
@@ -281,7 +281,7 @@ public abstract class StateHistoryBackendTestBase {
     @Test
     public void testBackendEndTime() {
         long maxIntervalEndTime = fIntervals.stream()
-                .mapToLong(ITmfStateInterval::getEndTime)
+                .mapToLong(IStateInterval::getEndTime)
                 .max().getAsLong();
 
         long expectedEndTime = Math.max(maxIntervalEndTime, END_TIME);

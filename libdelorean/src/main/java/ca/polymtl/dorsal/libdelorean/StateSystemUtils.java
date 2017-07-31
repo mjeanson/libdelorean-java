@@ -22,8 +22,8 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * Provide utility methods for the state system
@@ -64,10 +64,10 @@ public final class StateSystemUtils {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    public static @Nullable ITmfStateInterval querySingleStackTop(ITmfStateSystem ss,
-            long t, int stackAttributeQuark)
+    public static @Nullable IStateInterval querySingleStackTop(IStateSystemReader ss,
+                                                               long t, int stackAttributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException {
-        ITmfStateValue curStackStateValue = ss.querySingleState(t, stackAttributeQuark).getStateValue();
+        IStateValue curStackStateValue = ss.querySingleState(t, stackAttributeQuark).getStateValue();
 
         if (curStackStateValue.isNull()) {
             /* There is nothing stored in this stack at this moment */
@@ -113,12 +113,12 @@ public final class StateSystemUtils {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    public static List<ITmfStateInterval> queryHistoryRange(ITmfStateSystem ss,
-            int attributeQuark, long t1, long t2)
+    public static List<IStateInterval> queryHistoryRange(IStateSystemReader ss,
+                                                         int attributeQuark, long t1, long t2)
             throws AttributeNotFoundException, StateSystemDisposedException {
 
-        List<ITmfStateInterval> intervals;
-        ITmfStateInterval currentInterval;
+        List<IStateInterval> intervals;
+        IStateInterval currentInterval;
         long ts, tEnd;
 
         /* Make sure the time range makes sense */
@@ -180,11 +180,11 @@ public final class StateSystemUtils {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    public static List<ITmfStateInterval> queryHistoryRange(ITmfStateSystem ss,
-            int attributeQuark, long t1, long t2, long resolution, @Nullable FutureTask<?> task)
+    public static List<IStateInterval> queryHistoryRange(IStateSystemReader ss,
+                                                         int attributeQuark, long t1, long t2, long resolution, @Nullable FutureTask<?> task)
             throws AttributeNotFoundException, StateSystemDisposedException {
-        List<ITmfStateInterval> intervals = new LinkedList<>();
-        ITmfStateInterval currentInterval = null;
+        List<IStateInterval> intervals = new LinkedList<>();
+        IStateInterval currentInterval = null;
         long ts, tEnd;
 
         /* Make sure the time range makes sense */
@@ -236,8 +236,8 @@ public final class StateSystemUtils {
      *         value, or <code>null</code> if no interval was found once we
      *         reach either t2 or the end time of the state system.
      */
-    public static @Nullable ITmfStateInterval queryUntilNonNullValue(ITmfStateSystem ss,
-            int attributeQuark, long t1, long t2) {
+    public static @Nullable IStateInterval queryUntilNonNullValue(IStateSystemReader ss,
+                                                                  int attributeQuark, long t1, long t2) {
 
         long current = t1;
         /* Make sure the range is ok */
@@ -255,8 +255,8 @@ public final class StateSystemUtils {
 
         try {
             while (current < t2) {
-                ITmfStateInterval currentInterval = ss.querySingleState(current, attributeQuark);
-                ITmfStateValue value = currentInterval.getStateValue();
+                IStateInterval currentInterval = ss.querySingleState(current, attributeQuark);
+                IStateValue value = currentInterval.getStateValue();
 
                 if (!value.isNull()) {
                     return currentInterval;

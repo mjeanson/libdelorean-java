@@ -17,9 +17,9 @@ import java.nio.ByteBuffer;
 import org.eclipse.jdt.annotation.NonNull;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * The interval component, which will be contained in a node of the History
@@ -27,7 +27,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
  *
  * @author Alexandre Montplaisir
  */
-final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
+final class HTInterval implements IStateInterval, Comparable<HTInterval> {
 
     private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
 
@@ -43,7 +43,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     private final long start;
     private final long end;
     private final int attribute;
-    private final @NonNull TmfStateValue sv;
+    private final @NonNull StateValue sv;
 
     /** Size of this interval once serialized to disk (in bytes) */
     private final transient int sizeOnDisk;
@@ -64,7 +64,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      *             If the start time or end time are invalid
      */
     public HTInterval(long intervalStart, long intervalEnd, int attribute,
-            @NonNull TmfStateValue value) throws TimeRangeException {
+            @NonNull StateValue value) throws TimeRangeException {
         if (intervalStart > intervalEnd) {
             throw new TimeRangeException("Start:" + intervalStart + ", End:" + intervalEnd); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -85,7 +85,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * Compute how much space (in bytes) an interval will take in its serialized
      * form on disk. This is dependent on its state value.
      */
-    private static int computeSizeOnDisk(ITmfStateValue sv) {
+    private static int computeSizeOnDisk(IStateValue sv) {
         /*
          * Minimum size is 2x long (start and end), 1x int (attribute) and 1x
          * byte (value type).
@@ -125,7 +125,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * string state value again.
      */
     private HTInterval(long intervalStart, long intervalEnd, int attribute,
-            @NonNull TmfStateValue value, int size) throws TimeRangeException {
+                       @NonNull StateValue value, int size) throws TimeRangeException {
         if (intervalStart > intervalEnd) {
             throw new TimeRangeException("Start:" + intervalStart + ", End:" + intervalEnd); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -148,7 +148,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      *             If there was an error reading from the buffer
      */
     public static final HTInterval readFrom(ByteBuffer buffer) throws IOException {
-        TmfStateValue value;
+        StateValue value;
 
         int startPos = buffer.position();
 
@@ -161,27 +161,27 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
         byte valueType = buffer.get();
         switch (valueType) {
         case TYPE_NULL:
-            value = TmfStateValue.nullValue();
+            value = StateValue.nullValue();
             break;
 
         case TYPE_BOOLEAN_TRUE:
-            value = TmfStateValue.newValueBoolean(true);
+            value = StateValue.newValueBoolean(true);
             break;
 
         case TYPE_BOOLEAN_FALSE:
-            value = TmfStateValue.newValueBoolean(false);
+            value = StateValue.newValueBoolean(false);
             break;
 
         case TYPE_INTEGER:
-            value = TmfStateValue.newValueInt(buffer.getInt());
+            value = StateValue.newValueInt(buffer.getInt());
             break;
 
         case TYPE_LONG:
-            value = TmfStateValue.newValueLong(buffer.getLong());
+            value = StateValue.newValueLong(buffer.getLong());
             break;
 
         case TYPE_DOUBLE:
-            value = TmfStateValue.newValueDouble(buffer.getDouble());
+            value = StateValue.newValueDouble(buffer.getDouble());
             break;
 
         case TYPE_STRING: {
@@ -189,7 +189,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
             int strSize = buffer.getShort();
             byte[] array = new byte[strSize];
             buffer.get(array);
-            value = TmfStateValue.newValueString(new String(array));
+            value = StateValue.newValueString(new String(array));
 
             /* Confirm the 0'ed byte at the end */
             byte res = buffer.get();
@@ -287,7 +287,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
     }
 
     @Override
-    public ITmfStateValue getStateValue() {
+    public IStateValue getStateValue() {
         return sv;
     }
 
@@ -357,7 +357,7 @@ final class HTInterval implements ITmfStateInterval, Comparable<HTInterval> {
      * Here we determine how state values "types" are written in the 8-bit field
      * that indicates the value type in the file.
      */
-    private static byte getByteFromType(ITmfStateValue sv) {
+    private static byte getByteFromType(IStateValue sv) {
         switch(sv.getType()) {
         case NULL:
             return TYPE_NULL;

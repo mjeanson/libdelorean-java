@@ -16,7 +16,7 @@ import org.junit.Test;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 
 /**
- * Unit test for the {@link ITmfStateValue#compareTo(ITmfStateValue)} method
+ * Unit test for the {@link IStateValue#compareTo(IStateValue)} method
  *
  * @author Naser Ezzati
  */
@@ -27,31 +27,31 @@ public class StateValueCompareToTest {
     // ------------------------------------------------------------------------
 
     /* State values that will be used */
-    private static final ITmfStateValue BASE_INT_VALUE = TmfStateValue.newValueInt(10);
-    private static final ITmfStateValue BIGGER_INT_VALUE = TmfStateValue.newValueInt(20);
-    private static final ITmfStateValue SMALLER_INT_VALUE = TmfStateValue.newValueInt(6);
+    private static final IStateValue BASE_INT_VALUE = StateValue.newValueInt(10);
+    private static final IStateValue BIGGER_INT_VALUE = StateValue.newValueInt(20);
+    private static final IStateValue SMALLER_INT_VALUE = StateValue.newValueInt(6);
 
-    private static final ITmfStateValue BASE_LONG_VALUE = TmfStateValue.newValueLong(10);
-    private static final ITmfStateValue BIGGER_LONG_VALUE = TmfStateValue.newValueLong(20);
-    private static final ITmfStateValue SMALLER_LONG_VALUE = TmfStateValue.newValueLong(6);
-    private static final ITmfStateValue MIN_LONG_VALUE = TmfStateValue.newValueLong(Long.MIN_VALUE);
-    private static final ITmfStateValue MAX_LONG_VALUE = TmfStateValue.newValueLong(Long.MAX_VALUE);
+    private static final IStateValue BASE_LONG_VALUE = StateValue.newValueLong(10);
+    private static final IStateValue BIGGER_LONG_VALUE = StateValue.newValueLong(20);
+    private static final IStateValue SMALLER_LONG_VALUE = StateValue.newValueLong(6);
+    private static final IStateValue MIN_LONG_VALUE = StateValue.newValueLong(Long.MIN_VALUE);
+    private static final IStateValue MAX_LONG_VALUE = StateValue.newValueLong(Long.MAX_VALUE);
 
-    private static final ITmfStateValue BASE_DOUBLE_VALUE = TmfStateValue.newValueDouble(10.00);
-    private static final ITmfStateValue BIGGER_DOUBLE_VALUE1 = TmfStateValue.newValueDouble(20.00);
-    private static final ITmfStateValue BIGGER_DOUBLE_VALUE2 = TmfStateValue.newValueDouble(10.03);
-    private static final ITmfStateValue SMALLER_DOUBLE_VALUE1 = TmfStateValue.newValueDouble(6.00);
-    private static final ITmfStateValue SMALLER_DOUBLE_VALUE2 = TmfStateValue.newValueDouble(9.99);
-    private static final ITmfStateValue MIN_DOUBLE_VALUE = TmfStateValue.newValueDouble(Double.MIN_VALUE);
-    private static final ITmfStateValue MAX_DOUBLE_VALUE = TmfStateValue.newValueDouble(Double.MAX_VALUE);
-    private static final ITmfStateValue POSITIVE_INFINITY = TmfStateValue.newValueDouble(Double.POSITIVE_INFINITY);
-    private static final ITmfStateValue NEGATIVE_INFINITY = TmfStateValue.newValueDouble(Double.NEGATIVE_INFINITY);
+    private static final IStateValue BASE_DOUBLE_VALUE = StateValue.newValueDouble(10.00);
+    private static final IStateValue BIGGER_DOUBLE_VALUE1 = StateValue.newValueDouble(20.00);
+    private static final IStateValue BIGGER_DOUBLE_VALUE2 = StateValue.newValueDouble(10.03);
+    private static final IStateValue SMALLER_DOUBLE_VALUE1 = StateValue.newValueDouble(6.00);
+    private static final IStateValue SMALLER_DOUBLE_VALUE2 = StateValue.newValueDouble(9.99);
+    private static final IStateValue MIN_DOUBLE_VALUE = StateValue.newValueDouble(Double.MIN_VALUE);
+    private static final IStateValue MAX_DOUBLE_VALUE = StateValue.newValueDouble(Double.MAX_VALUE);
+    private static final IStateValue POSITIVE_INFINITY = StateValue.newValueDouble(Double.POSITIVE_INFINITY);
+    private static final IStateValue NEGATIVE_INFINITY = StateValue.newValueDouble(Double.NEGATIVE_INFINITY);
 
-    private static final ITmfStateValue BASE_STRING_VALUE = TmfStateValue.newValueString("D"); //$NON-NLS-1$
-    private static final ITmfStateValue BIGGER_STRING_VALUE = TmfStateValue.newValueString("Z"); //$NON-NLS-1$
-    private static final ITmfStateValue SMALLER_STRING_VALUE = TmfStateValue.newValueString("A"); //$NON-NLS-1$
+    private static final IStateValue BASE_STRING_VALUE = StateValue.newValueString("D"); //$NON-NLS-1$
+    private static final IStateValue BIGGER_STRING_VALUE = StateValue.newValueString("Z"); //$NON-NLS-1$
+    private static final IStateValue SMALLER_STRING_VALUE = StateValue.newValueString("A"); //$NON-NLS-1$
 
-    private static final ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
+    private static final IStateValue NULL_VALUE = StateValue.nullValue();
 
     // ------------------------------------------------------------------------
     // Comparisons of Integer state values

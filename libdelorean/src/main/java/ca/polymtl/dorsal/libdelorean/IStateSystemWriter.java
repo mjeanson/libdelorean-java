@@ -16,7 +16,7 @@ import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * This is the external interface to build or modify an existing state history.
@@ -30,10 +30,8 @@ import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
  * ITmfStateSystem interface instead.
  *
  * @author Alexandre Montplaisir
- * @noimplement Only the internal StateSystem class should implement this
- *              interface.
  */
-public interface ITmfStateSystemBuilder extends ITmfStateSystem {
+public interface IStateSystemWriter extends IStateSystemReader {
 
     /**
      * Special state provider version number that will tell the backend to
@@ -105,7 +103,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * @throws AttributeNotFoundException
      *             If the requested attribute is invalid
      */
-    void updateOngoingState(@NonNull ITmfStateValue newValue, int attributeQuark)
+    void updateOngoingState(@NonNull IStateValue newValue, int attributeQuark)
             throws AttributeNotFoundException;
 
     /**
@@ -127,7 +125,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the inserted state value's type does not match what is
      *             already assigned to this attribute.
      */
-    void modifyAttribute(long t, ITmfStateValue value, int attributeQuark)
+    void modifyAttribute(long t, IStateValue value, int attributeQuark)
             throws AttributeNotFoundException, StateValueTypeException;
 
     /**
@@ -172,7 +170,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the attribute 'attributeQuark' already exists, but is not
      *             of integer type.
      */
-    void pushAttribute(long t, ITmfStateValue value, int attributeQuark)
+    void pushAttribute(long t, IStateValue value, int attributeQuark)
             throws AttributeNotFoundException, StateValueTypeException;
 
     /**
@@ -195,7 +193,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      *             If the target attribute already exists, but its state value
      *             type is invalid (not an integer)
      */
-    ITmfStateValue popAttribute(long t, int attributeQuark)
+    IStateValue popAttribute(long t, int attributeQuark)
             throws AttributeNotFoundException, StateValueTypeException;
 
     /**
@@ -237,7 +235,7 @@ public interface ITmfStateSystemBuilder extends ITmfStateSystem {
      * Register an aggregation rule to this state system.
      *
      * Even though aggregation rules are technically read-only operations, only
-     * owners of an {@link ITmfStateSystemBuilder} should be able to setup
+     * owners of an {@link IStateSystemWriter} should be able to setup
      * aggregation rules, which is why this method is in this class.
      *
      * @param rule

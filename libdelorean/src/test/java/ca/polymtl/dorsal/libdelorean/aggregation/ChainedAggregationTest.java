@@ -20,11 +20,11 @@ import java.util.stream.IntStream;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Tests for aggregates states that are using other aggregate states.
@@ -35,7 +35,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
 public class ChainedAggregationTest extends AggregationTestBase {
 
     @Override
-    protected IStateAggregationRule createRuleWithParameters(ITmfStateSystemBuilder ssb,
+    protected IStateAggregationRule createRuleWithParameters(IStateSystemWriter ssb,
             int targetQuark, List<String @NonNull []> patterns) {
         /* Does not apply to this test */
         throw new UnsupportedOperationException();
@@ -77,7 +77,7 @@ public class ChainedAggregationTest extends AggregationTestBase {
      */
     @Test
     public void fullTest() {
-        ITmfStateSystemBuilder ss = getStateSystem();
+        IStateSystemWriter ss = getStateSystem();
         assertNotNull(ss);
 
         /* State values and attributes that will be used */
@@ -86,14 +86,14 @@ public class ChainedAggregationTest extends AggregationTestBase {
         int SOFTIRQ_ACTIVE = (1 << 2);
         int IRQ_ACTIVE = (1 << 3);
 
-        ITmfStateValue PROCESS_ACTIVE_VALUE = TmfStateValue.newValueInt(PROCESS_ACTIVE);
-        ITmfStateValue SOFTIRQ_RAISED_VALUE = TmfStateValue.newValueInt(SOFTIRQ_RAISED);
-        ITmfStateValue SOFTIRQ_ACTIVE_VALUE = TmfStateValue.newValueInt(SOFTIRQ_ACTIVE);
-        ITmfStateValue IRQ_ACTIVE_VALUE = TmfStateValue.newValueInt(IRQ_ACTIVE);
-        ITmfStateValue NULL_VALUE = TmfStateValue.nullValue();
+        IStateValue PROCESS_ACTIVE_VALUE = StateValue.newValueInt(PROCESS_ACTIVE);
+        IStateValue SOFTIRQ_RAISED_VALUE = StateValue.newValueInt(SOFTIRQ_RAISED);
+        IStateValue SOFTIRQ_ACTIVE_VALUE = StateValue.newValueInt(SOFTIRQ_ACTIVE);
+        IStateValue IRQ_ACTIVE_VALUE = StateValue.newValueInt(IRQ_ACTIVE);
+        IStateValue NULL_VALUE = StateValue.nullValue();
 
-        ITmfStateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
-                TmfStateValue.newValueInt(SOFTIRQ_RAISED | SOFTIRQ_ACTIVE);
+        IStateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
+                StateValue.newValueInt(SOFTIRQ_RAISED | SOFTIRQ_ACTIVE);
 
         int quarkCpu = ss.getQuarkAbsoluteAndAdd("cpu");
         int quarkProcess = ss.getQuarkAbsoluteAndAdd("cpu", "process");

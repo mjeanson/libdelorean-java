@@ -26,8 +26,8 @@ import org.junit.Test;
 
 import com.google.common.io.MoreFiles;
 
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Tests for {@link Statedump}.
@@ -57,14 +57,14 @@ public class StatedumpTest {
                     new String[] { "Threads", "2000", "PPID" },
                     new String[] { "Threads", "2000", "Active" });
 
-            List<@NonNull ITmfStateValue> initialValues = Arrays.asList(
-                    TmfStateValue.nullValue(),
-                    TmfStateValue.nullValue(),
-                    TmfStateValue.newValueString("Running"),
-                    TmfStateValue.nullValue(),
-                    TmfStateValue.newValueInt(1),
-                    TmfStateValue.newValueLong(1000L),
-                    TmfStateValue.newValueBoolean(true));
+            List<@NonNull IStateValue> initialValues = Arrays.asList(
+                    StateValue.nullValue(),
+                    StateValue.nullValue(),
+                    StateValue.newValueString("Running"),
+                    StateValue.nullValue(),
+                    StateValue.newValueInt(1),
+                    StateValue.newValueLong(1000L),
+                    StateValue.newValueBoolean(true));
 
             Statedump statedump = new Statedump(initialAttributes, initialValues, version);
             statedump.dumpState(dir, ssid);
@@ -75,7 +75,7 @@ public class StatedumpTest {
             assertEquals(version, results.getVersion());
 
             List<String[]> newAttributes = results.getAttributes();
-            List<ITmfStateValue> newValues = results.getStates();
+            List<IStateValue> newValues = results.getStates();
             assertEquals(nbAttributes, newAttributes.size());
             assertEquals(nbAttributes, newValues.size());
 

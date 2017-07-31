@@ -12,10 +12,9 @@ package ca.polymtl.dorsal.libdelorean
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException
 import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval
-import ca.polymtl.dorsal.libdelorean.interval.TmfStateInterval
-import ca.polymtl.dorsal.libdelorean.statevalue.TmfStateValue
-import com.google.common.collect.ImmutableSet
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -31,7 +30,7 @@ class StateSystemUtils2DTest {
         private const val DUMMY_STRING = "test"
     }
 
-    private lateinit var stateSystem: ITmfStateSystem
+    private lateinit var stateSystem: IStateSystemReader
     private var quark1 = -1
     private var quark2 = -1
     private var quark3 = -1
@@ -47,19 +46,19 @@ class StateSystemUtils2DTest {
             quark3 = ssb.getQuarkAbsoluteAndAdd(DUMMY_STRING + "3")
             quark4 = ssb.getQuarkAbsoluteAndAdd(DUMMY_STRING + "4")
 
-            ssb.modifyAttribute(1200L, TmfStateValue.newValueInt(10), quark1)
-            ssb.modifyAttribute(1500L, TmfStateValue.newValueInt(20), quark1)
+            ssb.modifyAttribute(1200L, StateValue.newValueInt(10), quark1)
+            ssb.modifyAttribute(1500L, StateValue.newValueInt(20), quark1)
 
             (START_TIME until END_TIME step 500).forEachIndexed { index, i ->
-                ssb.modifyAttribute(i, TmfStateValue.newValueInt(index), quark2)
+                ssb.modifyAttribute(i, StateValue.newValueInt(index), quark2)
             }
 
             (START_TIME until END_TIME step 200).forEachIndexed { index, i ->
-                ssb.modifyAttribute(i, TmfStateValue.newValueInt(index), quark3)
+                ssb.modifyAttribute(i, StateValue.newValueInt(index), quark3)
             }
 
             (START_TIME until END_TIME step 100).forEachIndexed { index, i ->
-                ssb.modifyAttribute(i, TmfStateValue.newValueInt(index), quark4)
+                ssb.modifyAttribute(i, StateValue.newValueInt(index), quark4)
             }
 
             ssb.closeHistory(END_TIME)
@@ -219,7 +218,7 @@ class StateSystemUtils2DTest {
         assertEquals(expectedIntervals, actualIntervals)
     }
 
-    private fun intervalFrom(start: Long, end: Long, quark: Int, intStateValue: Int?): ITmfStateInterval =
-            TmfStateInterval(start, end, quark,
-                    if (intStateValue == null) TmfStateValue.nullValue() else TmfStateValue.newValueInt(intStateValue))
+    private fun intervalFrom(start: Long, end: Long, quark: Int, intStateValue: Int?): IStateInterval =
+            StateInterval(start, end, quark,
+                    if (intStateValue == null) StateValue.nullValue() else StateValue.newValueInt(intStateValue))
 }

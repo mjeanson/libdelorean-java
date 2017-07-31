@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 
-import ca.polymtl.dorsal.libdelorean.ITmfStateSystemBuilder;
-import ca.polymtl.dorsal.libdelorean.interval.ITmfStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.ITmfStateValue;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * Common implementation for aggregation rules.
@@ -30,7 +30,7 @@ public abstract class StateAggregationRule implements IStateAggregationRule {
 
     private static final String WILDCARD = "*"; //$NON-NLS-1$
 
-    private final ITmfStateSystemBuilder fStateSystem;
+    private final IStateSystemWriter fStateSystem;
     private final int fTargetQuark;
     private final List<String[]> fAttributePatterns;
 
@@ -46,7 +46,7 @@ public abstract class StateAggregationRule implements IStateAggregationRule {
      *            the resolution of this aggregate state. How exactly they are
      *            used will depend on every implementation of this class.
      */
-    protected StateAggregationRule(ITmfStateSystemBuilder ssb,
+    protected StateAggregationRule(IStateSystemWriter ssb,
             int targetQuark,
             List<String[]> attributePatterns) {
         fStateSystem = ssb;
@@ -86,7 +86,7 @@ public abstract class StateAggregationRule implements IStateAggregationRule {
     }
 
     @Override
-    public final ITmfStateSystemBuilder getStateSystem() {
+    public final IStateSystemWriter getStateSystem() {
         return fStateSystem;
     }
 
@@ -96,9 +96,9 @@ public abstract class StateAggregationRule implements IStateAggregationRule {
     }
 
     @Override
-    public abstract ITmfStateValue getOngoingAggregatedState();
+    public abstract IStateValue getOngoingAggregatedState();
 
     @Override
-    public abstract ITmfStateInterval getAggregatedState(long timestamp);
+    public abstract IStateInterval getAggregatedState(long timestamp);
 
 }
