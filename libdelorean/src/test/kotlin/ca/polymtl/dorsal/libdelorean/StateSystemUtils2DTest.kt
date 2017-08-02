@@ -132,7 +132,10 @@ class StateSystemUtils2DTest {
     @Test
     fun test2DIteratorFullRange() {
         val iter = stateSystem.iterator2D(START_TIME, END_TIME, 1, setOf(quark1, quark2, quark3, quark4))
-        val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
+        val actualIntervals = iter.asSequence()
+                .flatMap { it.values.asSequence() }
+                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .toList()
 
         /* We should have all the intervals in the state system */
         val expectedIntervals = listOf(
@@ -172,7 +175,10 @@ class StateSystemUtils2DTest {
         val rangeStart: Long = 1100
         val rangeEnd:Long = 1900
         val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 1, setOf(quark1, quark2, quark3))
-        val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
+        val actualIntervals = iter.asSequence()
+                .flatMap { it.values.asSequence() }
+                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .toList()
 
         /* Only quark 1, 2 and 3, and only intervals inside the time range */
         val expectedIntervals = listOf(
@@ -197,7 +203,10 @@ class StateSystemUtils2DTest {
         val rangeStart: Long = 1100
         val rangeEnd:Long = 1900
         val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 100, setOf(quark1, quark2, quark3, quark4))
-        val actualIntervals = iter.asSequence().sortedWith(compareBy({ it.attribute }, { it.startTime })).toList()
+        val actualIntervals = iter.asSequence()
+                .flatMap { it.values.asSequence() }
+                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .toList()
 
         /*
          * Only keep intervals that cross TWO consecutive points between the following:
@@ -214,6 +223,22 @@ class StateSystemUtils2DTest {
                 intervalFrom(1400, 1599, quark3, 2),
                 intervalFrom(1600, 1799, quark3, 3),
                 intervalFrom(1800, 1999, quark3, 4)
+        )
+        assertEquals(expectedIntervals, actualIntervals)
+    }
+
+    @Test
+    fun testIterator2DBounds() {
+        val iter = stateSystem.iterator2D(START_TIME, 1550, 500, setOf(quark3, quark4))
+        val actualIntervals = iter.asSequence()
+                .flatMap { it.values.asSequence() }
+                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .toList()
+
+        /* Resolution points are 1000, 1500, 1550 (rangeEnd) */
+        val expectedIntervals = listOf(
+                intervalFrom(1400, 1599, quark3, 2),
+                intervalFrom(1500, 1599, quark4, 5)
         )
         assertEquals(expectedIntervals, actualIntervals)
     }

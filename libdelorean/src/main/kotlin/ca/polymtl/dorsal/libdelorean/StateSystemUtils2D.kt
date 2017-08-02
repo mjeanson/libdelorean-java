@@ -17,12 +17,15 @@ import java.util.*
  * Query the state system in a two-dimensional fashion in one go, one
  * dimension being time and the other being a set of quarks.
  *
- * It will return a lazy Iterable returning the matching state
- * intervals. These interval have no ordering guarantees according to
- * their quarks, but should be sorted time-wise.
+ * @return An iterator returning the matching state intervals. Each step of
+ *         the iteration will contain a set of intervals that are all at the
+ *         same timestamp (usually aligned on the "resolution points").
  */
-fun IStateSystemReader.iterator2D(rangeStart: Long, rangeEnd: Long, resolution: Long, quarks: Set<Int>): Iterator<IStateInterval> {
-    
+fun IStateSystemReader.iterator2D(rangeStart: Long,
+                                  rangeEnd: Long,
+                                  resolution: Long,
+                                  quarks: Set<Int>): Iterator<Map<Int, IStateInterval>> {
+
     /* Check parameters */
     if (rangeStart < this.startTime || rangeEnd > this.currentEndTime) {
         throw IllegalArgumentException()
@@ -31,45 +34,60 @@ fun IStateSystemReader.iterator2D(rangeStart: Long, rangeEnd: Long, resolution: 
         return Collections.emptyIterator()
     }
 
-    val initialTargets = quarks.map { Pair(it, rangeStart) }
-    return StateIterator(this, rangeStart, rangeEnd, resolution, initialTargets)
+    return StateIterator2D(this, rangeStart, rangeEnd, resolution, quarks)
 }
 
-@VisibleForTesting
-internal class StateIterator(private val ss: IStateSystemReader,
-                             private val rangeStart: Long,
-                             private val rangeEnd: Long,
-                             private val resolution: Long,
-                             initialTargets: Collection<Pair<Int, Long>>): AbstractIterator<IStateInterval>() {
+internal class StateIterator2D(private val ss: IStateSystemReader,
+                               private val rangeStart: Long,
+                               private val rangeEnd: Long,
+                               private val resolution: Long,
+                               quarks: Set<Int>) : AbstractIterator<Map<Int, IStateInterval>>() {
 
-    /* Prio queue of Pair<Interval, nextResolutionPoint> */
-    private val prio = PriorityQueue<QueryTarget>(initialTargets.size, compareBy { it.ts } )
+    private val prio: Queue<QueryTarget> = PriorityQueue(quarks.size, compareBy { it.ts })
     init {
-        /* Populate the queue from the initial intervals */
-        prio.addAll(initialTargets.map { QueryTarget(it.first, it.second) })
+        quarks.forEach { prio.offer(QueryTarget(it, rangeStart)) }
     }
 
     override fun computeNext() {
-        var target = prio.poll() ?: return done()
-        var interval = ss.querySingleState(target.ts, target.quark)
-        var nextResolutionPoint = target.ts + resolution
-        while (!(interval.intersects(target.ts) && interval.intersects(nextResolutionPoint))) {
-            if (nextResolutionPoint <= rangeEnd) {
-                prio.offer(QueryTarget(target.quark, nextResolutionPoint))
-            }
-            target = prio.poll() ?: return done()
-            interval = ss.querySingleState(target.ts, target.quark)
-            nextResolutionPoint = target.ts + resolution
+        val firstElement = prio.poll()
+        val queryTs = firstElement.ts
+        if (queryTs > rangeEnd) {
+            return done()
         }
-        /* "interval" is now one we will want the iteration to return */
-        setNext(interval)
-        nextResolutionPoint = determineNextQueryTs(interval, rangeStart, target.ts, resolution)
-        if (nextResolutionPoint <= rangeEnd) {
-            prio.offer(QueryTarget(target.quark, nextResolutionPoint))
+
+        /*
+         * One iteration step will contain all the intervals at the same
+         * timestamp. Pull from the queue all the values for the same
+         * timestamp.
+         */
+        val targets = mutableSetOf<QueryTarget>()
+        targets.add(firstElement)
+        while (prio.peek()?.ts == queryTs) {
+            targets.add(prio.poll())
         }
+
+        /* Do the partial state system query for the retrieved targets */
+        val queryQuarks = targets.map { it.quark }.toSet()
+        val queryResults = ss.queryStates(queryTs, queryQuarks)
+
+        /* Compute the next query targets and re-insert in the queue */
+        queryResults.forEach {
+            val nextTs = determineNextQueryTs(it.value, rangeStart, queryTs, resolution)
+            prio.offer(QueryTarget(it.key, nextTs))
+        }
+
+        /* Only return the intervals that cross the current resolution point
+        * *and* the next one. */
+        val nextResPoint = if (queryTs == rangeEnd) {
+            queryTs + resolution
+        } else {
+            Math.min(queryTs + resolution, rangeEnd)
+        }
+        val ret = queryResults.filter { it.value.intersects(nextResPoint) }
+        return setNext(ret)
     }
 
-    inner class QueryTarget(val quark: Int, val ts: Long) {
+    private inner class QueryTarget(val quark: Int, val ts: Long) {
         init {
             /* "ts" should always be a multiple of the resolution */
             if ((ts - rangeStart) % resolution != 0L) {
@@ -77,7 +95,6 @@ internal class StateIterator(private val ss: IStateSystemReader,
             }
         }
     }
-
 }
 
 @VisibleForTesting
