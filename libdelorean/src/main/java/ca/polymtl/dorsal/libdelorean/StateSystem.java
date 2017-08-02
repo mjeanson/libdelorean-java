@@ -73,7 +73,6 @@ class StateSystem implements IStateSystemWriter {
     /* Latch tracking if the state history is done building or not */
     private final CountDownLatch finishedLatch = new CountDownLatch(1);
 
-    private boolean buildCancelled = false;
     private boolean isDisposed = false;
 
     /**
@@ -121,11 +120,6 @@ class StateSystem implements IStateSystemWriter {
     }
 
     @Override
-    public boolean isCancelled() {
-        return buildCancelled;
-    }
-
-    @Override
     public void waitUntilBuilt() {
         try {
             finishedLatch.await();
@@ -150,7 +144,6 @@ class StateSystem implements IStateSystemWriter {
         isDisposed = true;
         if (transState.isActive()) {
             transState.setInactive();
-            buildCancelled = true;
         }
         backend.dispose();
     }
