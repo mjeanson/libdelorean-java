@@ -133,7 +133,7 @@ class StateSystemUtils2DTest {
     fun test2DIteratorFullRange() {
         val iter = stateSystem.iterator2D(START_TIME, END_TIME, 1, setOf(quark1, quark2, quark3, quark4))
         val actualIntervals = iter.asSequence()
-                .flatMap { it.values.asSequence() }
+                .flatMap { it.queryResults.values.asSequence() }
                 .sortedWith(compareBy({ it.attribute }, { it.startTime }))
                 .toList()
 
@@ -176,7 +176,7 @@ class StateSystemUtils2DTest {
         val rangeEnd:Long = 1900
         val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 1, setOf(quark1, quark2, quark3))
         val actualIntervals = iter.asSequence()
-                .flatMap { it.values.asSequence() }
+                .flatMap { it.queryResults.values.asSequence() }
                 .sortedWith(compareBy({ it.attribute }, { it.startTime }))
                 .toList()
 
@@ -204,7 +204,7 @@ class StateSystemUtils2DTest {
         val rangeEnd:Long = 1900
         val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 100, setOf(quark1, quark2, quark3, quark4))
         val actualIntervals = iter.asSequence()
-                .flatMap { it.values.asSequence() }
+                .flatMap { it.queryResults.values.asSequence() }
                 .sortedWith(compareBy({ it.attribute }, { it.startTime }))
                 .toList()
 
@@ -231,7 +231,7 @@ class StateSystemUtils2DTest {
     fun testIterator2DBounds() {
         val iter = stateSystem.iterator2D(START_TIME, 1550, 500, setOf(quark3, quark4))
         val actualIntervals = iter.asSequence()
-                .flatMap { it.values.asSequence() }
+                .flatMap { it.queryResults.values.asSequence() }
                 .sortedWith(compareBy({ it.attribute }, { it.startTime }))
                 .toList()
 

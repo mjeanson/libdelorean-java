@@ -24,7 +24,7 @@ import java.util.*
 fun IStateSystemReader.iterator2D(rangeStart: Long,
                                   rangeEnd: Long,
                                   resolution: Long,
-                                  quarks: Set<Int>): Iterator<Map<Int, IStateInterval>> {
+                                  quarks: Set<Int>): Iterator<IterationStep2D> {
 
     /* Check parameters */
     if (rangeStart < this.startTime || rangeEnd > this.currentEndTime) {
@@ -37,11 +37,13 @@ fun IStateSystemReader.iterator2D(rangeStart: Long,
     return StateIterator2D(this, rangeStart, rangeEnd, resolution, quarks)
 }
 
+class IterationStep2D(val ts: Long, val queryResults: Map<Int, IStateInterval>)
+
 internal class StateIterator2D(private val ss: IStateSystemReader,
                                private val rangeStart: Long,
                                private val rangeEnd: Long,
                                private val resolution: Long,
-                               quarks: Set<Int>) : AbstractIterator<Map<Int, IStateInterval>>() {
+                               quarks: Set<Int>) : AbstractIterator<IterationStep2D>() {
 
     private val prio: Queue<QueryTarget> = PriorityQueue(quarks.size, compareBy { it.ts })
     init {
@@ -76,15 +78,17 @@ internal class StateIterator2D(private val ss: IStateSystemReader,
             prio.offer(QueryTarget(it.key, nextTs))
         }
 
-        /* Only return the intervals that cross the current resolution point
-        * *and* the next one. */
+        /*
+         * Only return the intervals that cross the current resolution point
+         * *and* the next one.
+         */
         val nextResPoint = if (queryTs == rangeEnd) {
             queryTs + resolution
         } else {
             Math.min(queryTs + resolution, rangeEnd)
         }
-        val ret = queryResults.filter { it.value.intersects(nextResPoint) }
-        return setNext(ret)
+        val results = queryResults.filter { it.value.intersects(nextResPoint) }
+        return setNext(IterationStep2D(queryTs, results))
     }
 
     private inner class QueryTarget(val quark: Int, val ts: Long) {
