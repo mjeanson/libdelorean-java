@@ -10,23 +10,17 @@
 
 package ca.polymtl.dorsal.libdelorean.backend;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.eclipse.jdt.annotation.NonNull;
-
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.*;
 
 /**
  * State history back-end that stores its intervals in RAM only. It cannot be
@@ -218,13 +212,6 @@ class InMemoryBackend implements IStateHistoryBackend {
     @Override
     public void dispose() {
         /* Nothing to do */
-    }
-
-    @Override
-    public void debugPrint(PrintWriter writer) {
-        synchronized (intervals) {
-            writer.println(intervals.toString());
-        }
     }
 
     private static Iterator<IStateInterval> serachforEndTime(TreeSet<IStateInterval> tree, long time) {

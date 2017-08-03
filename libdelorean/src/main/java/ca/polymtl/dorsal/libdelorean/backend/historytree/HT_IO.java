@@ -11,6 +11,8 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
+import org.eclipse.jdt.annotation.NonNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -19,8 +21,6 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.FileChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * This class abstracts inputs/outputs of the HistoryTree nodes.
@@ -53,7 +53,7 @@ class HT_IO {
      */
     private static final int CACHE_SIZE = 256;
     private static final int CACHE_MASK = CACHE_SIZE - 1;
-    private final HTNode fNodeCache[] = new HTNode[CACHE_SIZE];
+    private final HistoryTreeNode fNodeCache[] = new HistoryTreeNode[CACHE_SIZE];
 
     /**
      * Standard constructor
@@ -114,18 +114,18 @@ class HT_IO {
      *             reading. Instead of using a big reader-writer lock, we'll
      *             just catch this exception.
      */
-    public synchronized @NonNull HTNode readNode(int seqNumber) throws ClosedChannelException {
+    public synchronized @NonNull HistoryTreeNode readNode(int seqNumber) throws ClosedChannelException {
         /* Do a cache lookup */
         int offset = seqNumber & CACHE_MASK;
-        HTNode readNode = fNodeCache[offset];
-        if (readNode != null && readNode.getSequenceNumber() == seqNumber) {
+        HistoryTreeNode readNode = fNodeCache[offset];
+        if (readNode != null && readNode.getSeqNumber() == seqNumber) {
             return readNode;
         }
 
         /* Lookup on disk */
         try {
             seekFCToNodePos(fFileChannelIn, seqNumber);
-            readNode = HTNode.readNode(fBlockSize, fMaxChildren, fFileChannelIn);
+            readNode = HistoryTreeNode.readNode(fBlockSize, fMaxChildren, fFileChannelIn);
 
             /* Put the node in the cache. */
             fNodeCache[offset] = readNode;
@@ -140,10 +140,10 @@ class HT_IO {
         }
     }
 
-    public synchronized void writeNode(HTNode node) {
+    public synchronized void writeNode(HistoryTreeNode node) {
         try {
             /* Insert the node into the cache. */
-            int seqNumber = node.getSequenceNumber();
+            int seqNumber = node.getSeqNumber();
             int offset = seqNumber & CACHE_MASK;
             fNodeCache[offset] = node;
 

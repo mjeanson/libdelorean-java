@@ -129,7 +129,7 @@ public class HistoryTreeTest {
         int prevDepth = getDepth(ht);
 
         /* Fill the following leaf node */
-        HTNode node = getLatestLeaf(ht);
+        HistoryTreeNode node = getLatestLeaf(ht);
         int nodeFreeSpace = node.getNodeFreeSpace();
         int nbIntervals = nodeFreeSpace / STRING_INTERVAL_SIZE;
         long ret = fillValues(ht, STRING_VALUE, nbIntervals, leafNodeStart);
@@ -151,8 +151,7 @@ public class HistoryTreeTest {
     public void testSequentialFill() {
         HistoryTree ht = setupSmallTree();
 
-        HTNode node = getLatestLeaf(ht);
-        assertEquals(0, node.getNodeUsagePercent());
+        HistoryTreeNode node = getLatestLeaf(ht);
 
         /* Add null intervals up to ~10% */
         int nodeFreeSpace = node.getNodeFreeSpace();
@@ -189,7 +188,7 @@ public class HistoryTreeTest {
         HistoryTree ht = setupSmallTree();
 
         /* Fill a first node */
-        HTNode node = getLatestLeaf(ht);
+        HistoryTreeNode node = getLatestLeaf(ht);
         int nodeFreeSpace = node.getNodeFreeSpace();
         int nbIntervals = nodeFreeSpace / STRING_INTERVAL_SIZE;
         long start = fillValues(ht, STRING_VALUE, nbIntervals, 1);
@@ -258,10 +257,10 @@ public class HistoryTreeTest {
         HistoryTree ht = setupSmallTree(2);
         start = fillNextLeafNode(ht, start);
 
-        List<HTNode> branch = ht.getLatestBranch();
+        List<HistoryTreeNode> branch = ht.getLatestBranch();
         assertEquals(1, branch.size());
-        assertEquals( 0, branch.get(0).getSequenceNumber());
-        assertEquals(-1, branch.get(0).getParentSequenceNumber());
+        assertEquals( 0, branch.get(0).getSeqNumber());
+        assertEquals(-1, branch.get(0).getParentSeqNumber());
 
         /* Create a new branch */
         start = fillValues(ht, STRING_VALUE, 1, start);
@@ -270,17 +269,17 @@ public class HistoryTreeTest {
         assertEquals(2, getDepth(ht));
 
         /* Make sure the first node's parent was updated */
-        HTNode node = ht.readNode(0);
-        assertEquals(0, node.getSequenceNumber());
-        assertEquals(1, node.getParentSequenceNumber());
+        HistoryTreeNode node = ht.readNode(0);
+        assertEquals(0, node.getSeqNumber());
+        assertEquals(1, node.getParentSeqNumber());
 
         /* Make sure the new branch is alright */
         branch = ht.getLatestBranch();
         assertEquals(2, branch.size());
-        assertEquals( 1, branch.get(0).getSequenceNumber());
-        assertEquals(-1, branch.get(0).getParentSequenceNumber());
-        assertEquals( 2, branch.get(1).getSequenceNumber());
-        assertEquals( 1, branch.get(1).getParentSequenceNumber());
+        assertEquals( 1, branch.get(0).getSeqNumber());
+        assertEquals(-1, branch.get(0).getParentSeqNumber());
+        assertEquals( 2, branch.get(1).getSeqNumber());
+        assertEquals( 1, branch.get(1).getParentSeqNumber());
 
         /* Create a third branch */
         start = fillValues(ht, STRING_VALUE, 1, start);
@@ -290,28 +289,28 @@ public class HistoryTreeTest {
 
         /* Make sure all previous nodes are still correct */
         node = ht.readNode(0);
-        assertEquals(0, node.getSequenceNumber());
-        assertEquals(1, node.getParentSequenceNumber());
+        assertEquals(0, node.getSeqNumber());
+        assertEquals(1, node.getParentSeqNumber());
         node = ht.readNode(1);
-        assertEquals(1, node.getSequenceNumber());
-        assertEquals(3, node.getParentSequenceNumber());
+        assertEquals(1, node.getSeqNumber());
+        assertEquals(3, node.getParentSeqNumber());
         node = ht.readNode(2);
-        assertEquals(2, node.getSequenceNumber());
-        assertEquals(1, node.getParentSequenceNumber());
+        assertEquals(2, node.getSeqNumber());
+        assertEquals(1, node.getParentSeqNumber());
 
         /* Verify the contents of the new latest branch */
         branch = ht.getLatestBranch();
         assertEquals(3, branch.size());
-        assertEquals( 3, branch.get(0).getSequenceNumber());
-        assertEquals(-1, branch.get(0).getParentSequenceNumber());
-        assertEquals( 4, branch.get(1).getSequenceNumber());
-        assertEquals( 3, branch.get(1).getParentSequenceNumber());
-        assertEquals( 5, branch.get(2).getSequenceNumber());
-        assertEquals( 4, branch.get(2).getParentSequenceNumber());
+        assertEquals( 3, branch.get(0).getSeqNumber());
+        assertEquals(-1, branch.get(0).getParentSeqNumber());
+        assertEquals( 4, branch.get(1).getSeqNumber());
+        assertEquals( 3, branch.get(1).getParentSeqNumber());
+        assertEquals( 5, branch.get(2).getSeqNumber());
+        assertEquals( 4, branch.get(2).getParentSeqNumber());
     }
 
-    private static HTNode getLatestLeaf(HistoryTree ht) {
-        List<HTNode> latest = ht.getLatestBranch();
+    private static HistoryTreeNode getLatestLeaf(HistoryTree ht) {
+        List<HistoryTreeNode> latest = ht.getLatestBranch();
         return Iterables.getLast(latest);
     }
 

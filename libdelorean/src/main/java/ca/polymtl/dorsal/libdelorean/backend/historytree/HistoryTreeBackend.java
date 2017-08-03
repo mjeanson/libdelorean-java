@@ -11,25 +11,22 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.channels.ClosedChannelException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.eclipse.jdt.annotation.NonNull;
-
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * History Tree backend for storing a state history. This is the basic version
@@ -229,12 +226,12 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         checkValidTime(t);
 
         /* We start by reading the information in the root node */
-        HTNode currentNode = fSht.getRootNode();
+        HistoryTreeNode currentNode = fSht.getRootNode();
         currentNode.writeInfoFromNode(stateInfo, t);
 
         /* Then we follow the branch down in the relevant children */
         try {
-            while (currentNode.getNodeType() == HTNode.NodeType.CORE) {
+            while (currentNode instanceof CoreNode) {
                 currentNode = fSht.selectNextChild((CoreNode) currentNode, t);
                 currentNode.writeInfoFromNode(stateInfo, t);
             }
@@ -261,7 +258,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         int remaining = quarks.size();
 
         /* We start by reading the information in the root node. */
-        HTNode currentNode = fSht.getRootNode();
+        HistoryTreeNode currentNode = fSht.getRootNode();
         currentNode.takeReadLock();
         try {
             for (IStateInterval interval : currentNode.getIntervals()) {
@@ -280,7 +277,7 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
 
         /* Then we follow the branch down in the relevant children. */
         try {
-            while (remaining > 0 && currentNode.getNodeType() == HTNode.NodeType.CORE) {
+            while (remaining > 0 && currentNode instanceof CoreNode) {
                 currentNode = fSht.selectNextChild((CoreNode) currentNode, t);
                 currentNode.takeReadLock();
                 try {
@@ -324,11 +321,11 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
             throws TimeRangeException, StateSystemDisposedException {
         checkValidTime(t);
 
-        HTNode currentNode = fSht.getRootNode();
+        HistoryTreeNode currentNode = fSht.getRootNode();
         HTInterval interval = currentNode.getRelevantInterval(key, t);
 
         try {
-            while (interval == null && currentNode.getNodeType() == HTNode.NodeType.CORE) {
+            while (interval == null && currentNode instanceof CoreNode) {
                 currentNode = fSht.selectNextChild((CoreNode) currentNode, t);
                 interval = currentNode.getRelevantInterval(key, t);
             }
@@ -347,59 +344,4 @@ public class HistoryTreeBackend implements IStateHistoryBackend {
         return fSht.getFileSize();
     }
 
-    /**
-     * Return the average node usage as a percentage (between 0 and 100)
-     *
-     * @return Average node usage %
-     */
-    public int getAverageNodeUsage() {
-        HTNode node;
-        long total = 0;
-        long ret;
-
-        try {
-            for (int seq = 0; seq < fSht.getNodeCount(); seq++) {
-                node = fSht.readNode(seq);
-                total += node.getNodeUsagePercent();
-            }
-        } catch (ClosedChannelException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        }
-
-        ret = total / fSht.getNodeCount();
-        /* The return value should be a percentage */
-        if (ret >= 0 && ret <= 100) {
-            throw new IllegalStateException("Average node usage is not a percentage: " + ret); //$NON-NLS-1$
-        }
-        return (int) ret;
-    }
-
-    @Override
-    public void debugPrint(PrintWriter writer) {
-        /* By default don't print out all the intervals */
-        debugPrint(writer, false);
-    }
-
-    /**
-     * The basic debugPrint method will print the tree structure, but not their
-     * contents.
-     *
-     * This method here print the contents (the intervals) as well.
-     *
-     * @param writer
-     *            The PrintWriter to which the debug info will be written
-     * @param printIntervals
-     *            Should we also print every contained interval individually?
-     */
-    public void debugPrint(PrintWriter writer, boolean printIntervals) {
-        /* Only used for debugging, shouldn't be externalized */
-        writer.println("------------------------------"); //$NON-NLS-1$
-        writer.println("State History Tree:\n"); //$NON-NLS-1$
-        writer.println(fSht.toString());
-        writer.println("Average node utilization: " //$NON-NLS-1$
-                + getAverageNodeUsage());
-        writer.println(""); //$NON-NLS-1$
-
-        fSht.debugPrintFullTree(writer, printIntervals);
-    }
 }

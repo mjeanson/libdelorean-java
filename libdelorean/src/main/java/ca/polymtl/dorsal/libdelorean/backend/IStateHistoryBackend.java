@@ -211,11 +211,4 @@ public interface IStateHistoryBackend {
         });
     }
 
-    /**
-     * Debug method to print the contents of the history backend.
-     *
-     * @param writer
-     *            The PrintWriter where to write the output
-     */
-    void debugPrint(PrintWriter writer);
 }

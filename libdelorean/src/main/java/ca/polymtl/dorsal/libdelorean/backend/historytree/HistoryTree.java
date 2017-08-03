@@ -11,10 +11,14 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
+import com.google.common.collect.ImmutableList;
+import org.eclipse.jdt.annotation.NonNull;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ClosedChannelException;
@@ -22,15 +26,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.eclipse.jdt.annotation.NonNull;
-
-import com.google.common.collect.ImmutableList;
-
-import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 
 /**
  * Meta-container for the History Tree. This structure contains all the
@@ -78,7 +74,7 @@ class HistoryTree {
     private int fNodeCount;
 
     /** "Cache" to keep the active nodes in memory */
-    private final @NonNull List<@NonNull HTNode> fLatestBranch;
+    private final @NonNull List<@NonNull HistoryTreeNode> fLatestBranch;
 
     // ------------------------------------------------------------------------
     // Constructors/"Destructors"
@@ -247,14 +243,14 @@ class HistoryTree {
      *            start
      * @throws ClosedChannelException
      */
-    private synchronized @NonNull List<@NonNull HTNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
-        List<@NonNull HTNode> list = new ArrayList<>();
+    private synchronized @NonNull List<@NonNull HistoryTreeNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
+        List<@NonNull HistoryTreeNode> list = new ArrayList<>();
 
-        HTNode nextChildNode = fTreeIO.readNode(rootNodeSeqNb);
+        HistoryTreeNode nextChildNode = fTreeIO.readNode(rootNodeSeqNb);
         list.add(nextChildNode);
 
         /* Follow the last branch up to the leaf */
-        while (nextChildNode.getNodeType() == HTNode.NodeType.CORE) {
+        while (nextChildNode instanceof CoreNode) {
             nextChildNode = fTreeIO.readNode(((CoreNode) nextChildNode).getLatestChild());
             list.add(nextChildNode);
         }
@@ -308,7 +304,7 @@ class HistoryTree {
                 buffer.putInt(fNodeCount);
 
                 /* root node seq. nb */
-                buffer.putInt(fLatestBranch.get(0).getSequenceNumber());
+                buffer.putInt(fLatestBranch.get(0).getSeqNumber());
 
                 /* start time of this history */
                 buffer.putLong(fLatestBranch.get(0).getNodeStart());
@@ -364,7 +360,7 @@ class HistoryTree {
      *
      * @return The root node
      */
-    public HTNode getRootNode() {
+    public HistoryTreeNode getRootNode() {
         return fLatestBranch.get(0);
     }
 
@@ -374,7 +370,7 @@ class HistoryTree {
      *
      * @return The immutable latest branch
      */
-    protected List<@NonNull HTNode> getLatestBranch() {
+    protected List<@NonNull HistoryTreeNode> getLatestBranch() {
         return ImmutableList.copyOf(fLatestBranch);
     }
 
@@ -422,11 +418,11 @@ class HistoryTree {
      * @throws ClosedChannelException
      *             If the tree IO is unavailable
      */
-    public HTNode readNode(int seqNumber) throws ClosedChannelException {
+    public HistoryTreeNode readNode(int seqNumber) throws ClosedChannelException {
         /* Try to read the node from memory */
         synchronized (fLatestBranch) {
-            for (HTNode node : fLatestBranch) {
-                if (node.getSequenceNumber() == seqNumber) {
+            for (HistoryTreeNode node : fLatestBranch) {
+                if (node.getSeqNumber() == seqNumber) {
                     return node;
                 }
             }
@@ -442,7 +438,7 @@ class HistoryTree {
      * @param node
      *            The node to write to disk
      */
-    public void writeNode(HTNode node) {
+    public void writeNode(HistoryTreeNode node) {
         fTreeIO.writeNode(node);
     }
 
@@ -489,7 +485,7 @@ class HistoryTree {
      *            insertion
      */
     private void tryInsertAtNode(HTInterval interval, int indexOfNode) {
-        HTNode targetNode = fLatestBranch.get(indexOfNode);
+        HistoryTreeNode targetNode = fLatestBranch.get(indexOfNode);
 
         /* Verify if there is enough room in this node to store this interval */
         if (interval.getSizeOnDisk() > targetNode.getNodeFreeSpace()) {
@@ -559,14 +555,14 @@ class HistoryTree {
                 fTreeIO.writeNode(fLatestBranch.get(i));
 
                 CoreNode prevNode = (CoreNode) fLatestBranch.get(i - 1);
-                HTNode newNode;
+                HistoryTreeNode newNode;
 
-                switch (fLatestBranch.get(i).getNodeType()) {
-                case CORE:
-                    newNode = initNewCoreNode(prevNode.getSequenceNumber(), splitTime + 1);
+                switch (fLatestBranch.get(i).getNodeByte()) {
+                case CoreNode.CORE_TYPE_BYTE:
+                    newNode = initNewCoreNode(prevNode.getSeqNumber(), splitTime + 1);
                     break;
-                case LEAF:
-                    newNode = initNewLeafNode(prevNode.getSequenceNumber(), splitTime + 1);
+                case LeafNode.LEAF_TYPE_BYTE:
+                    newNode = initNewLeafNode(prevNode.getSeqNumber(), splitTime + 1);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -585,11 +581,11 @@ class HistoryTree {
     private void addNewRootNode() {
         final long splitTime = fTreeEnd;
 
-        HTNode oldRootNode = fLatestBranch.get(0);
+        HistoryTreeNode oldRootNode = fLatestBranch.get(0);
         CoreNode newRootNode = initNewCoreNode(-1, fTreeStart);
 
         /* Tell the old root node that it isn't root anymore */
-        oldRootNode.setParentSequenceNumber(newRootNode.getSequenceNumber());
+        oldRootNode.setParentSeqNumber(newRootNode.getSeqNumber());
 
         /* Close off the whole current latestBranch */
 
@@ -609,7 +605,7 @@ class HistoryTree {
         // Create new coreNode
         for (int i = 1; i < depth; i++) {
             CoreNode prevNode = (CoreNode) fLatestBranch.get(i - 1);
-            CoreNode newNode = initNewCoreNode(prevNode.getSequenceNumber(),
+            CoreNode newNode = initNewCoreNode(prevNode.getSeqNumber(),
                     splitTime + 1);
             prevNode.linkNewChild(newNode);
             fLatestBranch.add(newNode);
@@ -617,7 +613,7 @@ class HistoryTree {
 
         // Create the new leafNode
         CoreNode prevNode = (CoreNode) fLatestBranch.get(depth - 1);
-        LeafNode newNode = initNewLeafNode(prevNode.getSequenceNumber(), splitTime + 1);
+        LeafNode newNode = initNewLeafNode(prevNode.getSeqNumber(), splitTime + 1);
         prevNode.linkNewChild(newNode);
         fLatestBranch.add(newNode);
     }
@@ -667,9 +663,9 @@ class HistoryTree {
      * @throws ClosedChannelException
      *             If the file channel was closed while we were reading the tree
      */
-    public HTNode selectNextChild(CoreNode currentNode, long t) throws ClosedChannelException {
+    public HistoryTreeNode selectNextChild(CoreNode currentNode, long t) throws ClosedChannelException {
         assert (currentNode.getNbChildren() > 0);
-        int potentialNextSeqNb = currentNode.getSequenceNumber();
+        int potentialNextSeqNb = currentNode.getSeqNumber();
 
         for (int i = 0; i < currentNode.getNbChildren(); i++) {
             if (t >= currentNode.getChildStart(i)) {
@@ -683,7 +679,7 @@ class HistoryTree {
          * Once we exit this loop, we should have found a children to follow. If
          * we didn't, there's a problem.
          */
-        if (potentialNextSeqNb == currentNode.getSequenceNumber()) {
+        if (potentialNextSeqNb == currentNode.getSeqNumber()) {
             throw new IllegalStateException("No next child node found"); //$NON-NLS-1$
         }
 
@@ -705,180 +701,6 @@ class HistoryTree {
      */
     public long getFileSize() {
         return fStateFile.length();
-    }
-
-    // ------------------------------------------------------------------------
-    // Test/debugging methods
-    // ------------------------------------------------------------------------
-
-    /**
-     * Debugging method to make sure all intervals contained in the given node
-     * have valid start and end times.
-     *
-     * @param zenode
-     *            The node to check
-     * @return True if everything is fine, false if there is at least one
-     *         invalid timestamp (end time < start time, time outside of the
-     *         range of the node, etc.)
-     */
-    @SuppressWarnings("nls")
-    public boolean checkNodeIntegrity(HTNode zenode) {
-        /* Only used for debugging, shouldn't be externalized */
-        HTNode otherNode;
-        CoreNode node;
-        StringBuffer buf = new StringBuffer();
-        boolean ret = true;
-
-        // FIXME /* Only testing Core Nodes for now */
-        if (!(zenode instanceof CoreNode)) {
-            return true;
-        }
-
-        node = (CoreNode) zenode;
-
-        try {
-            /*
-             * Test that this node's start and end times match the start of the
-             * first child and the end of the last child, respectively
-             */
-            if (node.getNbChildren() > 0) {
-                otherNode = fTreeIO.readNode(node.getChild(0));
-                if (node.getNodeStart() != otherNode.getNodeStart()) {
-                    buf.append("Start time of node (" + node.getNodeStart() + ") "
-                            + "does not match start time of first child " + "("
-                            + otherNode.getNodeStart() + "), " + "node #"
-                            + otherNode.getSequenceNumber() + ")\n");
-                    ret = false;
-                }
-                if (node.isOnDisk()) {
-                    otherNode = fTreeIO.readNode(node.getLatestChild());
-                    if (node.getNodeEnd() != otherNode.getNodeEnd()) {
-                        buf.append("End time of node (" + node.getNodeEnd()
-                                + ") does not match end time of last child ("
-                                + otherNode.getNodeEnd() + ", node #"
-                                + otherNode.getSequenceNumber() + ")\n");
-                        ret = false;
-                    }
-                }
-            }
-
-            /*
-             * Test that the childStartTimes[] array matches the real nodes'
-             * start times
-             */
-            for (int i = 0; i < node.getNbChildren(); i++) {
-                otherNode = fTreeIO.readNode(node.getChild(i));
-                if (otherNode.getNodeStart() != node.getChildStart(i)) {
-                    buf.append("  Expected start time of child node #"
-                            + node.getChild(i) + ": " + node.getChildStart(i)
-                            + "\n" + "  Actual start time of node #"
-                            + otherNode.getSequenceNumber() + ": "
-                            + otherNode.getNodeStart() + "\n");
-                    ret = false;
-                }
-            }
-
-        } catch (ClosedChannelException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        }
-
-        if (!ret) {
-            LOGGER.severe("SHT: Integrity check failed for node #"
-                    + node.getSequenceNumber() + ":" + buf.toString());
-        }
-        return ret;
-    }
-
-    /**
-     * Check the integrity of all the nodes in the tree. Calls
-     * {@link #checkNodeIntegrity} for every node in the tree.
-     */
-    public void checkIntegrity() {
-        try {
-            for (int i = 0; i < fNodeCount; i++) {
-                checkNodeIntegrity(fTreeIO.readNode(i));
-            }
-        } catch (ClosedChannelException e) {
-        }
-    }
-
-    /* Only used for debugging, shouldn't be externalized */
-    @SuppressWarnings("nls")
-    @Override
-    public String toString() {
-        return "Information on the current tree:\n\n" + "Blocksize: "
-                + fBlockSize + "\n" + "Max nb. of children per node: "
-                + fMaxChildren + "\n" + "Number of nodes: " + fNodeCount
-                + "\n" + "Depth of the tree: " + fLatestBranch.size() + "\n"
-                + "Size of the treefile: " + getFileSize() + "\n"
-                + "Root node has sequence number: "
-                + fLatestBranch.get(0).getSequenceNumber() + "\n"
-                + "'Latest leaf' has sequence number: "
-                + fLatestBranch.get(fLatestBranch.size() - 1).getSequenceNumber();
-    }
-
-    /**
-     * Start at currentNode and print the contents of all its children, in
-     * pre-order. Give the root node in parameter to visit the whole tree, and
-     * have a nice overview.
-     */
-    /* Only used for debugging, shouldn't be externalized */
-    @SuppressWarnings("nls")
-    private void preOrderPrint(PrintWriter writer, boolean printIntervals,
-            HTNode currentNode, int curDepth) {
-
-        writer.println(currentNode.toString());
-        if (printIntervals) {
-            currentNode.debugPrintIntervals(writer);
-        }
-
-        switch (currentNode.getNodeType()) {
-        case LEAF:
-            /* Stop if it's the leaf node */
-            return;
-
-        case CORE:
-            try {
-                final CoreNode node = (CoreNode) currentNode;
-                // NYI Print extension nodes here
-
-                /* Print the child nodes */
-                for (int i = 0; i < node.getNbChildren(); i++) {
-                    HTNode nextNode = fTreeIO.readNode(node.getChild(i));
-                    for (int j = 0; j < curDepth; j++) {
-                        writer.print("  ");
-                    }
-                    writer.print("+-");
-                    preOrderPrint(writer, printIntervals, nextNode, curDepth + 1);
-                }
-            } catch (ClosedChannelException e) {
-                LOGGER.severe(e.getMessage());
-            }
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    /**
-     * Print out the full tree for debugging purposes
-     *
-     * @param writer
-     *            PrintWriter in which to write the output
-     * @param printIntervals
-     *            Flag to enable full output of the interval information
-     */
-    public void debugPrintFullTree(PrintWriter writer, boolean printIntervals) {
-        /* Only used for debugging, shouldn't be externalized */
-
-        preOrderPrint(writer, false, fLatestBranch.get(0), 0);
-
-        if (printIntervals) {
-            writer.println("\nDetails of intervals:"); //$NON-NLS-1$
-            preOrderPrint(writer, true, fLatestBranch.get(0), 0);
-        }
-        writer.println('\n');
     }
 
 }

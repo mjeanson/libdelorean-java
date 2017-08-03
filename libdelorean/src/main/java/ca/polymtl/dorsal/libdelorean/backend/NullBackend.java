@@ -10,15 +10,13 @@
 
 package ca.polymtl.dorsal.libdelorean.backend;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
-import java.util.List;
-
-import org.eclipse.jdt.annotation.NonNull;
-
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import org.eclipse.jdt.annotation.NonNull;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.List;
 
 /**
  * An implement of a state history back-end to simply discards *all* the
@@ -116,8 +114,4 @@ class NullBackend implements IStateHistoryBackend {
         return null;
     }
 
-    @Override
-    public void debugPrint(PrintWriter writer) {
-        writer.println("Null history backend"); //$NON-NLS-1$
-    }
 }

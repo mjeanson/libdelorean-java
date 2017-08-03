@@ -11,26 +11,6 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
-
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-
 import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
@@ -41,6 +21,17 @@ import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue.Type;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * This is the core class of the Generic State System. It contains all the
@@ -717,18 +708,6 @@ class StateSystem implements IStateSystemWriter {
         LOGGER.severe("No data found in history for attribute " + //$NON-NLS-1$
                 attribute + " at time " + timestamp + //$NON-NLS-1$
                 ", returning dummy interval"); //$NON-NLS-1$
-    }
-
-    /**
-     * Print out the contents of the inner structures.
-     *
-     * @param writer
-     *            The PrintWriter in which to print the output
-     */
-    public void debugPrint(@NonNull PrintWriter writer) {
-        getAttributeTree().debugPrint(writer);
-        transState.debugPrint(writer);
-        backend.debugPrint(writer);
     }
 
 }

@@ -11,15 +11,14 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import org.eclipse.jdt.annotation.NonNull;
-
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * The interval component, which will be contained in a node of the History
@@ -27,7 +26,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
  *
  * @author Alexandre Montplaisir
  */
-final class HTInterval implements IStateInterval, Comparable<HTInterval> {
+public final class HTInterval implements IStateInterval, Comparable<HTInterval> {
 
     private static final String errMsg = "Invalid interval data. Maybe your file is corrupt?"; //$NON-NLS-1$
 
@@ -121,7 +120,7 @@ final class HTInterval implements IStateInterval, Comparable<HTInterval> {
      *
      * When we build an interval by reading it from disk with {@link #readFrom},
      * we already know its serialized size, so there is no need to call
-     * {@link #computeStringsEntrySize()} and potentially have to serialize a
+     * computeStringsEntrySize() and potentially have to serialize a
      * string state value again.
      */
     private HTInterval(long intervalStart, long intervalEnd, int attribute,
