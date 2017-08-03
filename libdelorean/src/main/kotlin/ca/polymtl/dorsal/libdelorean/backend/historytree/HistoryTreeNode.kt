@@ -10,13 +10,10 @@
 package ca.polymtl.dorsal.libdelorean.backend.historytree
 
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
-
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
-import java.util.*
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
@@ -52,7 +49,8 @@ sealed class HistoryTreeNode(val blockSize: Int,
         private set
 
     /* Vector containing all the intervals contained in this node */
-    val intervals = mutableListOf<HTInterval>()
+    private val intervals = mutableListOf<HTInterval>()
+    fun intervalIterator() = intervals.iterator()
 
     /* Lock used to protect the accesses to intervals, nodeEnd and such */
     private val rwl = ReentrantReadWriteLock(false)
@@ -238,13 +236,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
         /* This is from a state system query, we are "reading" this node */
         rwl.readLock().lock()
         try {
-            (getStartIndexFor(t) until intervals.size)
-                    .map { intervals[it] }
-                    /*
-                     * Second condition is to ignore new attributes that might have
-                     * been created after stateInfo was instantiated (they would be
-                     * null anyway).
-                     */
+            intervalIterator().asSequence()
                     .filter { it.startTime <= t && it.attribute < stateInfo.size }
                     .forEach { stateInfo[it.attribute] = it }
         } finally {
@@ -266,51 +258,12 @@ sealed class HistoryTreeNode(val blockSize: Int,
     fun getRelevantInterval(key: Int, t: Long): HTInterval? {
         rwl.readLock().lock()
         try {
-            return (getStartIndexFor(t) until intervals.size)
-                    .map { intervals[it] }
+            return intervalIterator().asSequence()
                     .firstOrNull { it.attribute == key && it.intersects(t) }
 
         } finally {
             rwl.readLock().unlock()
         }
-    }
-
-
-    private fun getStartIndexFor(t: Long): Int {
-        /* Should only be called by methods with the readLock taken */
-        if (intervals.isEmpty()) {
-            return 0
-        }
-        /*
-         * Since the intervals are sorted by end time, we can skip all the ones
-         * at the beginning whose end times are smaller than 't'. Java does
-         * provides a .binarySearch method, but its API is quite weird...
-         */
-        val dummy = HTInterval(0, t, 0, StateValue.nullValue())
-        var index = Collections.binarySearch(intervals, dummy)
-
-        if (index < 0) {
-            /*
-             * .binarySearch returns a negative number if the exact value was
-             * not found. Here we just want to know where to start searching, we
-             * don't care if the value is exact or not.
-             */
-            index = -index - 1
-
-        } else {
-            /*
-             * Another API quirkiness, the returned index is the one of the *last*
-             * element of a series of equal endtimes, which happens sometimes. We
-             * want the *first* element of such a series, to read through them
-             * again.
-             */
-            while (index > 0
-                    && intervals[index - 1].compareTo(intervals[index]) == 0) {
-                index--
-            }
-        }
-
-        return index
     }
 
     val totalHeaderSize get() = COMMON_HEADER_SIZE + specificHeaderSize
