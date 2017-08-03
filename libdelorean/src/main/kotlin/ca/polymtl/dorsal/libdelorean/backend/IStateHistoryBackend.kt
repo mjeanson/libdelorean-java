@@ -9,80 +9,37 @@
  * http://www.eclipse.org/legal/epl-v10.html
  */
 
-package ca.polymtl.dorsal.libdelorean.backend;
+package ca.polymtl.dorsal.libdelorean.backend
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue
+import java.io.File
+import java.io.FileInputStream
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+interface IStateHistoryBackend {
 
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-
-/**
- * The main difference between StateSystem and StateHistorySystem is that SHS
- * allows 'seeking' back in time to reload a Current State at a previous time.
- * "How to go back in time" is defined by the implementation of the
- * HistoryBackend.
- *
- * A StateHistorySystem contains one and only one HistoryBackend. If you want to
- * use a paradigm with more than one provider (eg. more or less precision
- * depending on what's asked by the user), implement one wrapper HistoryBackend
- * which can then contain your 2-3 other backends underneath.
- *
- * @author Alexandre Montplaisir
- */
-@NonNullByDefault
-public interface IStateHistoryBackend {
+    /** The ID of the state system that populates this backend. */
+    val SSID: String
 
     /**
-     * Get the ID of the state system that populates this backend.
-     *
-     * @return The state system's ID.
-     */
-    String getSSID();
-
-    /**
-     * Get the start time of this state history. This is usually the same as the
+     * The start time of this state history. This is usually the same as the
      * start time of the originating trace.
-     *
-     * @return The start time
      */
-    long getStartTime();
+    val startTime: Long
 
     /**
-     * Get the current end time of the state history. It will change as the
+     * The current end time of the state history. It will change as the
      * history is being built.
-     *
-     * @return The end time
      */
-    long getEndTime();
+    val endTime: Long
 
     /**
-     * Main method to insert state intervals into the history.
-     *
-     * @param stateStartTime
-     *            The start time of the interval
-     * @param stateEndTime
-     *            The end time of the interval
-     * @param quark
-     *            The quark of the attribute this interval refers to
-     * @param value
-     *            The StateValue represented by this interval
-     * @throws TimeRangeException
-     *             If the start or end time are invalid
+     * Main method to insert state intervals into the history
      */
-    // FIXME change to IStateInterval?
-    void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, IStateValue value) throws TimeRangeException;
+    fun insertPastState(stateStartTime: Long,
+                        stateEndTime: Long,
+                        quark: Int,
+                        value: IStateValue)
 
     /**
      * Indicate to the provider that we are done building the history (so it can
@@ -91,10 +48,8 @@ public interface IStateHistoryBackend {
      * @param endTime
      *            The end time to assign to this state history. It could be
      *            farther in time than the last state inserted, for example.
-     * @throws TimeRangeException
-     *             If the requested time makes no sense.
      */
-    void finishedBuilding(long endTime) throws TimeRangeException;
+    fun finishBuilding(endTime: Long)
 
     /**
      * It is the responsibility of the backend to define where to save the
@@ -107,24 +62,20 @@ public interface IStateHistoryBackend {
      * @return A FileInputStream object pointing to the correct file/location in
      *         the file where to read the attribute tree information.
      */
-    @Nullable FileInputStream supplyAttributeTreeReader();
+     fun supplyAttributeTreeReader() : FileInputStream?
 
     // FIXME change to FOS too?
     /**
      * Supply the File object to which we will write the attribute tree. The
      * position in this file is supplied by -TreeWriterFilePosition.
-     *
-     * @return The target File
      */
-    @Nullable File supplyAttributeTreeWriterFile();
+    fun supplyAttributeTreeWriterFile() : File?
 
     /**
      * Supply the position in the file where we should write the attribute tree
      * when asked to.
-     *
-     * @return The file position (we will seek() to it)
      */
-    long supplyAttributeTreeWriterFilePosition();
+    fun supplyAttributeTreeWriterFilePosition() : Long
 
     /**
      * Delete any generated files or anything that might have been created by
@@ -135,13 +86,13 @@ public interface IStateHistoryBackend {
      * index file to persist on disk. This could be limited to actions
      * originating from the user.
      */
-    void removeFiles();
+    fun removeFiles()
 
     /**
      * Notify the state history back-end that the trace is being closed, so it
      * should release its file descriptors, close its connections, etc.
      */
-    void dispose();
+    fun dispose()
 
     // ------------------------------------------------------------------------
     // Query methods
@@ -157,13 +108,8 @@ public interface IStateHistoryBackend {
      *            List of StateValues (index == quark) to fill up
      * @param t
      *            Target timestamp of the query
-     * @throws TimeRangeException
-     *             If the timestamp is outside of the history/trace
-     * @throws StateSystemDisposedException
-     *             If the state system is disposed while a request is ongoing.
      */
-    void doQuery(List<@Nullable IStateInterval> currentStateInfo, long t)
-            throws TimeRangeException, StateSystemDisposedException;
+    fun doQuery(stateInfo: MutableList<IStateInterval?>, t: Long)
 
     /**
      * Some providers might want to specify a different way to obtain just a
@@ -176,16 +122,8 @@ public interface IStateHistoryBackend {
      * @param attributeQuark
      *            The single attribute for which you want the state interval
      * @return The state interval matching this timestamp/attribute pair
-     * @throws TimeRangeException
-     *             If the timestamp was invalid
-     * @throws AttributeNotFoundException
-     *             If the quark was invalid
-     * @throws StateSystemDisposedException
-     *             If the state system is disposed while a request is ongoing.
      */
-    @Nullable IStateInterval doSingularQuery(long t, int attributeQuark)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateSystemDisposedException;
+     fun doSingularQuery(t: Long, attributeQuark: Int): IStateInterval?
 
     /**
      * Do a query for the specified quarks only. The results will be inserted
@@ -202,13 +140,12 @@ public interface IStateHistoryBackend {
      * @param results
      *            The results will be written in this map, with quarks as keys
      */
-    default void doPartialQuery(long t, Set<Integer> quarks, Map<Integer, IStateInterval> results) {
-        quarks.forEach(quark -> {
-            IStateInterval interval = doSingularQuery(t, quark);
-            if (interval != null) {
-                results.put(quark, interval);
-            }
-        });
-    }
+    fun doPartialQuery(t: Long,
+                       quarks: Set<Int>,
+                       results: MutableMap<Int, IStateInterval>) {
+        quarks.map { doSingularQuery(t, it) }
+                .filterNotNull()
+                .forEach { results.put(it.attribute, it) }
 
+    }
 }

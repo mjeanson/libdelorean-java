@@ -144,7 +144,7 @@ public abstract class StateHistoryBackendTestBase {
                     interval.getAttribute(),
                     interval.getStateValue());
         });
-        backend.finishedBuilding(Math.max(END_TIME, backend.getEndTime()));
+        backend.finishBuilding(Math.max(END_TIME, backend.getEndTime()));
 
         fBackend = backend;
 

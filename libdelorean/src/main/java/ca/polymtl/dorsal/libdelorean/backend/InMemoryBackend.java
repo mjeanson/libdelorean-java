@@ -17,6 +17,7 @@ import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -182,7 +183,7 @@ class InMemoryBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public void finishedBuilding(long endTime) throws TimeRangeException {
+    public void finishBuilding(long endTime) throws TimeRangeException {
         /* Nothing to do */
     }
 
@@ -226,4 +227,14 @@ class InMemoryBackend implements IStateHistoryBackend {
         return retVal;
     }
 
+    // FIXME Needs to be implemented because of https://youtrack.jetbrains.com/issue/KT-4779
+    @Override
+    public void doPartialQuery(long t, @NotNull Set<Integer> quarks, @NotNull Map<Integer, IStateInterval> results) {
+        quarks.forEach(quark -> {
+            IStateInterval interval = doSingularQuery(t, quark);
+            if (interval != null) {
+                results.put(quark, interval);
+            }
+        });
+    }
 }

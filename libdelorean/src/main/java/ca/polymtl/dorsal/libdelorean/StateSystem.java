@@ -211,7 +211,7 @@ class StateSystem implements IStateSystemWriter {
             realEndTime = backend.getEndTime();
         }
         transState.closeTransientState(realEndTime);
-        backend.finishedBuilding(realEndTime);
+        backend.finishBuilding(realEndTime);
 
         attributeTreeFile = backend.supplyAttributeTreeWriterFile();
         attributeTreeFilePos = backend.supplyAttributeTreeWriterFilePosition();

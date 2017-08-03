@@ -11,6 +11,7 @@ package ca.polymtl.dorsal.libdelorean.backend.historytree
 
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
+
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -27,7 +28,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  *  1 - byte (done or not)
  * </pre>
  */
-private const val COMMON_HEADER_SIZE = 34;
+private const val COMMON_HEADER_SIZE = 34
 
 /**
  * The base class for all the types of nodes that go in the History Tree.
@@ -76,20 +77,20 @@ sealed class HistoryTreeNode(val blockSize: Int,
          */
         @JvmStatic
         fun readNode(blockSize: Int, maxChildren: Int, fc: FileChannel): HistoryTreeNode {
-            val buffer = ByteBuffer.allocate(blockSize);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            buffer.clear();
-            val res = fc.read(buffer);
+            val buffer = ByteBuffer.allocate(blockSize)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
+            buffer.clear()
+            val res = fc.read(buffer)
             if (res != blockSize) throw IOException()
-            buffer.flip();
+            buffer.flip()
 
             /* Read the common header part */
-            val typeByte = buffer.get();
-            val start = buffer.getLong();
-            val end = buffer.getLong();
-            val seqNb = buffer.getInt();
-            val parentSeqNb = buffer.getInt();
-            val intervalCount = buffer.getInt();
+            val typeByte = buffer.get()
+            val start = buffer.getLong()
+            val end = buffer.getLong()
+            val seqNb = buffer.getInt()
+            val parentSeqNb = buffer.getInt()
+            val intervalCount = buffer.getInt()
 
             /* Now the rest of the header depends on the node type */
             val newNode = when (typeByte) {
@@ -97,23 +98,23 @@ sealed class HistoryTreeNode(val blockSize: Int,
                 LeafNode.LEAF_TYPE_BYTE -> LeafNode(blockSize, seqNb, parentSeqNb, start)
                 else -> throw IOException()
             }
-            newNode.readSpecificHeader(buffer);
+            newNode.readSpecificHeader(buffer)
 
             /*
              * At this point, we should be done reading the header and 'buffer'
              * should only have the intervals left
              */
             (0 until intervalCount).forEach {
-                val interval = HTInterval.readFrom(buffer);
-                newNode.intervals.add(interval);
-                newNode.sizeOfIntervalSection += interval.sizeOnDisk;
+                val interval = HTInterval.readFrom(buffer)
+                newNode.intervals.add(interval)
+                newNode.sizeOfIntervalSection += interval.sizeOnDisk
             }
 
             /* Assign the node's other information we have read previously */
-            newNode.nodeEnd = end;
-            newNode.isOnDisk = true;
+            newNode.nodeEnd = end
+            newNode.isOnDisk = true
 
-            return newNode;
+            return newNode
         }
     }
 
@@ -125,22 +126,22 @@ sealed class HistoryTreeNode(val blockSize: Int,
          * Yes, we are taking the *read* lock here, because we are reading the
          * information in the node to write it to disk.
          */
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
-            val buffer = ByteBuffer.allocate(blockSize);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            buffer.clear();
+            val buffer = ByteBuffer.allocate(blockSize)
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
+            buffer.clear()
 
             /* Write the common header part */
-            buffer.put(nodeByte);
-            buffer.putLong(nodeStart);
-            buffer.putLong(nodeEnd ?: 0L);
-            buffer.putInt(seqNumber);
-            buffer.putInt(parentSeqNumber);
-            buffer.putInt(intervals.size);
+            buffer.put(nodeByte)
+            buffer.putLong(nodeStart)
+            buffer.putLong(nodeEnd ?: 0L)
+            buffer.putInt(seqNumber)
+            buffer.putInt(parentSeqNumber)
+            buffer.putInt(intervals.size)
 
             /* Now call the inner method to write the specific header part */
-            writeSpecificHeader(buffer);
+            writeSpecificHeader(buffer)
 
             /* Back to us, we write the intervals */
             intervals.forEach { it.writeInterval(buffer) }
@@ -151,24 +152,24 @@ sealed class HistoryTreeNode(val blockSize: Int,
             }
 
             /* Finally, write everything in the Buffer to disk */
-            buffer.flip();
-            val res = fc.write(buffer);
+            buffer.flip()
+            val res = fc.write(buffer)
             if (res != blockSize) {
-                throw IllegalStateException("Wrong size of block written: Actual: " + res + ", Expected: " + blockSize); //$NON-NLS-1$ //$NON-NLS-2$
+                throw IllegalStateException("Wrong size of block written: Actual: $res, Expected: $blockSize")
             }
 
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
-        isOnDisk = true;
+        isOnDisk = true
     }
 
     fun takeReadLock() {
-        rwl.readLock().lock();
+        rwl.readLock().lock()
     }
 
     fun releaseReadLock() {
-        rwl.readLock().unlock();
+        rwl.readLock().unlock()
     }
 
     /**
@@ -199,7 +200,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
      * our right. (Puts isDone = true and sets the endtime)
      */
     fun closeThisNode(endTime: Long) {
-        rwl.writeLock().lock();
+        rwl.writeLock().lock()
         try {
             /**
              * FIXME: was assert (endtime >= fNodeStart); but that exception
@@ -216,13 +217,13 @@ sealed class HistoryTreeNode(val blockSize: Int,
                  * since they are sorted
                  */
                 if (endTime < intervals.last().endTime) {
-                    throw IllegalArgumentException("Closing end time should be greater than or equal to the end time of the intervals of this node"); //$NON-NLS-1$
+                    throw IllegalArgumentException("Closing end time should be greater than or equal to the end time of the intervals of this node")
                 }
             }
-            nodeEnd = endTime;
+            nodeEnd = endTime
 
         } finally {
-            rwl.writeLock().unlock();
+            rwl.writeLock().unlock()
         }
     }
 
@@ -237,9 +238,9 @@ sealed class HistoryTreeNode(val blockSize: Int,
      *            The timestamp for which the query is for. Only return
      *            intervals that intersect t.
      */
-    fun writeInfoFromNode(stateInfo: MutableList<IStateInterval>, t: Long) {
+    fun writeInfoFromNode(stateInfo: MutableList<IStateInterval?>, t: Long) {
         /* This is from a state system query, we are "reading" this node */
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
             (getStartIndexFor(t) until intervals.size)
                     .map { intervals[it] }
@@ -251,7 +252,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
                     .filter { it.startTime <= t && it.attribute < stateInfo.size }
                     .forEach { stateInfo[it.attribute] = it }
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
     }
 
@@ -267,14 +268,14 @@ sealed class HistoryTreeNode(val blockSize: Int,
      *         wasn't found
      */
     fun getRelevantInterval(key: Int, t: Long): HTInterval? {
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
             return (getStartIndexFor(t) until intervals.size)
                     .map { intervals[it] }
-                    .firstOrNull { it.attribute == key && it.intersects(t) };
+                    .firstOrNull { it.attribute == key && it.intersects(t) }
 
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
     }
 
@@ -289,8 +290,8 @@ sealed class HistoryTreeNode(val blockSize: Int,
          * at the beginning whose end times are smaller than 't'. Java does
          * provides a .binarySearch method, but its API is quite weird...
          */
-        val dummy = HTInterval(0, t, 0, StateValue.nullValue());
-        var index = Collections.binarySearch(intervals, dummy);
+        val dummy = HTInterval(0, t, 0, StateValue.nullValue())
+        var index = Collections.binarySearch(intervals, dummy)
 
         if (index < 0) {
             /*
@@ -298,7 +299,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
              * not found. Here we just want to know where to start searching, we
              * don't care if the value is exact or not.
              */
-            index = -index - 1;
+            index = -index - 1
 
         } else {
             /*
@@ -309,11 +310,11 @@ sealed class HistoryTreeNode(val blockSize: Int,
              */
             while (index > 0
                     && intervals[index - 1].compareTo(intervals[index]) == 0) {
-                index--;
+                index--
             }
         }
 
-        return index;
+        return index
     }
 
     val totalHeaderSize get() = COMMON_HEADER_SIZE + specificHeaderSize
@@ -336,7 +337,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
 
 
 
-private class CoreNode(blockSize: Int,
+internal class CoreNode(blockSize: Int,
                         val maxChildren: Int,
                         seqNumber: Int,
                         parentSeqNumber: Int,
@@ -357,60 +358,60 @@ private class CoreNode(blockSize: Int,
     private val childStart = LongArray(maxChildren)
 
     /** Seq number of this node's extension. -1 if none. Unused for now */
-    private val extension = -1;
+    private val extension = -1
 
     /**
      * Lock used to gate the accesses to the children arrays. Meant to be a
      * different lock from the one in {@link HTNode}.
      */
-    private val rwl = ReentrantReadWriteLock(false);
+    private val rwl = ReentrantReadWriteLock(false)
 
     fun getChild(index: Int): Int {
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
-            return children[index];
+            return children[index]
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
     }
 
     fun getLatestChild(): Int {
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
             return children.last()
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
     }
 
     fun getChildStart(index: Int): Long {
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
-            return childStart[index];
+            return childStart[index]
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
     }
 
     fun getLatestChildStart(): Long {
-        rwl.readLock().lock();
+        rwl.readLock().lock()
         try {
             return childStart.last()
         } finally {
-            rwl.readLock().unlock();
+            rwl.readLock().unlock()
         }
     }
 
     fun linkNewChild(childNode: HistoryTreeNode) {
-        rwl.writeLock().lock();
+        rwl.writeLock().lock()
         try {
             if (nbChildren >= maxChildren) throw IllegalStateException()
             children[nbChildren] = childNode.seqNumber
             childStart[nbChildren] = childNode.nodeStart
-            nbChildren++;
+            nbChildren++
 
         } finally {
-            rwl.writeLock().unlock();
+            rwl.writeLock().unlock()
         }
     }
 
@@ -427,9 +428,9 @@ private class CoreNode(blockSize: Int,
 
     override fun readSpecificHeader(buffer: ByteBuffer) {
         /* Unused "extension", should be -1 */
-        buffer.getInt();
+        buffer.getInt()
 
-        nbChildren = buffer.getInt();
+        nbChildren = buffer.getInt()
 
         (0 until nbChildren).forEach { children[it] = buffer.getInt() }
         (nbChildren until maxChildren).forEach { buffer.getInt() }
@@ -439,8 +440,8 @@ private class CoreNode(blockSize: Int,
     }
 
     override fun writeSpecificHeader(buffer: ByteBuffer) {
-        buffer.putInt(extension);
-        buffer.putInt(nbChildren);
+        buffer.putInt(extension)
+        buffer.putInt(nbChildren)
 
         /* Write the "children's seq number" array */
         (0 until nbChildren).forEach { buffer.putInt(children[it]) }
@@ -453,7 +454,7 @@ private class CoreNode(blockSize: Int,
 
 }
 
-private class LeafNode(blockSize: Int,
+internal class LeafNode(blockSize: Int,
                        seqNumber: Int,
                        parentSeqNumber: Int,
                        nodeStart: Long) : HistoryTreeNode(blockSize, seqNumber, parentSeqNumber, nodeStart) {

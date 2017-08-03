@@ -72,12 +72,7 @@ public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
 
     @Override
     protected IStateHistoryBackend instantiateBackend(long startTime) {
-        try {
-            return new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION, startTime, BLOCK_SIZE, MAX_CHILDREN);
-        } catch (IOException e) {
-            fail(e.getMessage());
-            return null;
-        }
+        return new HistoryTreeBackend(SSID, fTempFile, PROVIDER_VERSION, startTime, BLOCK_SIZE, MAX_CHILDREN);
     }
 
     @Override

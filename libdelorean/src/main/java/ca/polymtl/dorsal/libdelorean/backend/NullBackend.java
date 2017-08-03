@@ -13,10 +13,13 @@ package ca.polymtl.dorsal.libdelorean.backend;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import org.eclipse.jdt.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An implement of a state history back-end to simply discards *all* the
@@ -65,7 +68,7 @@ class NullBackend implements IStateHistoryBackend {
     }
 
     @Override
-    public void finishedBuilding(long endTime) {
+    public void finishBuilding(long endTime) {
         /* Nothing to do */
     }
 
@@ -114,4 +117,14 @@ class NullBackend implements IStateHistoryBackend {
         return null;
     }
 
+    // FIXME Needs to be implemented because of https://youtrack.jetbrains.com/issue/KT-4779
+    @Override
+    public void doPartialQuery(long t, @NotNull Set<Integer> quarks, @NotNull Map<Integer, IStateInterval> results) {
+        quarks.forEach(quark -> {
+            IStateInterval interval = doSingularQuery(t, quark);
+            if (interval != null) {
+                results.put(quark, interval);
+            }
+        });
+    }
 }
