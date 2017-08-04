@@ -14,6 +14,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
@@ -51,21 +52,22 @@ sealed class HistoryTreeNode(val blockSize: Int,
 
     /* Vector containing all the intervals contained in this node */
     private var intervals: MutableList<HTInterval>? = mutableListOf()
-    private var rawIntervals: ByteArray? = null
+
+    private var nodePayload: ByteBuffer? = null
     private var intervalCount: Int? = null
 
     fun intervalIterator(targetTimestamp: Long,
                          targetQuarks: Set<Int>?): Iterator<HTInterval> {
         val intervals = intervals
-        val rawIntervals = rawIntervals
+        val nodePayload = nodePayload
 
         return if (intervals != null) {
             intervals.iterator().asSequence()
                     .filter { targetQuarks?.contains(it.attribute) ?: true}
                     .filter { it.intersects(targetTimestamp) }
                     .iterator()
-        } else if (rawIntervals != null) {
-            RawIntervalIterator(rawIntervals, intervalCount!!, targetTimestamp, targetQuarks)
+        } else if (nodePayload != null) {
+            RawIntervalIterator(nodePayload, intervalCount!!, targetTimestamp, targetQuarks)
         } else {
             throw IllegalStateException()
         }
@@ -94,7 +96,9 @@ sealed class HistoryTreeNode(val blockSize: Int,
          */
         @JvmStatic
         fun readNode(blockSize: Int, maxChildren: Int, fc: FileChannel): HistoryTreeNode {
-            val buffer = fc.map(FileChannel.MapMode.READ_ONLY, fc.position(), blockSize.toLong());
+            /* Absolute position in 'fc' of the start of this node */
+            val nodeStartPos = fc.position()
+            val buffer = fc.map(FileChannel.MapMode.READ_ONLY, nodeStartPos, blockSize.toLong());
             buffer.order(ByteOrder.LITTLE_ENDIAN)
 
             /* Read the common header part */
@@ -117,18 +121,11 @@ sealed class HistoryTreeNode(val blockSize: Int,
              * At this point, we should be done reading the header and 'buffer'
              * should only have the intervals left.
              *
-             * Only read and store the serialized data here.
-             */
-            val sizeLeft = blockSize - buffer.position()
-            val rawData = ByteArray(sizeLeft)
-            buffer.get(rawData)
-
-            /*
              * The primary ctor initializes "intervals" and sets 'rawIntervals'
              * to null. Flip that around for nodes created through this factory
              * function.
              */
-            newNode.rawIntervals = rawData
+            newNode.nodePayload = buffer.slice().order(ByteOrder.LITTLE_ENDIAN)
             newNode.intervalCount = intervalCount
             newNode.intervals = null
 
@@ -460,7 +457,7 @@ internal class LeafNode(blockSize: Int,
     }
 }
 
-private class RawIntervalIterator(rawIntervals: ByteArray,
+private class RawIntervalIterator(private val bb: ByteBuffer,
                                   expectedIntervalCount: Int,
                                   private val targetTimestamp: Long,
                                   /* null for "all quarks" */
@@ -477,7 +474,10 @@ private class RawIntervalIterator(rawIntervals: ByteArray,
         private const val TYPE_BOOLEAN_FALSE: Byte = 5
     }
 
-    private val bb = ByteBuffer.wrap(rawIntervals).order(ByteOrder.LITTLE_ENDIAN)
+    init {
+        bb.position(0)
+    }
+
     private var remaining = expectedIntervalCount
 
     override fun computeNext() {
