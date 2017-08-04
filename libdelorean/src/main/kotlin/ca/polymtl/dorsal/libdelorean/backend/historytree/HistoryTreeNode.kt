@@ -532,7 +532,7 @@ private class RawIntervalIterator(rawIntervals: ByteArray,
                 TYPE_STRING -> bb.getShort().toInt() + 1
                 else -> throw IOException()
             }
-            if (payloadSize > 0) bb.get(ByteArray(payloadSize))
+            if (payloadSize > 0) bb.position(bb.position() + payloadSize)
             return null
         }
 
