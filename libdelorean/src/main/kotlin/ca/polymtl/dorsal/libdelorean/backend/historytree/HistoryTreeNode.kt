@@ -10,6 +10,7 @@
 package ca.polymtl.dorsal.libdelorean.backend.historytree
 
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -49,8 +50,26 @@ sealed class HistoryTreeNode(val blockSize: Int,
         private set
 
     /* Vector containing all the intervals contained in this node */
-    private val intervals = mutableListOf<HTInterval>()
-    fun intervalIterator() = intervals.iterator()
+    private var intervals: MutableList<HTInterval>? = mutableListOf()
+    private var rawIntervals: ByteArray? = null
+    private var intervalCount: Int? = null
+
+    fun intervalIterator(targetTimestamp: Long,
+                         targetQuarks: Set<Int>?): Iterator<HTInterval> {
+        val intervals = intervals
+        val rawIntervals = rawIntervals
+
+        return if (intervals != null) {
+            intervals.iterator().asSequence()
+                    .filter { targetQuarks?.contains(it.attribute) ?: true}
+                    .filter { it.intersects(targetTimestamp) }
+                    .iterator()
+        } else if (rawIntervals != null) {
+            RawIntervalIterator(rawIntervals, intervalCount!!, targetTimestamp, targetQuarks)
+        } else {
+            throw IllegalStateException()
+        }
+    }
 
     /* Lock used to protect the accesses to intervals, nodeEnd and such */
     private val rwl = ReentrantReadWriteLock(false)
@@ -96,13 +115,22 @@ sealed class HistoryTreeNode(val blockSize: Int,
 
             /*
              * At this point, we should be done reading the header and 'buffer'
-             * should only have the intervals left
+             * should only have the intervals left.
+             *
+             * Only read and store the serialized data here.
              */
-            (0 until intervalCount).forEach {
-                val interval = HTInterval.readFrom(buffer)
-                newNode.intervals.add(interval)
-                newNode.sizeOfIntervalSection += interval.sizeOnDisk
-            }
+            val sizeLeft = blockSize - buffer.position()
+            val rawData = ByteArray(sizeLeft)
+            buffer.get(rawData)
+
+            /*
+             * The primary ctor initializes "intervals" and sets 'rawIntervals'
+             * to null. Flip that around for nodes created through this factory
+             * function.
+             */
+            newNode.rawIntervals = rawData
+            newNode.intervalCount = intervalCount
+            newNode.intervals = null
 
             /* Assign the node's other information we have read previously */
             newNode.nodeEnd = end
@@ -122,6 +150,9 @@ sealed class HistoryTreeNode(val blockSize: Int,
          */
         rwl.readLock().lock()
         try {
+            /* We shouldn't writeSelf() a node that was read from disk */
+            val intervals = intervals ?: throw IllegalStateException()
+
             val buffer = ByteBuffer.allocate(blockSize)
             buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.clear()
@@ -172,6 +203,9 @@ sealed class HistoryTreeNode(val blockSize: Int,
     fun addInterval(newInterval: HTInterval) {
         rwl.writeLock().lock()
         try {
+            /* We shouldn't add to a node that was read from disk */
+            val intervals = intervals ?: throw IllegalStateException()
+
             /* Just in case, should be checked before even calling this function */
             assert (newInterval.sizeOnDisk <= nodeFreeSpace)
 
@@ -196,6 +230,9 @@ sealed class HistoryTreeNode(val blockSize: Int,
     fun closeThisNode(endTime: Long) {
         rwl.writeLock().lock()
         try {
+            /* Should not be called on a node that was read from disk */
+            val intervals = intervals ?: throw IllegalStateException()
+
             /**
              * FIXME: was assert (endtime >= fNodeStart); but that exception
              * is reached with an empty node that has start time endtime + 1
@@ -236,8 +273,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
         /* This is from a state system query, we are "reading" this node */
         rwl.readLock().lock()
         try {
-            intervalIterator().asSequence()
-                    .filter { it.startTime <= t && it.attribute < stateInfo.size }
+            intervalIterator(t, null)
                     .forEach { stateInfo[it.attribute] = it }
         } finally {
             rwl.readLock().unlock()
@@ -258,8 +294,8 @@ sealed class HistoryTreeNode(val blockSize: Int,
     fun getRelevantInterval(key: Int, t: Long): HTInterval? {
         rwl.readLock().lock()
         try {
-            return intervalIterator().asSequence()
-                    .firstOrNull { it.attribute == key && it.intersects(t) }
+            return intervalIterator(t, setOf(key))
+                    .asSequence().firstOrNull()
 
         } finally {
             rwl.readLock().unlock()
@@ -422,4 +458,85 @@ internal class LeafNode(blockSize: Int,
     override fun writeSpecificHeader(buffer: ByteBuffer) {
         /* No specific header part */
     }
+}
+
+private class RawIntervalIterator(rawIntervals: ByteArray,
+                                  expectedIntervalCount: Int,
+                                  private val targetTimestamp: Long,
+                                  /* null for "all quarks" */
+                                  private val targetQuarks: Set<Int>?): AbstractIterator<HTInterval>() {
+
+    companion object {
+        /* 'Byte' equivalent for state values types */
+        private const val TYPE_NULL: Byte          = -1
+        private const val TYPE_INTEGER: Byte       = 0
+        private const val TYPE_STRING: Byte        = 1
+        private const val TYPE_LONG: Byte          = 2
+        private const val TYPE_DOUBLE: Byte        = 3
+        private const val TYPE_BOOLEAN_TRUE: Byte  = 4
+        private const val TYPE_BOOLEAN_FALSE: Byte = 5
+    }
+
+    private val bb = ByteBuffer.wrap(rawIntervals).order(ByteOrder.LITTLE_ENDIAN)
+    private var remaining = expectedIntervalCount
+
+    override fun computeNext() {
+        while (remaining > 0) {
+            remaining--
+            val interval = considerNextInterval() ?: continue
+            return setNext(interval)
+        }
+        return done()
+    }
+
+    private fun considerNextInterval(): HTInterval? {
+        /* Read the data we'll need in all cases. */
+        val start = bb.getLong()
+        val end = bb.getLong()
+        val quark = bb.getInt()
+        val valueType: Byte = bb.get()
+
+        if ((targetQuarks?.contains(quark) ?: true) && targetTimestamp >= start && targetTimestamp <= end) {
+            /* Return this interval */
+            val sv: StateValue = when (valueType) {
+                TYPE_NULL -> StateValue.nullValue()
+                TYPE_BOOLEAN_TRUE -> StateValue.newValueBoolean(true)
+                TYPE_BOOLEAN_FALSE -> StateValue.newValueBoolean(false)
+                TYPE_INTEGER -> StateValue.newValueInt(bb.getInt())
+                TYPE_LONG -> StateValue.newValueLong(bb.getLong())
+                TYPE_DOUBLE -> StateValue.newValueDouble(bb.getDouble())
+                /* For strings the first "short" indicates the size */
+                TYPE_STRING -> {
+                    val strSize = bb.getShort()
+                    val array = ByteArray(strSize.toInt())
+                    bb.get(array)
+                    /* Confirm the 0'ed byte at the end */
+                    if (bb.get() != 0.toByte()) throw IOException()
+
+                    StateValue.newValueString(String(array))
+                }
+                else -> throw IOException()
+            }
+            return HTInterval(start, end, quark, sv)
+
+        } else {
+            /* Skip to the next and return null */
+            val payloadSize: Int = when (valueType) {
+                TYPE_NULL,
+                TYPE_BOOLEAN_TRUE,
+                TYPE_BOOLEAN_FALSE -> 0
+                TYPE_INTEGER -> Integer.BYTES
+                TYPE_LONG -> java.lang.Long.BYTES
+                TYPE_DOUBLE -> java.lang.Double.BYTES
+                /* For strings the first "short" indicates the size */
+                TYPE_STRING -> bb.getShort().toInt() + 1
+                else -> throw IOException()
+            }
+            if (payloadSize > 0) bb.get(ByteArray(payloadSize))
+            return null
+        }
+
+
+    }
+
 }

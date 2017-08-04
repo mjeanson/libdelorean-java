@@ -184,8 +184,7 @@ class HistoryTreeBackend private constructor(override val SSID: String,
         var currentNode = sht.rootNode
         currentNode.takeReadLock()
         try {
-            currentNode.intervalIterator().asSequence()
-                    .filter { quarks.contains(it.attribute) && it.intersects(t) }
+            currentNode.intervalIterator(t, quarks)
                     .forEach {
                         results.put(it.attribute, it)
                         remaining--
@@ -200,8 +199,7 @@ class HistoryTreeBackend private constructor(override val SSID: String,
                 currentNode = sht.selectNextChild(currentNode, t)
                 currentNode.takeReadLock()
                 try {
-                    currentNode.intervalIterator().asSequence()
-                            .filter { quarks.contains(it.attribute) && it.intersects(t) }
+                    currentNode.intervalIterator(t, quarks)
                             .forEach {
                                 results.put(it.attribute, it)
                                 remaining--
