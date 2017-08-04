@@ -77,12 +77,8 @@ sealed class HistoryTreeNode(val blockSize: Int,
          */
         @JvmStatic
         fun readNode(blockSize: Int, maxChildren: Int, fc: FileChannel): HistoryTreeNode {
-            val buffer = ByteBuffer.allocate(blockSize)
+            val buffer = fc.map(FileChannel.MapMode.READ_ONLY, fc.position(), blockSize.toLong());
             buffer.order(ByteOrder.LITTLE_ENDIAN)
-            buffer.clear()
-            val res = fc.read(buffer)
-            if (res != blockSize) throw IOException()
-            buffer.flip()
 
             /* Read the common header part */
             val typeByte = buffer.get()
