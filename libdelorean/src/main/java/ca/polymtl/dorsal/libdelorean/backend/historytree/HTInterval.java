@@ -152,12 +152,11 @@ public final class HTInterval implements IStateInterval, Comparable<HTInterval> 
         int startPos = buffer.position();
 
         /* Read the data common to all intervals */
+        byte valueType = buffer.get();
         long intervalStart = buffer.getLong();
         long intervalEnd = buffer.getLong();
         int attribute = buffer.getInt();
 
-        /* Read the 'type' of the value, then react accordingly */
-        byte valueType = buffer.get();
         switch (valueType) {
         case TYPE_NULL:
             value = StateValue.nullValue();
@@ -226,10 +225,10 @@ public final class HTInterval implements IStateInterval, Comparable<HTInterval> 
 
         final byte typeByte = getByteFromType(sv);
 
+        buffer.put(typeByte);
         buffer.putLong(start);
         buffer.putLong(end);
         buffer.putInt(attribute);
-        buffer.put(typeByte);
 
         switch (typeByte) {
         case TYPE_NULL:

@@ -460,7 +460,6 @@ internal class LeafNode(blockSize: Int,
 private class RawIntervalIterator(private val bb: ByteBuffer,
                                   expectedIntervalCount: Int,
                                   private val targetTimestamp: Long,
-                                  /* null for "all quarks" */
                                   private val targetQuarks: Set<Int>?): AbstractIterator<HTInterval>() {
 
     companion object {
@@ -490,53 +489,75 @@ private class RawIntervalIterator(private val bb: ByteBuffer,
     }
 
     private fun considerNextInterval(): HTInterval? {
-        /* Read the data we'll need in all cases. */
-        val start = bb.getLong()
-        val end = bb.getLong()
-        val quark = bb.getInt()
+        /* Start reading the interval's data, and exit as soon as we find a non-matching condition. */
         val valueType: Byte = bb.get()
 
-        if ((targetQuarks?.contains(quark) ?: true) && targetTimestamp >= start && targetTimestamp <= end) {
-            /* Return this interval */
-            val sv: StateValue = when (valueType) {
-                TYPE_NULL -> StateValue.nullValue()
-                TYPE_BOOLEAN_TRUE -> StateValue.newValueBoolean(true)
-                TYPE_BOOLEAN_FALSE -> StateValue.newValueBoolean(false)
-                TYPE_INTEGER -> StateValue.newValueInt(bb.getInt())
-                TYPE_LONG -> StateValue.newValueLong(bb.getLong())
-                TYPE_DOUBLE -> StateValue.newValueDouble(bb.getDouble())
-                /* For strings the first "short" indicates the size */
-                TYPE_STRING -> {
-                    val strSize = bb.getShort()
-                    val array = ByteArray(strSize.toInt())
-                    bb.get(array)
-                    /* Confirm the 0'ed byte at the end */
-                    if (bb.get() != 0.toByte()) throw IOException()
+        val start = bb.getLong()
+        if (targetTimestamp < start) {
+            /* Skip over "end" and "quark" */
+            bb.skip(java.lang.Long.BYTES + Integer.BYTES)
 
-                    StateValue.newValueString(String(array))
-                }
-                else -> throw IOException()
-            }
-            return HTInterval(start, end, quark, sv)
+            skipPayload(valueType)
+            return null
+        }
 
-        } else {
-            /* Skip to the next and return null */
-            val payloadSize: Int = when (valueType) {
-                TYPE_NULL,
-                TYPE_BOOLEAN_TRUE,
-                TYPE_BOOLEAN_FALSE -> 0
-                TYPE_INTEGER -> Integer.BYTES
-                TYPE_LONG -> java.lang.Long.BYTES
-                TYPE_DOUBLE -> java.lang.Double.BYTES
-                /* For strings the first "short" indicates the size */
-                TYPE_STRING -> bb.getShort().toInt() + 1
-                else -> throw IOException()
-            }
-            if (payloadSize > 0) bb.position(bb.position() + payloadSize)
+        val end = bb.getLong()
+        if (targetTimestamp > end) {
+            /* Skip over "quark" */
+            bb.skip(Integer.BYTES)
+
+            skipPayload(valueType)
+            return null
+        }
+
+        val quark = bb.getInt()
+        if (targetQuarks != null && !targetQuarks.contains(quark)) {
+            /* No need to skip, we're at the beginning of the payload now. */
+            skipPayload(valueType)
             return null
         }
 
 
+        /* All conditions match, return this interval */
+        val sv: StateValue = when (valueType) {
+            TYPE_NULL -> StateValue.nullValue()
+            TYPE_BOOLEAN_TRUE -> StateValue.newValueBoolean(true)
+            TYPE_BOOLEAN_FALSE -> StateValue.newValueBoolean(false)
+            TYPE_INTEGER -> StateValue.newValueInt(bb.getInt())
+            TYPE_LONG -> StateValue.newValueLong(bb.getLong())
+            TYPE_DOUBLE -> StateValue.newValueDouble(bb.getDouble())
+            /* For strings the first "short" indicates the size */
+            TYPE_STRING -> {
+                val strSize = bb.getShort()
+                val array = ByteArray(strSize.toInt())
+                bb.get(array)
+                /* Confirm the 0'ed byte at the end */
+                if (bb.get() != 0.toByte()) throw IOException()
+
+                StateValue.newValueString(String(array))
+            }
+            else -> throw IOException()
+        }
+        return HTInterval(start, end, quark, sv)
     }
 
+    /** Skip the payload part, depending on its type. */
+    private fun skipPayload(valueType: Byte) {
+        val payloadSize: Int = when (valueType) {
+            TYPE_NULL,
+            TYPE_BOOLEAN_TRUE,
+            TYPE_BOOLEAN_FALSE -> 0
+            TYPE_INTEGER -> Integer.BYTES
+            TYPE_LONG -> java.lang.Long.BYTES
+            TYPE_DOUBLE -> java.lang.Double.BYTES
+           /* For strings the first "short" indicates the size */
+            TYPE_STRING -> bb.getShort().toInt() + 1
+            else -> throw IOException()
+        }
+        if (payloadSize > 0) bb.skip(payloadSize)
+    }
+}
+
+private fun ByteBuffer.skip(nbBytes: Int) {
+    position(position() + nbBytes)
 }
