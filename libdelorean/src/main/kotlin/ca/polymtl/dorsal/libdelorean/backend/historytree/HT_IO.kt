@@ -11,12 +11,16 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import com.google.common.cache.LoadingCache
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.channels.ClosedChannelException
 import java.nio.channels.FileChannel
+import java.util.concurrent.ExecutionException
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -52,12 +56,26 @@ internal class HT_IO(private val stateFile: File,
     companion object {
         private val LOGGER = Logger.getLogger(HT_IO::class.java.name)
 
-        /**
-         * Cache size, must be a power of 2
-         * TODO test/benchmark optimal cache size
-         */
+        // TODO test/benchmark optimal cache size
         private const val CACHE_SIZE = 256
-        private const val CACHE_MASK = CACHE_SIZE - 1
+
+        private data class CacheKey(val stateHistory: HT_IO, val seqNumber: Int)
+
+        private val NODE_CACHE: LoadingCache<CacheKey, HistoryTreeNode> = CacheBuilder.newBuilder()
+                .maximumSize(CACHE_SIZE.toLong())
+                .build(object : CacheLoader<CacheKey, HistoryTreeNode>() {
+                    override fun load(key: CacheKey): HistoryTreeNode {
+                        val io = key.stateHistory
+                        val seqNb = key.seqNumber
+
+                        LOGGER.finest { "[HtIo:CacheMiss] seqNum=$seqNb" }
+
+                        synchronized(io) {
+                            io.seekFCToNodePos(io.fcIn, seqNb);
+                            return HistoryTreeNode.readNode(io.blockSize, io.maxChildren, io.fcIn)
+                        }
+                    }
+                })
     }
 
     /* Properties related to file I/O */
@@ -65,8 +83,6 @@ internal class HT_IO(private val stateFile: File,
     private val fos: FileOutputStream
     private val fcIn: FileChannel
     val fcOut: FileChannel
-
-    private val nodeCache: Array<HistoryTreeNode?> = arrayOfNulls(CACHE_SIZE)
 
     init {
         if (newFile) {
@@ -105,48 +121,41 @@ internal class HT_IO(private val stateFile: File,
      *             reading. Instead of using a big reader-writer lock, we'll
      *             just catch this exception.
      */
-    @Synchronized
     fun readNode(seqNumber: Int): HistoryTreeNode {
-        /* Do a cache lookup */
-        val offset = (seqNumber and CACHE_MASK)
-        var readNode = nodeCache[offset]
-        if (readNode != null && readNode.seqNumber == seqNumber) {
-            return readNode
-        }
-
-        /* Lookup on disk */
+        /* Do a cache lookup. If it's not present it will be loaded from disk */
+        LOGGER.finest { "[HtIo:CacheLookup] seqNum=$seqNumber" }
+        val key = CacheKey(this, seqNumber);
         try {
-            seekFCToNodePos(fcIn, seqNumber)
-            readNode = HistoryTreeNode.readNode(blockSize, maxChildren, fcIn)
+            return NODE_CACHE.get(key)
 
-            /* Put the node in the cache. */
-            nodeCache[offset] = readNode
-            return readNode
-
-        } catch (e: ClosedChannelException) {
-            throw e
-        } catch (e: IOException) {
-            /* Other types of IOExceptions shouldn't happen at this point though */
-            LOGGER.log(Level.SEVERE, e.message, e)
+        } catch (e: ExecutionException) {
+            /* Get the inner exception that was generated */
+            val cause = e.cause
+            if (cause is ClosedChannelException) {
+                throw cause
+            }
+            /* Other types of IOExceptions shouldn't happen at this point though. */
             throw IllegalStateException()
         }
     }
 
-    @Synchronized
     fun writeNode(node: HistoryTreeNode) {
         try {
-            /* Insert the node into the cache. */
             val seqNumber = node.seqNumber
-            val offset = (seqNumber and CACHE_MASK)
-            nodeCache[offset] = node
+
+            /* "Write-back" the node into the cache */
+            val key = CacheKey(this, seqNumber);
+            NODE_CACHE.put(key, node);
 
             /* Position ourselves at the start of the node and write it */
-            seekFCToNodePos(fcOut, seqNumber)
-            node.writeSelf(fcOut)
+            synchronized(this) {
+                seekFCToNodePos(fcOut, seqNumber);
+                node.writeSelf(fcOut);
+            }
 
         } catch (e: IOException) {
             /* If we were able to open the file, we should be fine now... */
-            LOGGER.log(Level.SEVERE, e.message, e)
+            throw IllegalStateException(e)
         }
     }
 
