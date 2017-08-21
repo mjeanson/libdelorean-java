@@ -182,30 +182,24 @@ class HistoryTreeBackend private constructor(override val SSID: String,
 
         /* We start by reading the information in the root node. */
         var currentNode = sht.rootNode
-        currentNode.takeReadLock()
-        try {
+        synchronized(currentNode) {
             currentNode.intervalIterator(t, quarks)
                     .forEach {
                         results.put(it.attribute, it)
                         remaining--
                     }
-        } finally {
-            currentNode.releaseReadLock()
         }
 
         /* Then we follow the branch down in the relevant children. */
         try {
             while (remaining > 0 && currentNode is CoreNode) {
                 currentNode = sht.selectNextChild(currentNode, t)
-                currentNode.takeReadLock()
-                try {
+                synchronized(currentNode) {
                     currentNode.intervalIterator(t, quarks)
                             .forEach {
                                 results.put(it.attribute, it)
                                 remaining--
                             }
-                } finally {
-                    currentNode.releaseReadLock()
                 }
             }
         } catch (e: ClosedChannelException) {

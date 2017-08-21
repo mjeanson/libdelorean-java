@@ -14,9 +14,7 @@ import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * <pre>
@@ -72,9 +70,6 @@ sealed class HistoryTreeNode(val blockSize: Int,
             throw IllegalStateException()
         }
     }
-
-    /* Lock used to protect the accesses to intervals, nodeEnd and such */
-    private val rwl = ReentrantReadWriteLock(false)
 
     companion object {
         /**
@@ -140,119 +135,93 @@ sealed class HistoryTreeNode(val blockSize: Int,
     /**
      * Write this node to the given file channel.
      */
+    @Synchronized
     fun writeSelf(fc: FileChannel) {
-        /*
-         * Yes, we are taking the *read* lock here, because we are reading the
-         * information in the node to write it to disk.
-         */
-        rwl.readLock().lock()
-        try {
-            /* We shouldn't writeSelf() a node that was read from disk */
-            val intervals = intervals ?: throw IllegalStateException()
+        /* We shouldn't writeSelf() a node that was read from disk */
+        val intervals = intervals ?: throw IllegalStateException()
 
-            val buffer = ByteBuffer.allocate(blockSize)
-            buffer.order(ByteOrder.LITTLE_ENDIAN)
-            buffer.clear()
+        val buffer = ByteBuffer.allocate(blockSize)
+        buffer.order(ByteOrder.LITTLE_ENDIAN)
+        buffer.clear()
 
-            /* Write the common header part */
-            buffer.put(nodeByte)
-            buffer.putLong(nodeStart)
-            buffer.putLong(nodeEnd ?: 0L)
-            buffer.putInt(seqNumber)
-            buffer.putInt(parentSeqNumber)
-            buffer.putInt(intervals.size)
+        /* Write the common header part */
+        buffer.put(nodeByte)
+        buffer.putLong(nodeStart)
+        buffer.putLong(nodeEnd ?: 0L)
+        buffer.putInt(seqNumber)
+        buffer.putInt(parentSeqNumber)
+        buffer.putInt(intervals.size)
 
-            /* Now call the inner method to write the specific header part */
-            writeSpecificHeader(buffer)
+        /* Now call the inner method to write the specific header part */
+        writeSpecificHeader(buffer)
 
-            /* Back to us, we write the intervals */
-            intervals.forEach { it.writeInterval(buffer) }
+        /* Back to us, we write the intervals */
+        intervals.forEach { it.writeInterval(buffer) }
 
-            /* Fill the rest of the block with zeroes. */
-            while (buffer.position() < blockSize) {
-                buffer.put(0.toByte())
-            }
-
-            /* Finally, write everything in the Buffer to disk */
-            buffer.flip()
-            val res = fc.write(buffer)
-            if (res != blockSize) {
-                throw IllegalStateException("Wrong size of block written: Actual: $res, Expected: $blockSize")
-            }
-
-        } finally {
-            rwl.readLock().unlock()
+        /* Fill the rest of the block with zeroes. */
+        while (buffer.position() < blockSize) {
+            buffer.put(0.toByte())
         }
+
+        /* Finally, write everything in the Buffer to disk */
+        buffer.flip()
+        val res = fc.write(buffer)
+        if (res != blockSize) {
+            throw IllegalStateException("Wrong size of block written: Actual: $res, Expected: $blockSize")
+        }
+
         isOnDisk = true
-    }
-
-    fun takeReadLock() {
-        rwl.readLock().lock()
-    }
-
-    fun releaseReadLock() {
-        rwl.readLock().unlock()
     }
 
     /**
      * Add an interval to this node
      */
+    @Synchronized
     fun addInterval(newInterval: HTInterval) {
-        rwl.writeLock().lock()
-        try {
-            /* We shouldn't add to a node that was read from disk */
-            val intervals = intervals ?: throw IllegalStateException()
+        /* We shouldn't add to a node that was read from disk */
+        val intervals = intervals ?: throw IllegalStateException()
 
-            /* Just in case, should be checked before even calling this function */
-            assert (newInterval.sizeOnDisk <= nodeFreeSpace)
+        /* Just in case, should be checked before even calling this function */
+        assert (newInterval.sizeOnDisk <= nodeFreeSpace)
 
-            /* Find the insert position to keep the list sorted */
-            var index = intervals.size
-            while (index > 0 && newInterval < intervals[index - 1]) {
-                index--
-            }
-
-            intervals.add(index, newInterval)
-            sizeOfIntervalSection += newInterval.sizeOnDisk
-
-        } finally {
-            rwl.writeLock().unlock()
+        /* Find the insert position to keep the list sorted */
+        var index = intervals.size
+        while (index > 0 && newInterval < intervals[index - 1]) {
+            index--
         }
+
+        intervals.add(index, newInterval)
+        sizeOfIntervalSection += newInterval.sizeOnDisk
     }
 
     /**
      * We've received word from the containerTree that newest nodes now exist to
      * our right. (Puts isDone = true and sets the endtime)
      */
+    @Synchronized
     fun closeThisNode(endTime: Long) {
-        rwl.writeLock().lock()
-        try {
-            /* Should not be called on a node that was read from disk */
-            val intervals = intervals ?: throw IllegalStateException()
+        /* Should not be called on a node that was read from disk */
+        val intervals = intervals ?: throw IllegalStateException()
 
-            /**
-             * FIXME: was assert (endtime >= fNodeStart); but that exception
-             * is reached with an empty node that has start time endtime + 1
+        /**
+         * FIXME: was assert (endtime >= fNodeStart); but that exception
+         * is reached with an empty node that has start time endtime + 1
+         */
+//      if (endtime < fNodeStart) {
+//          throw new IllegalArgumentException("Endtime " + endtime + " cannot be lower than start time " + fNodeStart);
+//      }
+
+        if (intervals.isNotEmpty()) {
+            /*
+             * Make sure there are no intervals in this node with their
+             * EndTime > the one requested. Only need to check the last one
+             * since they are sorted
              */
-//            if (endtime < fNodeStart) {
-//                throw new IllegalArgumentException("Endtime " + endtime + " cannot be lower than start time " + fNodeStart);
-//            }
-
-            if (intervals.isNotEmpty()) {
-                /*
-                 * Make sure there are no intervals in this node with their
-                 * EndTime > the one requested. Only need to check the last one
-                 * since they are sorted
-                 */
-                if (endTime < intervals.last().endTime) {
-                    throw IllegalArgumentException("Closing end time should be greater than or equal to the end time of the intervals of this node")
-                }
+            if (endTime < intervals.last().endTime) {
+                throw IllegalArgumentException("Closing end time should be greater than or equal to the end time of the intervals of this node")
             }
-            nodeEnd = endTime
-
-        } finally {
-            rwl.writeLock().unlock()
         }
+        nodeEnd = endTime
     }
 
     /**
@@ -266,15 +235,9 @@ sealed class HistoryTreeNode(val blockSize: Int,
      *            The timestamp for which the query is for. Only return
      *            intervals that intersect t.
      */
+    @Synchronized
     fun writeInfoFromNode(stateInfo: MutableList<IStateInterval?>, t: Long) {
-        /* This is from a state system query, we are "reading" this node */
-        rwl.readLock().lock()
-        try {
-            intervalIterator(t, null)
-                    .forEach { stateInfo[it.attribute] = it }
-        } finally {
-            rwl.readLock().unlock()
-        }
+        intervalIterator(t, null).forEach { stateInfo[it.attribute] = it }
     }
 
     /**
@@ -288,27 +251,16 @@ sealed class HistoryTreeNode(val blockSize: Int,
      * @return The Interval containing the information we want, or null if it
      *         wasn't found
      */
+    @Synchronized
     fun getRelevantInterval(key: Int, t: Long): HTInterval? {
-        rwl.readLock().lock()
-        try {
-            return intervalIterator(t, setOf(key))
-                    .asSequence().firstOrNull()
-
-        } finally {
-            rwl.readLock().unlock()
-        }
+        return intervalIterator(t, setOf(key)).asSequence().firstOrNull()
     }
 
     val totalHeaderSize get() = COMMON_HEADER_SIZE + specificHeaderSize
     private val dataSectionEndOffset get() = totalHeaderSize + sizeOfIntervalSection
 
     val nodeFreeSpace: Int
-        get() {
-            rwl.readLock().lock()
-            val ret = blockSize - dataSectionEndOffset
-            rwl.readLock().unlock()
-            return ret
-        }
+        @Synchronized get() = (blockSize - dataSectionEndOffset)
 
     protected abstract val nodeByte: Byte
     protected abstract val specificHeaderSize: Int
@@ -342,65 +294,30 @@ internal class CoreNode(blockSize: Int,
     /** Seq number of this node's extension. -1 if none. Unused for now */
     private val extension = -1
 
-    /**
-     * Lock used to gate the accesses to the children arrays. Meant to be a
-     * different lock from the one in {@link HTNode}.
-     */
-    private val rwl = ReentrantReadWriteLock(false)
+    @Synchronized
+    fun getChild(index: Int): Int = children[index]
 
-    fun getChild(index: Int): Int {
-        rwl.readLock().lock()
-        try {
-            return children[index]
-        } finally {
-            rwl.readLock().unlock()
-        }
-    }
+    @Synchronized
+    fun getLatestChild(): Int = children.last()
 
-    fun getLatestChild(): Int {
-        rwl.readLock().lock()
-        try {
-            return children.last()
-        } finally {
-            rwl.readLock().unlock()
-        }
-    }
+    @Synchronized
+    fun getChildStart(index: Int): Long = childStart[index]
 
-    fun getChildStart(index: Int): Long {
-        rwl.readLock().lock()
-        try {
-            return childStart[index]
-        } finally {
-            rwl.readLock().unlock()
-        }
-    }
+    @Synchronized
+    fun getLatestChildStart(): Long = childStart.last()
 
-    fun getLatestChildStart(): Long {
-        rwl.readLock().lock()
-        try {
-            return childStart.last()
-        } finally {
-            rwl.readLock().unlock()
-        }
-    }
-
+    @Synchronized
     fun linkNewChild(childNode: HistoryTreeNode) {
-        rwl.writeLock().lock()
-        try {
-            if (nbChildren >= maxChildren) throw IllegalStateException()
-            children[nbChildren] = childNode.seqNumber
-            childStart[nbChildren] = childNode.nodeStart
-            nbChildren++
-
-        } finally {
-            rwl.writeLock().unlock()
-        }
+        if (nbChildren >= maxChildren) throw IllegalStateException()
+        children[nbChildren] = childNode.seqNumber
+        childStart[nbChildren] = childNode.nodeStart
+        nbChildren++
     }
 
     override val nodeByte = CORE_TYPE_BYTE
     override val specificHeaderSize: Int = (
-                    /* 1x int (extension node) */
-                    Integer.BYTES +
+            /* 1x int (extension node) */
+            Integer.BYTES +
                     /* 1x int (nbChildren) */
                     Integer.BYTES +
                     /* MAX_NB * int ('children' table) */
