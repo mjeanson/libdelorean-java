@@ -15,8 +15,8 @@
 
   <parent>
     <groupId>org.lttng.scope</groupId>
-    <artifactId>project-parent</artifactId>
-    <version>1.0.0</version>
+    <artifactId>scope-project-parent</artifactId>
+    <version>1.0.1</version>
   </parent>
 
   <groupId>ca.polymtl.dorsal.libdelorean</groupId>
