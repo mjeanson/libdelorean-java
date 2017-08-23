@@ -10,9 +10,8 @@
 
 package ca.polymtl.dorsal.libdelorean.interval;
 
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
-
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * This is the basic interface for accessing state intervals. See
@@ -51,7 +50,7 @@ public interface IStateInterval {
      *
      * @return the state value represented by this interval
      */
-    @NonNull IStateValue getStateValue();
+    @NonNull StateValue getStateValue();
 
     /**
      * Test if this interval intersects another timestamp, inclusively.

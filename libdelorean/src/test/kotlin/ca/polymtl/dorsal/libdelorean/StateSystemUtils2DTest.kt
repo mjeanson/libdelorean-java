@@ -11,7 +11,6 @@ package ca.polymtl.dorsal.libdelorean
 
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
@@ -65,8 +64,6 @@ class StateSystemUtils2DTest {
 
             stateSystem = ssb
 
-        } catch (e: StateValueTypeException) {
-            fail(e.message)
         } catch (e: AttributeNotFoundException) {
             fail(e.message)
         }

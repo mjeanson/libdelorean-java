@@ -9,20 +9,15 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.util.List;
-
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests for {@link SymbolicLinkRule}.
@@ -66,9 +61,9 @@ public class SymbolicLinkTest extends AggregationTestBase {
         assertNotNull(ss);
 
         /* State values and attributes that will be used */
-        IStateValue VALUE_1 = StateValue.newValueInt(1);
-        IStateValue VALUE_2 = StateValue.newValueInt(2);
-        IStateValue NULL_VALUE = StateValue.nullValue();
+        StateValue VALUE_1 = StateValue.newValueInt(1);
+        StateValue VALUE_2 = StateValue.newValueInt(2);
+        StateValue NULL_VALUE = StateValue.nullValue();
 
         int quarkAttributeA = ss.getQuarkAbsoluteAndAdd("attributeA");
         int quarkAttributeB = ss.getQuarkAbsoluteAndAdd("attributeB");
@@ -105,7 +100,7 @@ public class SymbolicLinkTest extends AggregationTestBase {
             ss.modifyAttribute(70, NULL_VALUE, quarkAttributeB);
             assertEquals(NULL_VALUE, ss.queryOngoingState(quarkAttributeA));
 
-        } catch (StateValueTypeException | AttributeNotFoundException e) {
+        } catch (AttributeNotFoundException e) {
             fail(e.getMessage());
         }
 

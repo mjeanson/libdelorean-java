@@ -9,21 +9,16 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.junit.Test;
-
-import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static org.junit.Assert.*;
 
 /**
  * Tests for {@link AttributePriorityAggregationRule}.
@@ -63,11 +58,11 @@ public class AttributePriorityAggregationTest extends AggregationTestBase {
         assertNotNull(ss);
 
         /* State values and attributes that will be used */
-        IStateValue PROCESS_USER = StateValue.newValueInt(0);
-        IStateValue PROCESS_SYSCALL = StateValue.newValueInt(1);
-        IStateValue SOFTIRQ_ACTIVE = StateValue.newValueInt(2);
-        IStateValue IRQ_ACTIVE = StateValue.newValueInt(3);
-        IStateValue NULL_VALUE = StateValue.nullValue();
+        StateValue PROCESS_USER = StateValue.newValueInt(0);
+        StateValue PROCESS_SYSCALL = StateValue.newValueInt(1);
+        StateValue SOFTIRQ_ACTIVE = StateValue.newValueInt(2);
+        StateValue IRQ_ACTIVE = StateValue.newValueInt(3);
+        StateValue NULL_VALUE = StateValue.nullValue();
 
         int quark0 = ss.getQuarkAbsoluteAndAdd("CPUs", "0");
         int quarkProcess = ss.getQuarkAbsoluteAndAdd("CPUs", "0", "process");
@@ -146,7 +141,7 @@ public class AttributePriorityAggregationTest extends AggregationTestBase {
             ss.modifyAttribute(190, NULL_VALUE, quarkIrq);
             assertEquals(NULL_VALUE, ss.queryOngoingState(quark0));
 
-        } catch (StateValueTypeException | AttributeNotFoundException e) {
+        } catch (AttributeNotFoundException e) {
             fail(e.getMessage());
         }
 

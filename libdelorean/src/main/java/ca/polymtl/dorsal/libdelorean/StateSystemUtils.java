@@ -10,20 +10,19 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
+import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 
 /**
  * Provide utility methods for the state system
@@ -54,9 +53,6 @@ public final class StateSystemUtils {
      *            pushAttribute() at creation time)
      * @return The interval that was at the top of the stack, or 'null' if the
      *         stack was empty.
-     * @throws StateValueTypeException
-     *             If the target attribute is not a valid stack attribute (if it
-     *             has a string value for example)
      * @throws AttributeNotFoundException
      *             If the attribute was simply not found
      * @throws TimeRangeException
@@ -67,19 +63,19 @@ public final class StateSystemUtils {
     public static @Nullable IStateInterval querySingleStackTop(IStateSystemReader ss,
                                                                long t, int stackAttributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException {
-        IStateValue curStackStateValue = ss.querySingleState(t, stackAttributeQuark).getStateValue();
+        StateValue curStackStateValue = ss.querySingleState(t, stackAttributeQuark).getStateValue();
 
         if (curStackStateValue.isNull()) {
             /* There is nothing stored in this stack at this moment */
             return null;
         }
-        int curStackDepth = curStackStateValue.unboxInt();
+        int curStackDepth = ((IntegerStateValue) curStackStateValue).getValue();
         if (curStackDepth <= 0) {
             /*
              * This attribute is an integer attribute, but it doesn't seem like
              * it's used as a stack-attribute...
              */
-            throw new StateValueTypeException(ss.getSSID() + " Quark:" + stackAttributeQuark + ", Stack depth:" + curStackDepth);  //$NON-NLS-1$//$NON-NLS-2$
+            throw new IllegalArgumentException(ss.getSSID() + " Quark:" + stackAttributeQuark + ", Stack depth:" + curStackDepth);  //$NON-NLS-1$//$NON-NLS-2$
         }
 
         int subAttribQuark = ss.getQuarkRelative(stackAttributeQuark, String.valueOf(curStackDepth));
@@ -256,7 +252,7 @@ public final class StateSystemUtils {
         try {
             while (current < t2) {
                 IStateInterval currentInterval = ss.querySingleState(current, attributeQuark);
-                IStateValue value = currentInterval.getStateValue();
+                StateValue value = currentInterval.getStateValue();
 
                 if (!value.isNull()) {
                     return currentInterval;

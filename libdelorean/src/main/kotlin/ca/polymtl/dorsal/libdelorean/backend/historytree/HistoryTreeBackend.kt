@@ -15,9 +15,7 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
-
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -110,8 +108,8 @@ class HistoryTreeBackend private constructor(override val SSID: String,
     override fun insertPastState(stateStartTime: Long,
                                  stateEndTime: Long,
                                  quark: Int,
-                                 value: IStateValue) {
-        val interval = HTInterval(stateStartTime, stateEndTime, quark, value as StateValue)
+                                 value: StateValue) {
+        val interval = HTInterval(stateStartTime, stateEndTime, quark, value)
         /* Start insertions at the "latest leaf" */
         sht.insertInterval(interval)
     }

@@ -11,16 +11,9 @@
 package ca.polymtl.dorsal.libdelorean;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This is the quark-read-only interface to the generic state system.

@@ -9,18 +9,17 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Aggregation rule based on attribute priority.
@@ -60,8 +59,8 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
     }
 
     @Override
-    public IStateValue getOngoingAggregatedState() {
-        Optional<IStateValue> possibleValue = getQuarkStream()
+    public StateValue getOngoingAggregatedState() {
+        Optional<StateValue> possibleValue = getQuarkStream()
                 /* Query the value of each quark in the rule */
                 .map(quark -> {
                     try {
@@ -98,14 +97,14 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
          */
 
         List<IStateInterval> intervalsToUse = new ArrayList<>();
-        IStateValue value = StateValue.nullValue();
+        StateValue value = StateValue.nullValue();
 
         try {
             for (Integer quark : quarks) {
                 IStateInterval interval = ss.querySingleState(timestamp, quark);
                 intervalsToUse.add(interval);
 
-                IStateValue sv = interval.getStateValue();
+                StateValue sv = interval.getStateValue();
                 if (!sv.isNull()) {
                     value = sv;
                     break;

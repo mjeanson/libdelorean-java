@@ -9,20 +9,6 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import static java.util.Objects.requireNonNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.eclipse.jdt.annotation.Nullable;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.StateSystemFactory;
@@ -31,8 +17,18 @@ import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.Nullable;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Objects.requireNonNull;
+import static org.junit.Assert.*;
 
 /**
  * Base class for aggregation tests.
@@ -88,7 +84,7 @@ public abstract class AggregationTestBase {
     protected final void verifyInterval(long timestamp, int quark,
             long expectedStartTime,
             long expectedEndTime,
-            IStateValue expectedValue) {
+            StateValue expectedValue) {
 
         IStateSystemReader ss = getStateSystem();
         try {
@@ -147,7 +143,7 @@ public abstract class AggregationTestBase {
 
         int targetQuark = ss.getQuarkAbsoluteAndAdd("quarks", "target_quark");
 
-        IStateValue NULL_VALUE = StateValue.nullValue();
+        StateValue NULL_VALUE = StateValue.nullValue();
 
         IStateAggregationRule rule = createRuleWithParameters(ss, targetQuark,
                 Collections.singletonList(new String [] { "quarks", "invalid_quark" }));
@@ -185,8 +181,8 @@ public abstract class AggregationTestBase {
         int validQuark = ss.getQuarkAbsoluteAndAdd("quarks", "valid_quark");
         int targetQuark = ss.getQuarkAbsoluteAndAdd("quarks", "target_quark");
 
-        IStateValue STATE_VALUE = StateValue.newValueInt(1);
-        IStateValue NULL_VALUE = StateValue.nullValue();
+        StateValue STATE_VALUE = StateValue.newValueInt(1);
+        StateValue NULL_VALUE = StateValue.nullValue();
 
         IStateAggregationRule rule = createRuleWithParameters(ss, targetQuark,
                 Arrays.asList(

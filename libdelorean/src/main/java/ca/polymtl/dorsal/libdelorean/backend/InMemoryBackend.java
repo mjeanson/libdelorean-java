@@ -14,7 +14,6 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
@@ -103,7 +102,7 @@ class InMemoryBackend implements IStateHistoryBackend {
 
     @Override
     public void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, IStateValue value) throws TimeRangeException {
+            int quark, StateValue value) throws TimeRangeException {
         /* Make sure the passed start/end times make sense */
         if (stateStartTime > stateEndTime || stateStartTime < startTime) {
             throw new TimeRangeException(ssid + " Interval Start:" + stateStartTime + ", Interval End:" + stateEndTime + ", Backend Start:" + startTime); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

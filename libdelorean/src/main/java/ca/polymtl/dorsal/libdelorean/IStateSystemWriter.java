@@ -10,13 +10,11 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import org.eclipse.jdt.annotation.NonNull;
-
 import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
 
 /**
  * This is the external interface to build or modify an existing state history.
@@ -40,7 +38,7 @@ public interface IStateSystemWriter extends IStateSystemReader {
      */
     int IGNORE_PROVIDER_VERSION = -42;
 
-    /**
+    /*
      * @name Read/write quark-getting methods
      */
 
@@ -80,7 +78,7 @@ public interface IStateSystemWriter extends IStateSystemReader {
      */
     int getQuarkRelativeAndAdd(int startingNodeQuark, String... subPath);
 
-    /**
+    /*
      * @name State-changing methods
      */
 
@@ -103,7 +101,7 @@ public interface IStateSystemWriter extends IStateSystemReader {
      * @throws AttributeNotFoundException
      *             If the requested attribute is invalid
      */
-    void updateOngoingState(@NonNull IStateValue newValue, int attributeQuark)
+    void updateOngoingState(@NonNull StateValue newValue, int attributeQuark)
             throws AttributeNotFoundException;
 
     /**
@@ -121,12 +119,9 @@ public interface IStateSystemWriter extends IStateSystemReader {
      *             If the requested time is outside of the trace's range
      * @throws AttributeNotFoundException
      *             If the requested attribute quark is invalid
-     * @throws StateValueTypeException
-     *             If the inserted state value's type does not match what is
-     *             already assigned to this attribute.
      */
-    void modifyAttribute(long t, IStateValue value, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+    void modifyAttribute(long t, StateValue value, int attributeQuark)
+            throws AttributeNotFoundException;
 
     /**
      * Increment attribute method. Reads the current value of a given integer
@@ -138,15 +133,13 @@ public interface IStateSystemWriter extends IStateSystemReader {
      * @param attributeQuark
      *            Attribute to increment. If it doesn't exist it will be added,
      *            with a new value of 1.
-     * @throws StateValueTypeException
-     *             If the attribute already exists but is not of type Integer
      * @throws TimeRangeException
      *             If the given timestamp is invalid
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
     void incrementAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+            throws AttributeNotFoundException;
 
     /**
      * "Push" helper method. This uses the given integer attribute as a stack:
@@ -166,12 +159,9 @@ public interface IStateSystemWriter extends IStateSystemReader {
      *             If the requested timestamp is invalid
      * @throws AttributeNotFoundException
      *             If the attribute is invalid
-     * @throws StateValueTypeException
-     *             If the attribute 'attributeQuark' already exists, but is not
-     *             of integer type.
      */
-    void pushAttribute(long t, IStateValue value, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+    void pushAttribute(long t, StateValue value, int attributeQuark)
+            throws AttributeNotFoundException;
 
     /**
      * Antagonist of the pushAttribute(), pops the top-most attribute on the
@@ -189,12 +179,9 @@ public interface IStateSystemWriter extends IStateSystemReader {
      *             If the attribute is invalid
      * @throws TimeRangeException
      *             If the timestamp is invalid
-     * @throws StateValueTypeException
-     *             If the target attribute already exists, but its state value
-     *             type is invalid (not an integer)
      */
-    IStateValue popAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, StateValueTypeException;
+    StateValue popAttribute(long t, int attributeQuark)
+            throws AttributeNotFoundException;
 
     /**
      * Remove attribute method. Similar to the above modify- methods, with value

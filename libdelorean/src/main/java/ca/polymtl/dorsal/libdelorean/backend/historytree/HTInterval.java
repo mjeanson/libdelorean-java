@@ -13,8 +13,7 @@ package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.*;
 import org.eclipse.jdt.annotation.NonNull;
 
 import java.io.IOException;
@@ -84,35 +83,34 @@ public final class HTInterval implements IStateInterval, Comparable<HTInterval> 
      * Compute how much space (in bytes) an interval will take in its serialized
      * form on disk. This is dependent on its state value.
      */
-    private static int computeSizeOnDisk(IStateValue sv) {
+    private static int computeSizeOnDisk(StateValue sv) {
         /*
          * Minimum size is 2x long (start and end), 1x int (attribute) and 1x
          * byte (value type).
          */
         final int minSize = Long.BYTES + Long.BYTES + Integer.BYTES + Byte.BYTES;
 
-        switch (sv.getType()) {
-        case NULL:
-        case BOOLEAN:
+        if (sv.isNull() || sv instanceof BooleanStateValue) {
             return minSize;
-        case INTEGER:
+        } else if (sv instanceof IntegerStateValue) {
             return (minSize + Integer.BYTES);
-        case LONG:
+        } else if (sv instanceof LongStateValue) {
             return (minSize + Long.BYTES);
-        case DOUBLE:
+        } else if (sv instanceof DoubleStateValue) {
             return (minSize + Double.BYTES);
-        case STRING:
+        } else if (sv instanceof StringStateValue) {
             /*
              * String's length + 3 (2 bytes for size, 1 byte for \0 at the end
              */
-            return (minSize + sv.unboxStr().getBytes().length + 3);
-        default:
+            return (minSize + ((StringStateValue) sv).getValue().getBytes().length + 3);
+        } else {
             /*
              * It's very important that we know how to write the state value in
              * the file!!
              */
             throw new IllegalStateException();
         }
+
     }
 
     /**
@@ -237,19 +235,19 @@ public final class HTInterval implements IStateInterval, Comparable<HTInterval> 
             /* Nothing else to write, 'typeByte' carries all the information */
             break;
         case TYPE_INTEGER:
-            buffer.putInt(sv.unboxInt());
+            buffer.putInt(((IntegerStateValue) sv).getValue());
             break;
 
         case TYPE_LONG:
-            buffer.putLong(sv.unboxLong());
+            buffer.putLong(((LongStateValue) sv).getValue());
             break;
 
         case TYPE_DOUBLE:
-            buffer.putDouble(sv.unboxDouble());
+            buffer.putDouble(((DoubleStateValue) sv).getValue());
             break;
 
         case TYPE_STRING:
-            String string = sv.unboxStr();
+            String string = ((StringStateValue) sv).getValue();
             byte[] strArray = string.getBytes();
 
             /* Write the string size, then the actual bytes, then \0 */
@@ -285,7 +283,7 @@ public final class HTInterval implements IStateInterval, Comparable<HTInterval> 
     }
 
     @Override
-    public IStateValue getStateValue() {
+    public StateValue getStateValue() {
         return sv;
     }
 
@@ -355,22 +353,20 @@ public final class HTInterval implements IStateInterval, Comparable<HTInterval> 
      * Here we determine how state values "types" are written in the 8-bit field
      * that indicates the value type in the file.
      */
-    private static byte getByteFromType(IStateValue sv) {
-        switch(sv.getType()) {
-        case NULL:
+    private static byte getByteFromType(StateValue sv) {
+        if (sv.isNull()) {
             return TYPE_NULL;
-        case BOOLEAN:
-            return (sv.unboxBoolean() ? TYPE_BOOLEAN_TRUE : TYPE_BOOLEAN_FALSE);
-        case INTEGER:
+        } else if (sv instanceof BooleanStateValue) {
+            return (((BooleanStateValue) sv).getValue() ? TYPE_BOOLEAN_TRUE : TYPE_BOOLEAN_FALSE);
+        } else if (sv instanceof IntegerStateValue) {
             return TYPE_INTEGER;
-        case STRING:
+        } else if (sv instanceof StringStateValue) {
             return TYPE_STRING;
-        case LONG:
+        } else if (sv instanceof LongStateValue) {
             return TYPE_LONG;
-        case DOUBLE:
+        } else if (sv instanceof DoubleStateValue) {
             return TYPE_DOUBLE;
-        default:
-            /* Should not happen if the switch is fully covered */
+        } else {
             throw new IllegalStateException();
         }
     }

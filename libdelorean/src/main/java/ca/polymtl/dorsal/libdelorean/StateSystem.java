@@ -15,11 +15,9 @@ import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue.Type;
+import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -365,9 +363,8 @@ class StateSystem implements IStateSystemWriter {
     //--------------------------------------------------------------------------
 
     @Override
-    public void modifyAttribute(long t, IStateValue value, int attributeQuark)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateValueTypeException {
+    public void modifyAttribute(long t, StateValue value, int attributeQuark)
+            throws TimeRangeException, AttributeNotFoundException {
         if (value == null) {
             /*
              * TODO Replace with @NonNull parameter (will require fixing all the
@@ -380,25 +377,23 @@ class StateSystem implements IStateSystemWriter {
 
     @Override
     public void incrementAttribute(long t, int attributeQuark)
-            throws StateValueTypeException, TimeRangeException,
+            throws TimeRangeException,
             AttributeNotFoundException {
-        IStateValue stateValue = queryOngoingState(attributeQuark);
+        StateValue stateValue = queryOngoingState(attributeQuark);
         int prevValue = 0;
         /* if the attribute was previously null, start counting at 0 */
         if (!stateValue.isNull()) {
-            prevValue = stateValue.unboxInt();
+            prevValue = ((IntegerStateValue) stateValue).getValue();
         }
-        modifyAttribute(t, StateValue.newValueInt(prevValue + 1),
-                attributeQuark);
+        modifyAttribute(t, StateValue.newValueInt(prevValue + 1), attributeQuark);
     }
 
     @Override
-    public void pushAttribute(long t, IStateValue value, int attributeQuark)
-            throws TimeRangeException, AttributeNotFoundException,
-            StateValueTypeException {
+    public void pushAttribute(long t, StateValue value, int attributeQuark)
+            throws TimeRangeException, AttributeNotFoundException {
         int stackDepth;
         int subAttributeQuark;
-        IStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
+        StateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
             /*
@@ -406,12 +401,12 @@ class StateSystem implements IStateSystemWriter {
              * use this attribute. Leave stackDepth at 0.
              */
             stackDepth = 0;
-        } else if (previousSV.getType() == Type.INTEGER) {
+        } else if (previousSV instanceof IntegerStateValue) {
             /* Previous value was an integer, all is good, use it */
-            stackDepth = previousSV.unboxInt();
+            stackDepth = ((IntegerStateValue) previousSV).getValue();
         } else {
             /* Previous state of this attribute was another type? Not good! */
-            throw new StateValueTypeException(getSSID() + " Quark:" + attributeQuark + ", Type:" + previousSV.getType() + ", Expected:" + Type.INTEGER); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            throw new IllegalArgumentException(getSSID() + " Quark:" + attributeQuark + ", Type:" + previousSV.getClass().getSimpleName() + ", Expected:" + IntegerStateValue.class.getSimpleName()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
 
         if (stackDepth >= 100000) {
@@ -431,11 +426,10 @@ class StateSystem implements IStateSystemWriter {
     }
 
     @Override
-    public IStateValue popAttribute(long t, int attributeQuark)
-            throws AttributeNotFoundException, TimeRangeException,
-            StateValueTypeException {
+    public StateValue popAttribute(long t, int attributeQuark)
+            throws AttributeNotFoundException, TimeRangeException {
         /* These are the state values of the stack-attribute itself */
-        IStateValue previousSV = transState.getOngoingStateValue(attributeQuark);
+        StateValue previousSV = transState.getOngoingStateValue(attributeQuark);
 
         if (previousSV.isNull()) {
             /*
@@ -446,27 +440,27 @@ class StateSystem implements IStateSystemWriter {
              */
             return null;
         }
-        if (previousSV.getType() != Type.INTEGER) {
+        if (!(previousSV instanceof IntegerStateValue)) {
             /*
              * The existing value was not an integer (which is expected for
              * stack tops), this doesn't look like a valid stack attribute.
              */
-            throw new StateValueTypeException(getSSID() + " Quark:" + attributeQuark + ", Type:" + previousSV.getType() + ", Expected:" + Type.INTEGER); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            throw new IllegalArgumentException(getSSID() + " Quark:" + attributeQuark + ", Type:" + previousSV.getClass().getSimpleName() + ", Expected:" + IntegerStateValue.class.getSimpleName()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
 
-        int stackDepth = previousSV.unboxInt();
+        int stackDepth = ((IntegerStateValue) previousSV).getValue();
 
         if (stackDepth <= 0) {
             /* This on the other hand should not happen... */
-            throw new StateValueTypeException(getSSID() + " Quark:" + attributeQuark + ", Stack depth:" + stackDepth);  //$NON-NLS-1$//$NON-NLS-2$
+            throw new IllegalArgumentException(getSSID() + " Quark:" + attributeQuark + ", Stack depth:" + stackDepth);  //$NON-NLS-1$//$NON-NLS-2$
         }
 
         /* The attribute should already exist at this point */
         int subAttributeQuark = getQuarkRelative(attributeQuark, String.valueOf(stackDepth));
-        IStateValue poppedValue = queryOngoingState(subAttributeQuark);
+        StateValue poppedValue = queryOngoingState(subAttributeQuark);
 
         /* Update the state value of the stack-attribute */
-        IStateValue nextSV;
+        StateValue nextSV;
         if (--stackDepth == 0) {
             /* Store a null state value */
             nextSV = StateValue.nullValue();
@@ -501,15 +495,7 @@ class StateSystem implements IStateSystemWriter {
             removeAttribute(t, childNodeQuark);
         }
         /* Nullify ourselves */
-        try {
-            transState.processStateChange(t, StateValue.nullValue(), attributeQuark);
-        } catch (StateValueTypeException e) {
-            /*
-             * Will not happen since we're inserting null values only, but poor
-             * compiler has no way of knowing this...
-             */
-            throw new IllegalStateException(e);
-        }
+        transState.processStateChange(t, StateValue.nullValue(), attributeQuark);
     }
 
     //--------------------------------------------------------------------------
@@ -517,9 +503,9 @@ class StateSystem implements IStateSystemWriter {
     //--------------------------------------------------------------------------
 
     @Override
-    public IStateValue queryOngoingState(int attributeQuark) throws AttributeNotFoundException {
+    public StateValue queryOngoingState(int attributeQuark) throws AttributeNotFoundException {
         /* Check if the attribute is an aggregate */
-        IStateValue aggregatedValue = getOngoingAggregatedState(attributeQuark);
+        StateValue aggregatedValue = getOngoingAggregatedState(attributeQuark);
         if (aggregatedValue != null) {
             return aggregatedValue;
         }
@@ -536,7 +522,7 @@ class StateSystem implements IStateSystemWriter {
     }
 
     @Override
-    public void updateOngoingState(IStateValue newValue, int attributeQuark)
+    public void updateOngoingState(StateValue newValue, int attributeQuark)
             throws AttributeNotFoundException {
         transState.changeOngoingStateValue(attributeQuark, newValue);
     }
@@ -684,7 +670,7 @@ class StateSystem implements IStateSystemWriter {
         aggregationRules.put(Integer.valueOf(rule.getTargetQuark()), rule);
     }
 
-    private @Nullable IStateValue getOngoingAggregatedState(int quark) {
+    private @Nullable StateValue getOngoingAggregatedState(int quark) {
         IStateAggregationRule rule = aggregationRules.get(Integer.valueOf(quark));
         if (rule == null) {
             return null;

@@ -11,23 +11,20 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
+import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.NullStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-
-import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue.Type;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * The Transient State is used to build intervals from punctual state changes.
@@ -53,9 +50,9 @@ class TransientState {
     private volatile long fLatestTime;
 
     /* A method accessing these arrays will have to go through the lock */
-    private List<IStateValue> fOngoingStateInfo;
+    private List<StateValue> fOngoingStateInfo;
     private List<Long> fOngoingStateStartTimes;
-    private List<Type> fStateValueTypes;
+    private List<Class<? extends StateValue>> fStateValueTypes;
 
     /**
      * Constructor
@@ -91,7 +88,7 @@ class TransientState {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    public IStateValue getOngoingStateValue(int quark) throws AttributeNotFoundException {
+    public StateValue getOngoingStateValue(int quark) throws AttributeNotFoundException {
         fRWLock.readLock().lock();
         try {
             checkValidAttribute(quark);
@@ -131,7 +128,7 @@ class TransientState {
      * @throws AttributeNotFoundException
      *             If the quark is invalid
      */
-    public void changeOngoingStateValue(int quark, IStateValue newValue)
+    public void changeOngoingStateValue(int quark, StateValue newValue)
             throws AttributeNotFoundException {
         fRWLock.writeLock().lock();
         try {
@@ -221,7 +218,7 @@ class TransientState {
             for (IStateInterval interval : newStateIntervals) {
                 fOngoingStateInfo.add(interval.getStateValue());
                 fOngoingStateStartTimes.add(interval.getStartTime());
-                fStateValueTypes.add(interval.getStateValue().getType());
+                fStateValueTypes.add(interval.getStateValue().getClass());
             }
         } finally {
             fRWLock.writeLock().unlock();
@@ -243,7 +240,7 @@ class TransientState {
              * at the first state change.
              */
             fOngoingStateInfo.add(StateValue.nullValue());
-            fStateValueTypes.add(Type.NULL);
+            fStateValueTypes.add(NullStateValue.class);
 
             fOngoingStateStartTimes.add(fBackend.getStartTime());
         } finally {
@@ -264,38 +261,35 @@ class TransientState {
      *             If 'eventTime' is invalid
      * @throws AttributeNotFoundException
      *             IF 'quark' does not represent an existing attribute
-     * @throws StateValueTypeException
-     *             If the state value to be inserted is of a different type of
-     *             what was inserted so far for this attribute.
      */
-    public void processStateChange(long eventTime, IStateValue value, int quark)
-            throws TimeRangeException, AttributeNotFoundException, StateValueTypeException {
+    public void processStateChange(long eventTime, StateValue value, int quark)
+            throws TimeRangeException, AttributeNotFoundException {
         if (!this.fIsActive) {
             return;
         }
 
         fRWLock.writeLock().lock();
         try {
-            Type expectedSvType = fStateValueTypes.get(quark);
+            Class<? extends StateValue> expectedSvType = fStateValueTypes.get(quark);
             checkValidAttribute(quark);
 
             /*
              * Make sure the state value type we're inserting is the same as the
              * one registered for this attribute.
              */
-            if (expectedSvType == Type.NULL) {
+            if (expectedSvType == NullStateValue.class) {
                 /*
                  * The value hasn't been used yet, set it to the value we're
                  * currently inserting (which might be null/-1 again).
                  */
-                fStateValueTypes.set(quark, value.getType());
-            } else if ((value.getType() != Type.NULL) && (value.getType() != expectedSvType)) {
+                fStateValueTypes.set(quark, value.getClass());
+            } else if ((value.getClass() != NullStateValue.class) && (value.getClass() != expectedSvType)) {
                 /*
                  * We authorize inserting null values in any type of attribute,
                  * but for every other types, it needs to match our
                  * expectations!
                  */
-                throw new StateValueTypeException(fBackend.getSSID() + " Quark:" + quark + ", Type:" + value.getType() + ", Expected:" + expectedSvType); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                throw new IllegalArgumentException(fBackend.getSSID() + " Quark:" + quark + ", Type:" + value.getClass().getSimpleName() + ", Expected:" + expectedSvType.getSimpleName()); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             }
 
             if (fOngoingStateInfo.get(quark).equals(value)) {

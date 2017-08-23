@@ -9,21 +9,16 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.junit.Test;
-
-import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static org.junit.Assert.*;
 
 /**
  * Tests for {@link BitwiseOrAggregationRule}.
@@ -65,12 +60,12 @@ public class BitwiseOrAggregationTest extends AggregationTestBase {
         int SOFTIRQ_RAISED = (1 << 1);
         int SOFTIRQ_ACTIVE = (1 << 0);
 
-        IStateValue NULL_VALUE = StateValue.nullValue();
-        IStateValue SOFTIRQ_RAISED_VALUE = StateValue.newValueInt(SOFTIRQ_RAISED);
-        IStateValue SOFTIRQ_ACTIVE_VALUE = StateValue.newValueInt(SOFTIRQ_ACTIVE);
+        StateValue NULL_VALUE = StateValue.nullValue();
+        StateValue SOFTIRQ_RAISED_VALUE = StateValue.newValueInt(SOFTIRQ_RAISED);
+        StateValue SOFTIRQ_ACTIVE_VALUE = StateValue.newValueInt(SOFTIRQ_ACTIVE);
 
         /* This one will never be inserted directly */
-        IStateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
+        StateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
                 StateValue.newValueInt(SOFTIRQ_ACTIVE | SOFTIRQ_RAISED);
 
         int quarkSoftirq = ss.getQuarkAbsoluteAndAdd("softirq");
@@ -132,7 +127,7 @@ public class BitwiseOrAggregationTest extends AggregationTestBase {
             ss.modifyAttribute(140, NULL_VALUE, quarkActive);
             assertEquals(NULL_VALUE, ss.queryOngoingState(quarkSoftirq));
 
-        } catch (StateValueTypeException | AttributeNotFoundException e) {
+        } catch (AttributeNotFoundException e) {
             fail(e.getMessage());
         }
 

@@ -10,29 +10,24 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import static java.util.Objects.requireNonNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
+import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
+import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
-import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static java.util.Objects.requireNonNull;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for stack-attributes in the Generic State System (using
@@ -52,11 +47,11 @@ public class StateSystemPushPopTest {
 
     /* State values that will be used */
     //private final static ITmfStateValue nullValue = TmfStateValue.nullValue();
-    private final static IStateValue value1 = StateValue.newValueString("A");
-    private final static IStateValue value2 = StateValue.newValueInt(10);
-    private final static IStateValue value3 = StateValue.nullValue();
-    private final static IStateValue value4 = StateValue.newValueString("D");
-    private final static IStateValue value5 = StateValue.newValueLong(Long.MAX_VALUE);
+    private final static StateValue value1 = StateValue.newValueString("A");
+    private final static StateValue value2 = StateValue.newValueInt(10);
+    private final static StateValue value3 = StateValue.nullValue();
+    private final static StateValue value4 = StateValue.newValueString("D");
+    private final static StateValue value5 = StateValue.newValueLong(Long.MAX_VALUE);
 
     /**
      * Initialization. We run the checks for the return values of
@@ -69,13 +64,11 @@ public class StateSystemPushPopTest {
      *             Fails the test
      * @throws AttributeNotFoundException
      *             Fails the test
-     * @throws StateValueTypeException
-     *             Fails the test
      */
     @Before
     public void setUp() throws IOException, TimeRangeException,
-            AttributeNotFoundException, StateValueTypeException {
-        IStateValue value;
+            AttributeNotFoundException {
+        StateValue value;
         testHtFile = File.createTempFile("test", ".ht");
 
         IStateHistoryBackend backend = StateHistoryBackendFactory.createHistoryTreeBackendNewFile(
@@ -168,10 +161,10 @@ public class StateSystemPushPopTest {
 
             /* Test the stack attributes themselves */
             IStateInterval interval = ss.querySingleState(11, attribute);
-            assertEquals(4, interval.getStateValue().unboxInt());
+            assertEquals(4, ((IntegerStateValue) interval.getStateValue()).getValue());
 
             interval = ss.querySingleState(24, attribute);
-            assertEquals(1, interval.getStateValue().unboxInt());
+            assertEquals(1, ((IntegerStateValue) interval.getStateValue()).getValue());
 
             /* Go retrieve the user values manually */
             interval = ss.querySingleState(10, subAttribute1);
@@ -268,7 +261,7 @@ public class StateSystemPushPopTest {
 
             /* Stack depth = 5 */
             state = ss.queryFullState(10);
-            assertEquals(5, state.get(attribute).getStateValue().unboxInt());
+            assertEquals(5, ((IntegerStateValue) state.get(attribute).getStateValue()).getValue());
             assertEquals(value1, state.get(subAttrib1).getStateValue());
             assertEquals(value2, state.get(subAttrib2).getStateValue());
             assertEquals(value3, state.get(subAttrib3).getStateValue());
@@ -284,7 +277,7 @@ public class StateSystemPushPopTest {
 
             /* Stack depth = 1 */
             state = ss.queryFullState(21);
-            assertEquals(1, state.get(attribute).getStateValue().unboxInt());
+            assertEquals(1, ((IntegerStateValue) state.get(attribute).getStateValue()).getValue());
             assertEquals(value1, state.get(subAttrib1).getStateValue());
             assertTrue(state.get(subAttrib2).getStateValue().isNull());
             assertTrue(state.get(subAttrib3).getStateValue().isNull());

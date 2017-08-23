@@ -9,18 +9,18 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Aggregation rule that does bitwise-OR operations of all specified attributes.
@@ -53,7 +53,7 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
     }
 
     @Override
-    public IStateValue getOngoingAggregatedState() {
+    public StateValue getOngoingAggregatedState() {
         OptionalInt value = getQuarkStream()
                 /* Query the value of each quark in the rule */
                 .map(quark -> {
@@ -64,7 +64,7 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
                         }
                     })
                 .filter(stateValue -> !stateValue.isNull())
-                .mapToInt(stateValue -> stateValue.unboxInt())
+                .mapToInt(stateValue -> ((IntegerStateValue) stateValue).getValue())
                 .reduce((a, b) -> a | b);
 
         if (value.isPresent()) {
@@ -91,10 +91,10 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
         /* Calculate the value */
         OptionalInt possibleValue = intervals.get()
                 .filter(stateInterval -> !stateInterval.getStateValue().isNull())
-                .mapToInt(stateInterval -> stateInterval.getStateValue().unboxInt())
+                .mapToInt(stateInterval -> ((IntegerStateValue) stateInterval.getStateValue()).getValue())
                 .reduce((a, b) -> a | b);
 
-        IStateValue value = (possibleValue.isPresent() ?
+        StateValue value = (possibleValue.isPresent() ?
                 StateValue.newValueInt(possibleValue.getAsInt()) :
                 StateValue.nullValue());
 

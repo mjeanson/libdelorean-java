@@ -12,7 +12,7 @@ package ca.polymtl.dorsal.libdelorean.aggregation;
 import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
  * Interface for state aggregation rules.
@@ -52,7 +52,7 @@ public interface IStateAggregationRule {
      *
      * @return The ongoing state of the mounted quark
      */
-    IStateValue getOngoingAggregatedState();
+    StateValue getOngoingAggregatedState();
 
     /**
      * Get the state of the aggregate quark.

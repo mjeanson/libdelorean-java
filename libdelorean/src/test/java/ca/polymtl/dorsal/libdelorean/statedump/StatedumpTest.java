@@ -9,11 +9,10 @@
 
 package ca.polymtl.dorsal.libdelorean.statedump;
 
-import static java.util.Objects.requireNonNull;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import com.google.common.io.MoreFiles;
+import org.eclipse.jdt.annotation.NonNull;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,13 +20,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.junit.Test;
-
-import com.google.common.io.MoreFiles;
-
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static java.util.Objects.requireNonNull;
+import static org.junit.Assert.*;
 
 /**
  * Tests for {@link Statedump}.
@@ -57,7 +51,7 @@ public class StatedumpTest {
                     new String[] { "Threads", "2000", "PPID" },
                     new String[] { "Threads", "2000", "Active" });
 
-            List<@NonNull IStateValue> initialValues = Arrays.asList(
+            List<@NonNull StateValue> initialValues = Arrays.asList(
                     StateValue.nullValue(),
                     StateValue.nullValue(),
                     StateValue.newValueString("Running"),
@@ -75,7 +69,7 @@ public class StatedumpTest {
             assertEquals(version, results.getVersion());
 
             List<String[]> newAttributes = results.getAttributes();
-            List<IStateValue> newValues = results.getStates();
+            List<StateValue> newValues = results.getStates();
             assertEquals(nbAttributes, newAttributes.size());
             assertEquals(nbAttributes, newValues.size());
 

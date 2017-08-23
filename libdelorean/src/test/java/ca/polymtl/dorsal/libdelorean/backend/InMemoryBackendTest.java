@@ -9,26 +9,21 @@
 
 package ca.polymtl.dorsal.libdelorean.backend;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
+import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Test cases for the in-memory backend
@@ -68,11 +63,8 @@ public class InMemoryBackendTest {
         assertNotNull(interval);
         assertEquals(startTime, interval.getStartTime());
         assertEquals(endTime, interval.getEndTime());
-        try {
-            assertEquals(value, interval.getStateValue().unboxInt());
-        } catch (StateValueTypeException e) {
-            fail(e.getMessage());
-        }
+        int actual = ((IntegerStateValue) interval.getStateValue()).getValue();
+        assertEquals(value, actual);
     }
 
 
@@ -182,7 +174,7 @@ public class InMemoryBackendTest {
             assertNotNull(interval);
             assertEquals(0, interval.getStartTime());
             assertEquals(90, interval.getEndTime());
-            assertEquals(0, interval.getStateValue().unboxInt());
+            assertEquals(0, ((IntegerStateValue) interval.getStateValue()).getValue());
 
         } catch (TimeRangeException | AttributeNotFoundException | StateSystemDisposedException e) {
             fail(e.getMessage());

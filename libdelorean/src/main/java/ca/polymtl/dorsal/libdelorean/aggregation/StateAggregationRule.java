@@ -9,14 +9,13 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import com.google.common.collect.ImmutableList;
-
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Common implementation for aggregation rules.
@@ -96,7 +95,7 @@ public abstract class StateAggregationRule implements IStateAggregationRule {
     }
 
     @Override
-    public abstract IStateValue getOngoingAggregatedState();
+    public abstract StateValue getOngoingAggregatedState();
 
     @Override
     public abstract IStateInterval getAggregatedState(long timestamp);

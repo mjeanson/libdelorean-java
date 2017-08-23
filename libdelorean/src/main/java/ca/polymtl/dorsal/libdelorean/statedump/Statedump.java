@@ -9,7 +9,16 @@
 
 package ca.polymtl.dorsal.libdelorean.statedump;
 
-import static java.util.Objects.requireNonNull;
+import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
+import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
+import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.statevalue.*;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,27 +27,11 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-
-import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Wrapper object representing a full query, along with its corresponding
@@ -58,7 +51,7 @@ public class Statedump {
     private static final String FILE_SUFFIX = ".statedump.json"; //$NON-NLS-1$
 
     private final List<String[]> fAttributes;
-    private final List<IStateValue> fStates;
+    private final List<StateValue> fStates;
     private final int fStatedumpVersion;
 
     /**
@@ -74,7 +67,7 @@ public class Statedump {
      * @throws IllegalArgumentException
      *             If the two arrays don't have the same size
      */
-    public Statedump(List<String[]> attributes, List<IStateValue> states, int version) {
+    public Statedump(List<String[]> attributes, List<StateValue> states, int version) {
         if (attributes.size() != states.size()) {
             throw new IllegalArgumentException("Both lists should have the same number of elements"); //$NON-NLS-1$
         }
@@ -111,7 +104,7 @@ public class Statedump {
         }
         fAttributes = attributesBuilder.build();
 
-        List<IStateValue> states = fullQuery.stream()
+        List<StateValue> states = fullQuery.stream()
                 .map(IStateInterval::getStateValue)
                 .collect(Collectors.toList());
         fStates = ImmutableList.copyOf(states);
@@ -133,7 +126,7 @@ public class Statedump {
      *
      * @return The state values
      */
-    public List<IStateValue> getStates() {
+    public List<StateValue> getStates() {
         return fStates;
     }
 
@@ -192,7 +185,7 @@ public class Statedump {
             /* Insert all the paths, types, and values */
             for (int i = 0; i < getAttributes().size(); i++) {
                 String[] attribute = getAttributes().get(i);
-                IStateValue sv = getStates().get(i);
+                StateValue sv = getStates().get(i);
 
                 Serialization.insertFrom(rootNode, attribute, 0, sv);
             }
@@ -271,19 +264,17 @@ public class Statedump {
         private static final String DOUBLE_POS_INF = "+inf"; //$NON-NLS-1$
         private static final String DOUBLE_NEG_INF = "-inf"; //$NON-NLS-1$
 
-        private static void insertStateValueInStateNode(JSONObject stateNode, IStateValue stateValue) throws JSONException {
+        private static void insertStateValueInStateNode(JSONObject stateNode, StateValue stateValue) throws JSONException {
 
             @NonNull String type;
             Object value;
 
-            switch (stateValue.getType()) {
-            case BOOLEAN:
+            if (stateValue instanceof BooleanStateValue) {
                 type = BOOLEAN_TYPE;
-                value = stateValue.unboxBoolean();
-                break;
-            case DOUBLE:
+                value = ((BooleanStateValue) stateValue).getValue();
+            } else if (stateValue instanceof DoubleStateValue) {
                 type = DOUBLE_TYPE;
-                double doubleValue = stateValue.unboxDouble();
+                double doubleValue = ((DoubleStateValue) stateValue).getValue();
 
                 if (Double.isNaN(doubleValue)) {
                     value = DOUBLE_NAN;
@@ -296,27 +287,21 @@ public class Statedump {
                 } else {
                     value = doubleValue;
                 }
-                break;
-            case INTEGER:
+            } else if (stateValue instanceof IntegerStateValue) {
                 type = INT_TYPE;
-                value = stateValue.unboxInt();
-                break;
-            case LONG:
+                value = ((IntegerStateValue) stateValue).getValue();
+            } else if (stateValue instanceof LongStateValue) {
                 type = LONG_TYPE;
-                value = stateValue.unboxLong();
-                break;
-            case NULL:
+                value = ((LongStateValue) stateValue).getValue();
+            } else if (stateValue instanceof NullStateValue) {
                 type = NULL_TYPE;
                 value = null;
-                break;
-            case STRING:
+            } else if (stateValue instanceof StringStateValue) {
                 type = STRING_TYPE;
-                value = stateValue.unboxStr();
-                break;
-            default:
+                value = ((StringStateValue) stateValue).getValue();
+            } else {
                 type = UNKNOWN_TYPE;
                 value = stateValue.toString();
-                break;
             }
 
             stateNode.put(TYPE_KEY, type);
@@ -325,7 +310,7 @@ public class Statedump {
             }
         }
 
-        private static void insertFrom(JSONObject stateNode, String[] attr, int attrIndex, IStateValue stateValue) throws JSONException {
+        private static void insertFrom(JSONObject stateNode, String[] attr, int attrIndex, StateValue stateValue) throws JSONException {
             if (attr.length == 0 || !stateNode.has(CHILDREN_KEY)) {
                 throw new IllegalStateException();
             }
@@ -350,8 +335,8 @@ public class Statedump {
             insertFrom(nearestChild, attr, attrIndex + 1, stateValue);
         }
 
-        private static @Nullable IStateValue stateValueFromJsonObject(JSONObject node) {
-            IStateValue stateValue;
+        private static @Nullable StateValue stateValueFromJsonObject(JSONObject node) {
+            StateValue stateValue;
 
             String type = node.optString(TYPE_KEY);
             if (type == null) {
@@ -451,8 +436,8 @@ public class Statedump {
         }
 
         private static boolean visitStateNode(JSONObject stateNode, List<String> attrStack,
-                List<String[]> attributes, List<IStateValue> values) {
-            IStateValue stateValue = null;
+                List<String[]> attributes, List<StateValue> values) {
+            StateValue stateValue = null;
             String[] attribute = attrStack.stream().toArray(String[]::new);
 
             /* Ignore if it's the root node */
@@ -511,7 +496,7 @@ public class Statedump {
 
         private static @Nullable Statedump stateDumpFromJsonObject(JSONObject root, String expectedSsid) {
             List<String[]> attributes = new ArrayList<>();
-            List<IStateValue> values = new ArrayList<>();
+            List<StateValue> values = new ArrayList<>();
 
             int statedumpVersion;
             JSONObject rootStateNode;

@@ -9,17 +9,16 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import java.util.Collections;
-import java.util.OptionalInt;
-
 import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+
+import java.util.Collections;
+import java.util.OptionalInt;
 
 /**
  * Simple aggregation that simply redirects to another attribute. Similar to a
@@ -50,7 +49,7 @@ public class SymbolicLinkRule extends StateAggregationRule {
     }
 
     @Override
-    public IStateValue getOngoingAggregatedState() {
+    public StateValue getOngoingAggregatedState() {
         OptionalInt possibleQuark = getQuarkStream()
                 .mapToInt(Integer::intValue)
                 .findFirst();

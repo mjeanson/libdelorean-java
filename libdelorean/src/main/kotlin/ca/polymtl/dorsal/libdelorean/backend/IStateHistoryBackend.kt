@@ -12,7 +12,7 @@
 package ca.polymtl.dorsal.libdelorean.backend
 
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.File
 import java.io.FileInputStream
 
@@ -39,7 +39,7 @@ interface IStateHistoryBackend {
     fun insertPastState(stateStartTime: Long,
                         stateEndTime: Long,
                         quark: Int,
-                        value: IStateValue)
+                        value: StateValue)
 
     /**
      * Indicate to the provider that we are done building the history (so it can

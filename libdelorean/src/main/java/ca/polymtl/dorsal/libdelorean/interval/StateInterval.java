@@ -11,11 +11,9 @@
 
 package ca.polymtl.dorsal.libdelorean.interval;
 
-import org.eclipse.jdt.annotation.NonNull;
-
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import com.google.common.base.MoreObjects;
-
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import org.eclipse.jdt.annotation.NonNull;
 
 import java.util.Objects;
 
@@ -31,7 +29,7 @@ public final class StateInterval implements IStateInterval {
     private final long start;
     private final long end;
     private final int attribute;
-    private final @NonNull IStateValue sv;
+    private final @NonNull StateValue sv;
 
     /**
      * Construct an interval from its given parameters
@@ -46,7 +44,7 @@ public final class StateInterval implements IStateInterval {
      *            State value this interval will contain
      */
     public StateInterval(long start, long end, int attribute,
-                         @NonNull IStateValue sv) {
+                         @NonNull StateValue sv) {
         this.start = start;
         this.end = end;
         this.attribute = attribute;
@@ -69,7 +67,7 @@ public final class StateInterval implements IStateInterval {
     }
 
     @Override
-    public IStateValue getStateValue() {
+    public StateValue getStateValue() {
         return sv;
     }
 

@@ -11,7 +11,7 @@
 package ca.polymtl.dorsal.libdelorean.backend;
 
 import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,7 +63,7 @@ class NullBackend implements IStateHistoryBackend {
      */
     @Override
     public void insertPastState(long stateStartTime, long stateEndTime,
-            int quark, IStateValue value) {
+            int quark, StateValue value) {
         /* The interval is always discarded. */
     }
 

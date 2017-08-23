@@ -9,22 +9,17 @@
 
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import org.eclipse.jdt.annotation.NonNull;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.junit.Test;
-
-import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.exceptions.StateValueTypeException;
-import ca.polymtl.dorsal.libdelorean.statevalue.IStateValue;
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static org.junit.Assert.*;
 
 /**
  * Tests for aggregates states that are using other aggregate states.
@@ -86,13 +81,13 @@ public class ChainedAggregationTest extends AggregationTestBase {
         int SOFTIRQ_ACTIVE = (1 << 2);
         int IRQ_ACTIVE = (1 << 3);
 
-        IStateValue PROCESS_ACTIVE_VALUE = StateValue.newValueInt(PROCESS_ACTIVE);
-        IStateValue SOFTIRQ_RAISED_VALUE = StateValue.newValueInt(SOFTIRQ_RAISED);
-        IStateValue SOFTIRQ_ACTIVE_VALUE = StateValue.newValueInt(SOFTIRQ_ACTIVE);
-        IStateValue IRQ_ACTIVE_VALUE = StateValue.newValueInt(IRQ_ACTIVE);
-        IStateValue NULL_VALUE = StateValue.nullValue();
+        StateValue PROCESS_ACTIVE_VALUE = StateValue.newValueInt(PROCESS_ACTIVE);
+        StateValue SOFTIRQ_RAISED_VALUE = StateValue.newValueInt(SOFTIRQ_RAISED);
+        StateValue SOFTIRQ_ACTIVE_VALUE = StateValue.newValueInt(SOFTIRQ_ACTIVE);
+        StateValue IRQ_ACTIVE_VALUE = StateValue.newValueInt(IRQ_ACTIVE);
+        StateValue NULL_VALUE = StateValue.nullValue();
 
-        IStateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
+        StateValue SOFTIRQ_RAISED_ACTIVE_VALUE =
                 StateValue.newValueInt(SOFTIRQ_RAISED | SOFTIRQ_ACTIVE);
 
         int quarkCpu = ss.getQuarkAbsoluteAndAdd("cpu");
@@ -162,7 +157,7 @@ public class ChainedAggregationTest extends AggregationTestBase {
             assertEquals(NULL_VALUE, ss.queryOngoingState(quarkCpu));
             assertEquals(NULL_VALUE, ss.queryOngoingState(quarkOtherCpu));
 
-        } catch (StateValueTypeException | AttributeNotFoundException e) {
+        } catch (AttributeNotFoundException e) {
             fail(e.getMessage());
         }
 
