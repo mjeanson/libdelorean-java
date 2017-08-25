@@ -13,9 +13,11 @@ sealed class StateValue(val isNull: Boolean = false) {
 
     companion object {
         private const val CACHE_SIZE = 128
+        private const val STRING_CACHE_SIZE = 256
         private val INT_CACHE = arrayOfNulls<IntegerStateValue>(CACHE_SIZE)
         private val LONG_CACHE = arrayOfNulls<LongStateValue>(CACHE_SIZE)
         private val DOUBLE_CACHE = arrayOfNulls<DoubleStateValue>(CACHE_SIZE)
+        private val STRING_CACHE = arrayOfNulls<StringStateValue>(STRING_CACHE_SIZE)
 
         private val NULL_VALUE = NullStateValue()
         private val BOOLEAN_VALUE_TRUE = BooleanStateValue(true)
@@ -81,8 +83,15 @@ sealed class StateValue(val isNull: Boolean = false) {
         @JvmStatic
         fun newValueString(strValue: String?): StateValue {
             if (strValue == null) {
-                return nullValue();
+                return nullValue()
             }
+            /* Check if this string is in the cache */
+            val offset = strValue.hashCode() and (STRING_CACHE_SIZE - 1)
+            val cached = STRING_CACHE[offset]
+            if (cached != null && cached.value == strValue) {
+                return cached
+            }
+
             /*
              * Make sure the String does not contain "weird" things, like ISO
              * control characters.
@@ -90,7 +99,9 @@ sealed class StateValue(val isNull: Boolean = false) {
             if (strValue.toCharArray().any { Character.isISOControl(it) }) {
                 throw IllegalArgumentException("Trying to use invalid string: $strValue")
             }
-            return StringStateValue(strValue);
+            val newValue = StringStateValue(strValue)
+            STRING_CACHE[offset] = newValue
+            return newValue
         }
 
     }
