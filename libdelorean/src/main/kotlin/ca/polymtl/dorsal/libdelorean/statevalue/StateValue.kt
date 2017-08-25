@@ -33,51 +33,51 @@ sealed class StateValue(val isNull: Boolean = false) {
         @JvmStatic
         fun newValueInt(intValue: Int): StateValue {
             /* Lookup in cache for the existence of the same value. */
-            val offset = intValue and (CACHE_SIZE - 1);
-            val cached = INT_CACHE[offset];
+            val offset = intValue and (CACHE_SIZE - 1)
+            val cached = INT_CACHE[offset]
             if (cached != null && cached.value == intValue) {
-                return cached;
+                return cached
             }
 
             /* Not in cache, create a new value and cache it. */
-            val newValue = IntegerStateValue(intValue);
-            INT_CACHE[offset] = newValue;
-            return newValue;
+            val newValue = IntegerStateValue(intValue)
+            INT_CACHE[offset] = newValue
+            return newValue
         }
 
         @JvmStatic
         fun newValueLong(longValue: Long): StateValue {
             /* Lookup in cache for the existence of the same value. */
             val offset = (longValue and (CACHE_SIZE - 1L)).toInt()
-            val cached = LONG_CACHE[offset];
+            val cached = LONG_CACHE[offset]
             if (cached != null && cached.value == longValue) {
-                return cached;
+                return cached
             }
 
             /* Not in cache, create a new value and cache it. */
-            val newValue = LongStateValue(longValue);
-            LONG_CACHE[offset] = newValue;
-            return newValue;
+            val newValue = LongStateValue(longValue)
+            LONG_CACHE[offset] = newValue
+            return newValue
         }
 
         @JvmStatic
         fun newValueDouble(doubleValue: Double): StateValue {
             /* Lookup in cache for the existence of the same value. */
             val offset = (java.lang.Double.doubleToLongBits(doubleValue) and (CACHE_SIZE - 1L)).toInt()
-            val cached = DOUBLE_CACHE[offset];
+            val cached = DOUBLE_CACHE[offset]
 
             /*
              * We're using Double.compareTo() instead of .equals(), because .compare()
              * works when both values are Double.NaN.
              */
             if (cached != null && (cached.value.compareTo(doubleValue) == 0)) {
-                return cached;
+                return cached
             }
 
             /* Not in cache, create a new value and cache it. */
-            val newValue = DoubleStateValue(doubleValue);
-            DOUBLE_CACHE[offset] = newValue;
-            return newValue;
+            val newValue = DoubleStateValue(doubleValue)
+            DOUBLE_CACHE[offset] = newValue
+            return newValue
         }
 
         @JvmStatic
