@@ -9,7 +9,7 @@
 
 package ca.polymtl.dorsal.libdelorean
 
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import com.google.common.annotations.VisibleForTesting
 import java.util.*
 
@@ -37,7 +37,7 @@ fun IStateSystemReader.iterator2D(rangeStart: Long,
     return StateIterator2D(this, rangeStart, rangeEnd, resolution, quarks)
 }
 
-class IterationStep2D(val ts: Long, val queryResults: Map<Int, IStateInterval>)
+class IterationStep2D(val ts: Long, val queryResults: Map<Int, StateInterval>)
 
 internal class StateIterator2D(private val ss: IStateSystemReader,
                                private val rangeStart: Long,
@@ -102,7 +102,7 @@ internal class StateIterator2D(private val ss: IStateSystemReader,
 }
 
 @VisibleForTesting
-internal fun determineNextQueryTs(interval: IStateInterval,
+internal fun determineNextQueryTs(interval: StateInterval,
                                   rangeStart: Long,
                                   currentQueryTs: Long,
                                   resolution: Long): Long {
@@ -113,10 +113,10 @@ internal fun determineNextQueryTs(interval: IStateInterval,
     }
 
     val nextResolutionPoint = currentQueryTs + resolution
-    return if (nextResolutionPoint > interval.endTime) {
+    return if (nextResolutionPoint > interval.end) {
         nextResolutionPoint
     } else {
-        val base = interval.endTime - rangeStart + 1
+        val base = interval.end - rangeStart + 1
         val newBase = roundToClosestHigherMultiple(base, resolution)
         newBase + rangeStart
     }

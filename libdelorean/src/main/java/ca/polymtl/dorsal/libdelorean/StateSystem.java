@@ -16,7 +16,7 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
@@ -535,7 +535,7 @@ class StateSystem implements IStateSystemWriter {
      * @param newStateIntervals
      *            The new List of state values to use as ongoing state info
      */
-    protected void replaceOngoingState(@NonNull List<@NonNull IStateInterval> newStateIntervals) {
+    protected void replaceOngoingState(@NonNull List<@NonNull StateInterval> newStateIntervals) {
         transState.replaceOngoingState(newStateIntervals);
     }
 
@@ -544,14 +544,14 @@ class StateSystem implements IStateSystemWriter {
     //--------------------------------------------------------------------------
 
     @Override
-    public synchronized List<IStateInterval> queryFullState(long t)
+    public synchronized List<StateInterval> queryFullState(long t)
             throws TimeRangeException, StateSystemDisposedException {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
         final int nbAttr = getNbAttributes();
-        List<@Nullable IStateInterval> stateInfo = new ArrayList<>(nbAttr);
+        List<@Nullable StateInterval> stateInfo = new ArrayList<>(nbAttr);
 
         /* Bring the size of the array to the current number of attributes */
         for (int i = 0; i < nbAttr; i++) {
@@ -575,14 +575,14 @@ class StateSystem implements IStateSystemWriter {
          */
         aggregationRules.values().forEach(rule -> {
             int quark = rule.getTargetQuark();
-            IStateInterval newValue = rule.getAggregatedState(t);
+            StateInterval newValue = rule.getAggregatedState(t);
             stateInfo.set(quark, newValue);
         });
 
         /*
          * We should have previously inserted an interval for every attribute.
          */
-        for (IStateInterval interval : stateInfo) {
+        for (StateInterval interval : stateInfo) {
             if (interval == null) {
                 throw new IllegalStateException("Incoherent interval storage"); //$NON-NLS-1$
             }
@@ -591,14 +591,14 @@ class StateSystem implements IStateSystemWriter {
     }
 
     @Override
-    public IStateInterval querySingleState(long t, int attributeQuark)
+    public StateInterval querySingleState(long t, int attributeQuark)
             throws AttributeNotFoundException, TimeRangeException, StateSystemDisposedException {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
         /* First check if the target quark is an aggregate */
-        IStateInterval ret = getAggregatedState(attributeQuark, t);
+        StateInterval ret = getAggregatedState(attributeQuark, t);
         if (ret != null) {
             return ret;
         }
@@ -624,12 +624,12 @@ class StateSystem implements IStateSystemWriter {
 
     @Override
     @NonNullByDefault
-    public Map<Integer, IStateInterval> queryStates(long t, Set<Integer> quarks) {
+    public Map<Integer, StateInterval> queryStates(long t, Set<Integer> quarks) {
         if (isDisposed) {
             throw new StateSystemDisposedException();
         }
 
-        Map<Integer, IStateInterval> results = new HashMap<>(quarks.size());
+        Map<Integer, StateInterval> results = new HashMap<>(quarks.size());
         Set<Integer> remainingQuarks = new HashSet<>(quarks);
 
         /*
@@ -641,7 +641,7 @@ class StateSystem implements IStateSystemWriter {
         while (iter.hasNext()) {
             int quark = iter.next();
             /* Check if it's an aggregate. */
-            IStateInterval interval = getAggregatedState(quark, t);
+            StateInterval interval = getAggregatedState(quark, t);
             if (interval == null) {
                 /* Check if it's in the transient state. */
                 interval = transState.getIntervalAt(t, quark);
@@ -678,7 +678,7 @@ class StateSystem implements IStateSystemWriter {
         return rule.getOngoingAggregatedState();
     }
 
-    private @Nullable IStateInterval getAggregatedState(int quark, long timestamp) {
+    private @Nullable StateInterval getAggregatedState(int quark, long timestamp) {
         IStateAggregationRule rule = aggregationRules.get(Integer.valueOf(quark));
         if (rule == null) {
             return null;

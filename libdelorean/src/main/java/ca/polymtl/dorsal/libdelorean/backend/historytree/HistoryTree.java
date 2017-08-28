@@ -469,8 +469,8 @@ class HistoryTree {
      *             If the start of end time of the interval are invalid
      */
     public void insertInterval(HTInterval interval) throws TimeRangeException {
-        if (interval.getStartTime() < fTreeStart) {
-            throw new TimeRangeException("Interval Start:" + interval.getStartTime() + ", Config Start:" + fTreeStart); //$NON-NLS-1$ //$NON-NLS-2$
+        if (interval.getStart() < fTreeStart) {
+            throw new TimeRangeException("Interval Start:" + interval.getStart() + ", Config Start:" + fTreeStart); //$NON-NLS-1$ //$NON-NLS-2$
         }
         tryInsertAtNode(interval, fLatestBranch.size() - 1);
     }
@@ -496,7 +496,7 @@ class HistoryTree {
         }
 
         /* Make sure the interval time range fits this node */
-        if (interval.getStartTime() < targetNode.getNodeStart()) {
+        if (interval.getStart() < targetNode.getNodeStart()) {
             /*
              * No, this interval starts before the startTime of this node. We
              * need to check recursively in parents if it can fit.
@@ -512,8 +512,8 @@ class HistoryTree {
         targetNode.addInterval(interval);
 
         /* Update treeEnd if needed */
-        if (interval.getEndTime() > fTreeEnd) {
-            fTreeEnd = interval.getEndTime();
+        if (interval.getEnd() > fTreeEnd) {
+            fTreeEnd = interval.getEnd();
         }
     }
 

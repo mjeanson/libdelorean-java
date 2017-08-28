@@ -16,7 +16,7 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
@@ -88,15 +88,15 @@ public abstract class AggregationTestBase {
 
         IStateSystemReader ss = getStateSystem();
         try {
-            IStateInterval interval1 = ss.querySingleState(timestamp, quark);
-            assertEquals(expectedStartTime, interval1.getStartTime());
-            assertEquals(expectedEndTime, interval1.getEndTime());
+            StateInterval interval1 = ss.querySingleState(timestamp, quark);
+            assertEquals(expectedStartTime, interval1.getStart());
+            assertEquals(expectedEndTime, interval1.getEnd());
             assertEquals(quark, interval1.getAttribute());
             assertEquals(expectedValue, interval1.getStateValue());
 
-            IStateInterval interval2 = ss.queryFullState(timestamp).get(quark);
-            assertEquals(expectedStartTime, interval2.getStartTime());
-            assertEquals(expectedEndTime, interval2.getEndTime());
+            StateInterval interval2 = ss.queryFullState(timestamp).get(quark);
+            assertEquals(expectedStartTime, interval2.getStart());
+            assertEquals(expectedEndTime, interval2.getEnd());
             assertEquals(quark, interval2.getAttribute());
             assertEquals(expectedValue, interval2.getStateValue());
 

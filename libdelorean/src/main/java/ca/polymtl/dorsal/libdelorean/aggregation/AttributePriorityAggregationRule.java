@@ -12,7 +12,6 @@ package ca.polymtl.dorsal.libdelorean.aggregation;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
@@ -80,7 +79,7 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
     }
 
     @Override
-    public IStateInterval getAggregatedState(long timestamp) {
+    public StateInterval getAggregatedState(long timestamp) {
         IStateSystemWriter ss = getStateSystem();
 
         /* First we need all the currently valid quarks */
@@ -96,12 +95,12 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
          * state, so they are ignored.
          */
 
-        List<IStateInterval> intervalsToUse = new ArrayList<>();
+        List<StateInterval> intervalsToUse = new ArrayList<>();
         StateValue value = StateValue.nullValue();
 
         try {
             for (Integer quark : quarks) {
-                IStateInterval interval = ss.querySingleState(timestamp, quark);
+                StateInterval interval = ss.querySingleState(timestamp, quark);
                 intervalsToUse.add(interval);
 
                 StateValue sv = interval.getStateValue();
@@ -112,11 +111,11 @@ public class AttributePriorityAggregationRule extends StateAggregationRule {
             }
 
             long start = intervalsToUse.stream()
-                    .mapToLong(IStateInterval::getStartTime)
+                    .mapToLong(StateInterval::getStart)
                     .max().orElse(ss.getStartTime());
 
             long end = intervalsToUse.stream()
-                    .mapToLong(IStateInterval::getEndTime)
+                    .mapToLong(StateInterval::getEnd)
                     .min().orElse(ss.getCurrentEndTime());
 
             return new StateInterval(start, end, getTargetQuark(), value);

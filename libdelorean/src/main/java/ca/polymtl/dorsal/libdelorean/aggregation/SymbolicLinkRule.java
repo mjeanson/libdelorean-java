@@ -13,7 +13,6 @@ import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
@@ -68,7 +67,7 @@ public class SymbolicLinkRule extends StateAggregationRule {
     }
 
     @Override
-    public IStateInterval getAggregatedState(long timestamp) {
+    public StateInterval getAggregatedState(long timestamp) {
         IStateSystemReader ss = getStateSystem();
 
         OptionalInt possibleQuark = getQuarkStream()
@@ -85,10 +84,10 @@ public class SymbolicLinkRule extends StateAggregationRule {
 
         try {
             int quark = possibleQuark.getAsInt();
-            IStateInterval otherInterval = getStateSystem().querySingleState(timestamp, quark);
+            StateInterval otherInterval = getStateSystem().querySingleState(timestamp, quark);
 
-            return new StateInterval(otherInterval.getStartTime(),
-                    otherInterval.getEndTime(),
+            return new StateInterval(otherInterval.getStart(),
+                    otherInterval.getEnd(),
                     getTargetQuark(),
                     otherInterval.getStateValue());
 

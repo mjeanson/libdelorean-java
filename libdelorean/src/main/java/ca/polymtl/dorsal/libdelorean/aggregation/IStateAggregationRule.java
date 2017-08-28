@@ -11,7 +11,7 @@ package ca.polymtl.dorsal.libdelorean.aggregation;
 
 import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 
 /**
@@ -61,5 +61,5 @@ public interface IStateAggregationRule {
      *            The timestamp of the query
      * @return The corresponding state interval
      */
-    IStateInterval getAggregatedState(long timestamp);
+    StateInterval getAggregatedState(long timestamp);
 }

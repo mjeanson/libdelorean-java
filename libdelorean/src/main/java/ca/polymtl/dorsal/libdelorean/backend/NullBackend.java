@@ -10,7 +10,7 @@
 
 package ca.polymtl.dorsal.libdelorean.backend;
 
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
@@ -102,7 +102,7 @@ class NullBackend implements IStateHistoryBackend {
      * currentStateInfo.
      */
     @Override
-    public void doQuery(List<IStateInterval> currentStateInfo, long t) {
+    public void doQuery(List<StateInterval> currentStateInfo, long t) {
         /* Cannot do past queries */
     }
 
@@ -112,16 +112,16 @@ class NullBackend implements IStateHistoryBackend {
      * @return Always returns null.
      */
     @Override
-    public IStateInterval doSingularQuery(long t, int attributeQuark) {
+    public StateInterval doSingularQuery(long t, int attributeQuark) {
         /* Cannot do past queries */
         return null;
     }
 
     // FIXME Needs to be implemented because of https://youtrack.jetbrains.com/issue/KT-4779
     @Override
-    public void doPartialQuery(long t, @NotNull Set<Integer> quarks, @NotNull Map<Integer, IStateInterval> results) {
+    public void doPartialQuery(long t, @NotNull Set<Integer> quarks, @NotNull Map<Integer, StateInterval> results) {
         quarks.forEach(quark -> {
-            IStateInterval interval = doSingularQuery(t, quark);
+            StateInterval interval = doSingularQuery(t, quark);
             if (interval != null) {
                 results.put(quark, interval);
             }

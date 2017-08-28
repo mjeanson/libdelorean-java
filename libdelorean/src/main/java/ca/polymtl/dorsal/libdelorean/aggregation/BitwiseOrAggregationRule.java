@@ -12,7 +12,6 @@ package ca.polymtl.dorsal.libdelorean.aggregation;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
@@ -74,11 +73,11 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
     }
 
     @Override
-    public IStateInterval getAggregatedState(long timestamp) {
+    public StateInterval getAggregatedState(long timestamp) {
         IStateSystemWriter ss = getStateSystem();
 
         /* We first need to get all the valid state intervals */
-        Supplier<Stream<IStateInterval>> intervals = () -> (getQuarkStream()
+        Supplier<Stream<StateInterval>> intervals = () -> (getQuarkStream()
                 .map(quark -> {
                         try {
                             return ss.querySingleState(timestamp, quark.intValue());
@@ -100,12 +99,12 @@ public class BitwiseOrAggregationRule extends StateAggregationRule {
 
         /* Calculate the dummy interval start (the latest one) */
         long start = intervals.get()
-                .mapToLong(IStateInterval::getStartTime)
+                .mapToLong(StateInterval::getStart)
                 .max().orElse(ss.getStartTime());
 
         /* Calculate the dummy interval end (the earliest one) */
         long end = intervals.get()
-                .mapToLong(IStateInterval::getEndTime)
+                .mapToLong(StateInterval::getEnd)
                 .min().orElse(ss.getCurrentEndTime());
 
         return new StateInterval(start, end, getTargetQuark(), value);

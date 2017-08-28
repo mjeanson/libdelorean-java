@@ -11,7 +11,7 @@ package ca.polymtl.dorsal.libdelorean.statedump;
 
 import ca.polymtl.dorsal.libdelorean.IStateSystemReader;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.*;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
@@ -88,7 +88,7 @@ public class Statedump {
      *            Version of the statedump
      */
     public Statedump(IStateSystemReader ss, long timestamp, int version) {
-        List<IStateInterval> fullQuery;
+        List<StateInterval> fullQuery;
         try {
             fullQuery = ss.queryFullState(timestamp);
         } catch (StateSystemDisposedException e1) {
@@ -105,7 +105,7 @@ public class Statedump {
         fAttributes = attributesBuilder.build();
 
         List<StateValue> states = fullQuery.stream()
-                .map(IStateInterval::getStateValue)
+                .map(StateInterval::getStateValue)
                 .collect(Collectors.toList());
         fStates = ImmutableList.copyOf(states);
 

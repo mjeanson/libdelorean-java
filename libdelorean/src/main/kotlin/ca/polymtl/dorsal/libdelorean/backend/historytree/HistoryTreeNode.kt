@@ -9,7 +9,7 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree
 
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -186,7 +186,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
 
         /* Find the insert position to keep the list sorted */
         var index = intervals.size
-        while (index > 0 && newInterval < intervals[index - 1]) {
+        while (index > 0 && newInterval.end < intervals[index - 1].end) {
             index--
         }
 
@@ -217,7 +217,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
              * EndTime > the one requested. Only need to check the last one
              * since they are sorted
              */
-            if (endTime < intervals.last().endTime) {
+            if (endTime < intervals.last().end) {
                 throw IllegalArgumentException("Closing end time should be greater than or equal to the end time of the intervals of this node")
             }
         }
@@ -236,7 +236,7 @@ sealed class HistoryTreeNode(val blockSize: Int,
      *            intervals that intersect t.
      */
     @Synchronized
-    fun writeInfoFromNode(stateInfo: MutableList<IStateInterval?>, t: Long) {
+    fun writeInfoFromNode(stateInfo: MutableList<StateInterval?>, t: Long) {
         intervalIterator(t, null).forEach { stateInfo[it.attribute] = it }
     }
 

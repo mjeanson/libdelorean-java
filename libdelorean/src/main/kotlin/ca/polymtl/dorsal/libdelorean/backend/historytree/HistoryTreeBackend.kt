@@ -14,7 +14,7 @@ package ca.polymtl.dorsal.libdelorean.backend.historytree
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.File
 import java.io.FileInputStream
@@ -138,7 +138,7 @@ class HistoryTreeBackend private constructor(override val SSID: String,
         }
     }
 
-    override fun doQuery(stateInfo: MutableList<IStateInterval?>, t: Long) {
+    override fun doQuery(stateInfo: MutableList<StateInterval?>, t: Long) {
         checkValidTime(t)
 
         /* We start by reading the information in the root node */
@@ -174,7 +174,7 @@ class HistoryTreeBackend private constructor(override val SSID: String,
     }
 
 
-    override fun doPartialQuery(t: Long, quarks: Set<Int>, results: MutableMap<Int, IStateInterval>) {
+    override fun doPartialQuery(t: Long, quarks: Set<Int>, results: MutableMap<Int, StateInterval>) {
         checkValidTime(t)
         var remaining = quarks.size
 

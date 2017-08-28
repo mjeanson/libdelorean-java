@@ -10,7 +10,7 @@
 package ca.polymtl.dorsal.libdelorean.aggregation;
 
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import com.google.common.collect.ImmutableList;
 
@@ -98,6 +98,6 @@ public abstract class StateAggregationRule implements IStateAggregationRule {
     public abstract StateValue getOngoingAggregatedState();
 
     @Override
-    public abstract IStateInterval getAggregatedState(long timestamp);
+    public abstract StateInterval getAggregatedState(long timestamp);
 
 }

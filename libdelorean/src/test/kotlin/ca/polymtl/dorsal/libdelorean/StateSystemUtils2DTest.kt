@@ -11,7 +11,6 @@ package ca.polymtl.dorsal.libdelorean
 
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import org.junit.After
@@ -131,7 +130,7 @@ class StateSystemUtils2DTest {
         val iter = stateSystem.iterator2D(START_TIME, END_TIME, 1, setOf(quark1, quark2, quark3, quark4))
         val actualIntervals = iter.asSequence()
                 .flatMap { it.queryResults.values.asSequence() }
-                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .sortedWith(compareBy({ it.attribute }, { it.start }))
                 .toList()
 
         /* We should have all the intervals in the state system */
@@ -174,7 +173,7 @@ class StateSystemUtils2DTest {
         val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 1, setOf(quark1, quark2, quark3))
         val actualIntervals = iter.asSequence()
                 .flatMap { it.queryResults.values.asSequence() }
-                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .sortedWith(compareBy({ it.attribute }, { it.start }))
                 .toList()
 
         /* Only quark 1, 2 and 3, and only intervals inside the time range */
@@ -202,7 +201,7 @@ class StateSystemUtils2DTest {
         val iter = stateSystem.iterator2D(rangeStart, rangeEnd, 100, setOf(quark1, quark2, quark3, quark4))
         val actualIntervals = iter.asSequence()
                 .flatMap { it.queryResults.values.asSequence() }
-                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .sortedWith(compareBy({ it.attribute }, { it.start }))
                 .toList()
 
         /*
@@ -229,7 +228,7 @@ class StateSystemUtils2DTest {
         val iter = stateSystem.iterator2D(START_TIME, 1550, 500, setOf(quark3, quark4))
         val actualIntervals = iter.asSequence()
                 .flatMap { it.queryResults.values.asSequence() }
-                .sortedWith(compareBy({ it.attribute }, { it.startTime }))
+                .sortedWith(compareBy({ it.attribute }, { it.start }))
                 .toList()
 
         /* Resolution points are 1000, 1500, 1550 (rangeEnd) */
@@ -240,7 +239,7 @@ class StateSystemUtils2DTest {
         assertEquals(expectedIntervals, actualIntervals)
     }
 
-    private fun intervalFrom(start: Long, end: Long, quark: Int, intStateValue: Int?): IStateInterval =
+    private fun intervalFrom(start: Long, end: Long, quark: Int, intStateValue: Int?): StateInterval =
             StateInterval(start, end, quark,
                     if (intStateValue == null) StateValue.nullValue() else StateValue.newValueInt(intStateValue))
 }

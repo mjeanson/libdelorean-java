@@ -11,7 +11,7 @@
 
 package ca.polymtl.dorsal.libdelorean.backend
 
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue
 import java.io.File
 import java.io.FileInputStream
@@ -109,7 +109,7 @@ interface IStateHistoryBackend {
      * @param t
      *            Target timestamp of the query
      */
-    fun doQuery(stateInfo: MutableList<IStateInterval?>, t: Long)
+    fun doQuery(stateInfo: MutableList<StateInterval?>, t: Long)
 
     /**
      * Some providers might want to specify a different way to obtain just a
@@ -123,7 +123,7 @@ interface IStateHistoryBackend {
      *            The single attribute for which you want the state interval
      * @return The state interval matching this timestamp/attribute pair
      */
-     fun doSingularQuery(t: Long, attributeQuark: Int): IStateInterval?
+     fun doSingularQuery(t: Long, attributeQuark: Int): StateInterval?
 
     /**
      * Do a query for the specified quarks only. The results will be inserted
@@ -142,7 +142,7 @@ interface IStateHistoryBackend {
      */
     fun doPartialQuery(t: Long,
                        quarks: Set<Int>,
-                       results: MutableMap<Int, IStateInterval>) {
+                       results: MutableMap<Int, StateInterval>) {
         quarks.map { doSingularQuery(t, it) }
                 .filterNotNull()
                 .forEach { results.put(it.attribute, it) }

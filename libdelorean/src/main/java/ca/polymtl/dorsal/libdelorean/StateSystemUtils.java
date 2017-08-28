@@ -13,7 +13,7 @@ package ca.polymtl.dorsal.libdelorean;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -60,8 +60,8 @@ public final class StateSystemUtils {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    public static @Nullable IStateInterval querySingleStackTop(IStateSystemReader ss,
-                                                               long t, int stackAttributeQuark)
+    public static @Nullable StateInterval querySingleStackTop(IStateSystemReader ss,
+                                                              long t, int stackAttributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException {
         StateValue curStackStateValue = ss.querySingleState(t, stackAttributeQuark).getStateValue();
 
@@ -109,12 +109,12 @@ public final class StateSystemUtils {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    public static List<IStateInterval> queryHistoryRange(IStateSystemReader ss,
-                                                         int attributeQuark, long t1, long t2)
+    public static List<StateInterval> queryHistoryRange(IStateSystemReader ss,
+                                                        int attributeQuark, long t1, long t2)
             throws AttributeNotFoundException, StateSystemDisposedException {
 
-        List<IStateInterval> intervals;
-        IStateInterval currentInterval;
+        List<StateInterval> intervals;
+        StateInterval currentInterval;
         long ts, tEnd;
 
         /* Make sure the time range makes sense */
@@ -135,12 +135,12 @@ public final class StateSystemUtils {
         intervals.add(currentInterval);
 
         /* Get the following state changes */
-        ts = currentInterval.getEndTime();
+        ts = currentInterval.getEnd();
         while (ts != -1 && ts < tEnd) {
             ts++; /* To "jump over" to the next state in the history */
             currentInterval = ss.querySingleState(ts, attributeQuark);
             intervals.add(currentInterval);
-            ts = currentInterval.getEndTime();
+            ts = currentInterval.getEnd();
         }
         return intervals;
     }
@@ -176,11 +176,11 @@ public final class StateSystemUtils {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    public static List<IStateInterval> queryHistoryRange(IStateSystemReader ss,
+    public static List<StateInterval> queryHistoryRange(IStateSystemReader ss,
                                                          int attributeQuark, long t1, long t2, long resolution, @Nullable FutureTask<?> task)
             throws AttributeNotFoundException, StateSystemDisposedException {
-        List<IStateInterval> intervals = new LinkedList<>();
-        IStateInterval currentInterval = null;
+        List<StateInterval> intervals = new LinkedList<>();
+        StateInterval currentInterval = null;
         long ts, tEnd;
 
         /* Make sure the time range makes sense */
@@ -199,7 +199,7 @@ public final class StateSystemUtils {
          * Iterate over the "resolution points". We skip unneeded queries in the
          * case the current interval is longer than the resolution.
          */
-        for (ts = t1; ts <= tEnd; ts += ((currentInterval.getEndTime() - ts) / resolution + 1) * resolution) {
+        for (ts = t1; ts <= tEnd; ts += ((currentInterval.getEnd() - ts) / resolution + 1) * resolution) {
             if (task != null && task.isCancelled()) {
                 return intervals;
             }
@@ -208,7 +208,7 @@ public final class StateSystemUtils {
         }
 
         /* Add the interval at t2, if it wasn't included already. */
-        if (currentInterval != null && currentInterval.getEndTime() < tEnd) {
+        if (currentInterval != null && currentInterval.getEnd() < tEnd) {
             currentInterval = ss.querySingleState(tEnd, attributeQuark);
             intervals.add(currentInterval);
         }
@@ -232,8 +232,8 @@ public final class StateSystemUtils {
      *         value, or <code>null</code> if no interval was found once we
      *         reach either t2 or the end time of the state system.
      */
-    public static @Nullable IStateInterval queryUntilNonNullValue(IStateSystemReader ss,
-                                                                  int attributeQuark, long t1, long t2) {
+    public static @Nullable StateInterval queryUntilNonNullValue(IStateSystemReader ss,
+                                                                 int attributeQuark, long t1, long t2) {
 
         long current = t1;
         /* Make sure the range is ok */
@@ -251,13 +251,13 @@ public final class StateSystemUtils {
 
         try {
             while (current < t2) {
-                IStateInterval currentInterval = ss.querySingleState(current, attributeQuark);
+                StateInterval currentInterval = ss.querySingleState(current, attributeQuark);
                 StateValue value = currentInterval.getStateValue();
 
                 if (!value.isNull()) {
                     return currentInterval;
                 }
-                current = currentInterval.getEndTime() + 1;
+                current = currentInterval.getEnd() + 1;
             }
         } catch (AttributeNotFoundException | StateSystemDisposedException | TimeRangeException e) {
             /* Nothing to do */

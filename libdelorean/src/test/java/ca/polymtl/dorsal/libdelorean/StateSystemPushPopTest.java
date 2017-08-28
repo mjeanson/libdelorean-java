@@ -15,7 +15,7 @@ import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.junit.After;
@@ -135,14 +135,14 @@ public class StateSystemPushPopTest {
     @Test
     public void testBeginEnd() {
         try {
-            IStateInterval interval = ss.querySingleState(0, attribute);
-            assertEquals(0, interval.getStartTime());
-            assertEquals(1, interval.getEndTime());
+            StateInterval interval = ss.querySingleState(0, attribute);
+            assertEquals(0, interval.getStart());
+            assertEquals(1, interval.getEnd());
             assertTrue(interval.getStateValue().isNull());
 
             interval = ss.querySingleState(29, attribute);
-            assertEquals(26, interval.getStartTime());
-            assertEquals(30, interval.getEndTime());
+            assertEquals(26, interval.getStart());
+            assertEquals(30, interval.getEnd());
             assertTrue(interval.getStateValue().isNull());
 
         } catch (AttributeNotFoundException | TimeRangeException | StateSystemDisposedException e) {
@@ -160,7 +160,7 @@ public class StateSystemPushPopTest {
             final int subAttribute2 = ss.getQuarkRelative(attribute, "2");
 
             /* Test the stack attributes themselves */
-            IStateInterval interval = ss.querySingleState(11, attribute);
+            StateInterval interval = ss.querySingleState(11, attribute);
             assertEquals(4, ((IntegerStateValue) interval.getStateValue()).getValue());
 
             interval = ss.querySingleState(24, attribute);
@@ -190,7 +190,7 @@ public class StateSystemPushPopTest {
         assertNotNull(ss2);
 
         try {
-            IStateInterval interval = StateSystemUtils.querySingleStackTop(ss2, 10, attribute);
+            StateInterval interval = StateSystemUtils.querySingleStackTop(ss2, 10, attribute);
             assertNotNull(interval);
             assertEquals(value5, interval.getStateValue());
 
@@ -225,7 +225,7 @@ public class StateSystemPushPopTest {
 
         try {
             /* At the start */
-            IStateInterval interval = ss.querySingleState(1, attribute);
+            StateInterval interval = ss.querySingleState(1, attribute);
             assertTrue(interval.getStateValue().isNull());
             interval = StateSystemUtils.querySingleStackTop(ss2, 1, attribute);
             assertEquals(null, interval);
@@ -252,7 +252,7 @@ public class StateSystemPushPopTest {
      */
     @Test
     public void testFullQueries() {
-        List<IStateInterval> state;
+        List<StateInterval> state;
         try {
             final int subAttrib1 = ss.getQuarkRelative(attribute, "1");
             final int subAttrib2 = ss.getQuarkRelative(attribute, "2");

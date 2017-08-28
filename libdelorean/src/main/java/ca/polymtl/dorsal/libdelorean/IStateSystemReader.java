@@ -13,7 +13,7 @@ package ca.polymtl.dorsal.libdelorean;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -136,7 +136,7 @@ public interface IStateSystemReader extends IStateSystemQuarkResolver {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    List<@NonNull IStateInterval> queryFullState(long t)
+    List<@NonNull StateInterval> queryFullState(long t)
             throws StateSystemDisposedException;
 
     /**
@@ -161,7 +161,7 @@ public interface IStateSystemReader extends IStateSystemQuarkResolver {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    IStateInterval querySingleState(long t, int attributeQuark)
+    StateInterval querySingleState(long t, int attributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException;
 
     /**
@@ -178,5 +178,5 @@ public interface IStateSystemReader extends IStateSystemQuarkResolver {
      *             If the query is sent after the state system has been
      *             disposed.
      */
-    Map<Integer, IStateInterval> queryStates(long t, Set<Integer> quarks);
+    Map<Integer, StateInterval> queryStates(long t, Set<Integer> quarks);
 }

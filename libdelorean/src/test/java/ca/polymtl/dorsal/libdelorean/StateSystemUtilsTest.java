@@ -12,7 +12,7 @@ package ca.polymtl.dorsal.libdelorean;
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 import ca.polymtl.dorsal.libdelorean.backend.StateHistoryBackendFactory;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import ca.polymtl.dorsal.libdelorean.interval.IStateInterval;
+import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import org.eclipse.jdt.annotation.NonNull;
@@ -86,7 +86,7 @@ public class StateSystemUtilsTest {
              * Should return the right interval if an interval is within range,
              * even if the range starts or ends outside state system range
              */
-            IStateInterval interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1000L, 1300L);
+            StateInterval interval = StateSystemUtils.queryUntilNonNullValue(ss, quark, 1000L, 1300L);
             assertNotNull(interval);
             assertTrue(interval.getStateValue() instanceof IntegerStateValue);
             assertEquals(10, ((IntegerStateValue) interval.getStateValue()).getValue());
