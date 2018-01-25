@@ -12,6 +12,8 @@ package ca.polymtl.dorsal.libdelorean
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import com.google.common.annotations.VisibleForTesting
 import java.util.*
+import kotlin.math.ceil
+import kotlin.math.min
 
 /**
  * Query the state system in a two-dimensional fashion in one go, one
@@ -28,7 +30,7 @@ fun IStateSystemReader.iterator2D(rangeStart: Long,
 
     /* Check parameters */
     if (rangeStart < this.startTime || rangeEnd > this.currentEndTime) {
-        throw IllegalArgumentException()
+        throw IllegalArgumentException("Requested query time range = [$rangeStart, $rangeEnd], state system time range is [$startTime, $currentEndTime].")
     }
     if (quarks.isEmpty()) {
         return Collections.emptyIterator()
@@ -46,6 +48,7 @@ internal class StateIterator2D(private val ss: IStateSystemReader,
                                quarks: Set<Int>) : AbstractIterator<IterationStep2D>() {
 
     private val prio: Queue<QueryTarget> = PriorityQueue(quarks.size, compareBy { it.ts })
+
     init {
         quarks.forEach { prio.offer(QueryTarget(it, rangeStart)) }
     }
@@ -85,7 +88,7 @@ internal class StateIterator2D(private val ss: IStateSystemReader,
         val nextResPoint = if (queryTs == rangeEnd) {
             queryTs + resolution
         } else {
-            Math.min(queryTs + resolution, rangeEnd)
+            min(queryTs + resolution, rangeEnd)
         }
         val results = queryResults.filter { it.value.intersects(nextResPoint) }
         return setNext(IterationStep2D(queryTs, results))
@@ -134,5 +137,5 @@ internal fun determineNextQueryTs(interval: StateInterval,
  * @return The closest, greater multiple
  */
 private fun roundToClosestHigherMultiple(number: Long, multipleOf: Long): Long {
-    return (Math.ceil(number.toDouble() / multipleOf) * multipleOf).toLong()
+    return (ceil(number.toDouble() / multipleOf) * multipleOf).toLong()
 }
