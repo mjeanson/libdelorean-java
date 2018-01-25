@@ -109,16 +109,6 @@ class StateSystemUtils2DTest {
         assertEquals(450, ts3)
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun testInvalidRangeStart() {
-        stateSystem.iterator2D(START_TIME - 10, START_TIME + 10, 1, emptySet())
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun testInvalidRangeEnd() {
-        stateSystem.iterator2D(END_TIME - 10, END_TIME + 10, 1, emptySet())
-    }
-
     @Test
     fun testEmptySet() {
         val iter = stateSystem.iterator2D(START_TIME + 10, END_TIME - 10, 1, emptySet())

@@ -13,6 +13,7 @@ import ca.polymtl.dorsal.libdelorean.interval.StateInterval
 import com.google.common.annotations.VisibleForTesting
 import java.util.*
 import kotlin.math.ceil
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -28,15 +29,21 @@ fun IStateSystemReader.iterator2D(rangeStart: Long,
                                   resolution: Long,
                                   quarks: Set<Int>): Iterator<IterationStep2D> {
 
-    /* Check parameters */
-    if (rangeStart < this.startTime || rangeEnd > this.currentEndTime) {
-        throw IllegalArgumentException("Requested query time range = [$rangeStart, $rangeEnd], state system time range is [$startTime, $currentEndTime].")
+    if (rangeStart > rangeEnd) throw IllegalArgumentException("Invalid time range [$rangeStart, $rangeEnd], start is higher than end.")
+
+    if (rangeEnd <= this.startTime || rangeStart >= this.currentEndTime) {
+        /* The range is completely outside of the state system's range, nothing will be found. */
+        return Collections.emptyIterator()
     }
+
     if (quarks.isEmpty()) {
         return Collections.emptyIterator()
     }
 
-    return StateIterator2D(this, rangeStart, rangeEnd, resolution, quarks)
+    val actualStart = max(rangeStart, startTime)
+    val actualEnd = min(rangeEnd, currentEndTime)
+
+    return StateIterator2D(this, actualStart, actualEnd, resolution, quarks)
 }
 
 class IterationStep2D(val ts: Long, val queryResults: Map<Int, StateInterval>)
