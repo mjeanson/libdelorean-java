@@ -12,7 +12,6 @@ package ca.polymtl.dorsal.libdelorean.backend;
 
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -31,7 +30,7 @@ import java.util.Set;
  */
 class NullBackend implements IStateHistoryBackend {
 
-    private final @NonNull String ssid;
+    private final @NotNull String ssid;
 
     /**
      * Constructor
@@ -39,7 +38,7 @@ class NullBackend implements IStateHistoryBackend {
      * @param ssid
      *            The state system's id
      */
-    public NullBackend(@NonNull String ssid) {
+    public NullBackend(@NotNull String ssid) {
         this.ssid = ssid;
     }
 

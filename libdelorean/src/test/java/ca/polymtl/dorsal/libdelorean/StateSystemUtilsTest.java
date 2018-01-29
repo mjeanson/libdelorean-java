@@ -15,7 +15,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
 public class StateSystemUtilsTest {
 
     private static final long START_TIME = 1000L;
-    private static final @NonNull String DUMMY_STRING = "test"; //$NON-NLS-1$
+    private static final @NotNull String DUMMY_STRING = "test"; //$NON-NLS-1$
 
     private IStateSystemWriter fStateSystem;
 

@@ -15,7 +15,6 @@ import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -88,7 +87,7 @@ public class InMemoryBackendTest {
      */
     @Test
     public void testDoQuery() {
-        List<@Nullable StateInterval> interval = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
+        List<StateInterval> interval = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
         for (int i = 0; i < NUMBER_OF_ATTRIBUTES; i++) {
             interval.add(null);
         }
@@ -134,7 +133,7 @@ public class InMemoryBackendTest {
             testInterval(interval[8], 908, 998, 9);
             testInterval(interval[9], 909, 999, 9);
 
-            List<@Nullable StateInterval> intervalQuery = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
+            List<StateInterval> intervalQuery = new ArrayList<>(NUMBER_OF_ATTRIBUTES);
             for (int i = 0; i < NUMBER_OF_ATTRIBUTES; i++) {
                 intervalQuery.add(null);
             }

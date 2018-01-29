@@ -19,9 +19,8 @@ import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +56,7 @@ class StateSystem implements IStateSystemWriter {
      * Map to store the state aggregation rules. The key the quark, effectively
      * limiting each quark to one rule.
      */
-    private final @NonNull Map<@NonNull Integer, @NonNull IStateAggregationRule> aggregationRules = new ConcurrentHashMap<>();
+    private final @NotNull Map<Integer, IStateAggregationRule> aggregationRules = new ConcurrentHashMap<>();
 
     /* Latch tracking if the state history is done building or not */
     private final CountDownLatch finishedLatch = new CountDownLatch(1);
@@ -71,7 +70,7 @@ class StateSystem implements IStateSystemWriter {
      * @param backend
      *            Back-end plugin to use
      */
-    public StateSystem(@NonNull IStateHistoryBackend backend) {
+    public StateSystem(@NotNull IStateHistoryBackend backend) {
         this.backend = backend;
         this.transState = new TransientState(backend);
         this.attributeTree = new AttributeTree(this);
@@ -88,7 +87,7 @@ class StateSystem implements IStateSystemWriter {
      * @throws IOException
      *             If there was a problem creating the new history file
      */
-    public StateSystem(@NonNull IStateHistoryBackend backend, boolean newFile)
+    public StateSystem(@NotNull IStateHistoryBackend backend, boolean newFile)
             throws IOException {
         this.backend = backend;
         this.transState = new TransientState(backend);
@@ -275,8 +274,8 @@ class StateSystem implements IStateSystemWriter {
     }
 
     @Override
-    public List<@NonNull Integer> getQuarks(String... pattern) {
-        List<@NonNull Integer> quarks = new LinkedList<>();
+    public List<Integer> getQuarks(String... pattern) {
+        List<Integer> quarks = new LinkedList<>();
         List<String> prefix = new LinkedList<>();
         List<String> suffix = new LinkedList<>();
         boolean split = false;
@@ -535,7 +534,7 @@ class StateSystem implements IStateSystemWriter {
      * @param newStateIntervals
      *            The new List of state values to use as ongoing state info
      */
-    protected void replaceOngoingState(@NonNull List<@NonNull StateInterval> newStateIntervals) {
+    protected void replaceOngoingState(@NotNull List<StateInterval> newStateIntervals) {
         transState.replaceOngoingState(newStateIntervals);
     }
 
@@ -551,7 +550,7 @@ class StateSystem implements IStateSystemWriter {
         }
 
         final int nbAttr = getNbAttributes();
-        List<@Nullable StateInterval> stateInfo = new ArrayList<>(nbAttr);
+        List<StateInterval> stateInfo = new ArrayList<>(nbAttr);
 
         /* Bring the size of the array to the current number of attributes */
         for (int i = 0; i < nbAttr; i++) {
@@ -623,7 +622,6 @@ class StateSystem implements IStateSystemWriter {
     }
 
     @Override
-    @NonNullByDefault
     public Map<Integer, StateInterval> queryStates(long t, Set<Integer> quarks) {
         if (isDisposed) {
             throw new StateSystemDisposedException();
@@ -663,7 +661,7 @@ class StateSystem implements IStateSystemWriter {
     // --------------------------------------------------------------------------
 
     @Override
-    public void addAggregationRule(@NonNull IStateAggregationRule rule) {
+    public void addAggregationRule(@NotNull IStateAggregationRule rule) {
         if (rule.getStateSystem() != this) {
             throw new IllegalArgumentException();
         }

@@ -14,7 +14,7 @@ import ca.polymtl.dorsal.libdelorean.aggregation.IStateAggregationRule;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This is the external interface to build or modify an existing state history.
@@ -101,7 +101,7 @@ public interface IStateSystemWriter extends IStateSystemReader {
      * @throws AttributeNotFoundException
      *             If the requested attribute is invalid
      */
-    void updateOngoingState(@NonNull StateValue newValue, int attributeQuark)
+    void updateOngoingState(@NotNull StateValue newValue, int attributeQuark)
             throws AttributeNotFoundException;
 
     /**
@@ -229,5 +229,5 @@ public interface IStateSystemWriter extends IStateSystemReader {
      *            Aggregation rule to add
      * @see IStateAggregationRule
      */
-    void addAggregationRule(@NonNull IStateAggregationRule rule);
+    void addAggregationRule(@NotNull IStateAggregationRule rule);
 }

@@ -12,8 +12,6 @@ package ca.polymtl.dorsal.libdelorean;
 
 import java.io.IOException;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
 
 /**
@@ -25,7 +23,6 @@ import ca.polymtl.dorsal.libdelorean.backend.IStateHistoryBackend;
  *
  * @author Alexandre Montplaisir
  */
-@NonNullByDefault
 public final class StateSystemFactory {
 
     private StateSystemFactory() {}

@@ -10,12 +10,10 @@
 
 package ca.polymtl.dorsal.libdelorean.backend;
 
+import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
+
 import java.io.File;
 import java.io.IOException;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
-import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
 
 /**
  * Factory for the various types {@link IStateHistoryBackend} supplied by this
@@ -23,7 +21,6 @@ import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
  *
  * @author Alexandre Montplaisir
  */
-@NonNullByDefault
 public final class StateHistoryBackendFactory {
 
     private StateHistoryBackendFactory() {}

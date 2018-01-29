@@ -14,7 +14,7 @@ package ca.polymtl.dorsal.libdelorean.backend.historytree;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import com.google.common.collect.ImmutableList;
-import org.eclipse.jdt.annotation.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,7 +74,7 @@ class HistoryTree {
     private int fNodeCount;
 
     /** "Cache" to keep the active nodes in memory */
-    private final @NonNull List<@NonNull HistoryTreeNode> fLatestBranch;
+    private final @NotNull List<HistoryTreeNode> fLatestBranch;
 
     // ------------------------------------------------------------------------
     // Constructors/"Destructors"
@@ -243,8 +243,8 @@ class HistoryTree {
      *            start
      * @throws ClosedChannelException
      */
-    private synchronized @NonNull List<@NonNull HistoryTreeNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
-        List<@NonNull HistoryTreeNode> list = new ArrayList<>();
+    private synchronized @NotNull List<HistoryTreeNode> buildLatestBranch(int rootNodeSeqNb) throws ClosedChannelException {
+        List<HistoryTreeNode> list = new ArrayList<>();
 
         HistoryTreeNode nextChildNode = fTreeIO.readNode(rootNodeSeqNb);
         list.add(nextChildNode);
@@ -370,7 +370,7 @@ class HistoryTree {
      *
      * @return The immutable latest branch
      */
-    protected List<@NonNull HistoryTreeNode> getLatestBranch() {
+    protected List<HistoryTreeNode> getLatestBranch() {
         return ImmutableList.copyOf(fLatestBranch);
     }
 
@@ -627,7 +627,7 @@ class HistoryTree {
      *            Start time of the new node
      * @return The newly created node
      */
-    private @NonNull CoreNode initNewCoreNode(int parentSeqNumber, long startTime) {
+    private @NotNull CoreNode initNewCoreNode(int parentSeqNumber, long startTime) {
         CoreNode newNode = new CoreNode(fBlockSize, fMaxChildren, fNodeCount, parentSeqNumber,
                 startTime);
         fNodeCount++;
@@ -643,7 +643,7 @@ class HistoryTree {
      *            Start time of the new node
      * @return The newly created node
      */
-    private @NonNull LeafNode initNewLeafNode(int parentSeqNumber, long startTime) {
+    private @NotNull LeafNode initNewLeafNode(int parentSeqNumber, long startTime) {
         LeafNode newNode = new LeafNode(fBlockSize, fNodeCount, parentSeqNumber,
                 startTime);
         fNodeCount++;

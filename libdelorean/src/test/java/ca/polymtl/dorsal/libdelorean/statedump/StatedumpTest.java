@@ -11,7 +11,6 @@ package ca.polymtl.dorsal.libdelorean.statedump;
 
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import com.google.common.io.MoreFiles;
-import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -42,7 +41,7 @@ public class StatedumpTest {
             final int nbAttributes = 7;
             final int version = 0;
 
-            List<String @NonNull []> initialAttributes = Arrays.asList(
+            List<String[]> initialAttributes = Arrays.asList(
                     new String[] { "Threads" },
                     new String[] { "Threads", "1000" },
                     new String[] { "Threads", "1000", "Status" },
@@ -51,7 +50,7 @@ public class StatedumpTest {
                     new String[] { "Threads", "2000", "PPID" },
                     new String[] { "Threads", "2000", "Active" });
 
-            List<@NonNull StateValue> initialValues = Arrays.asList(
+            List<StateValue> initialValues = Arrays.asList(
                     StateValue.nullValue(),
                     StateValue.nullValue(),
                     StateValue.newValueString("Running"),

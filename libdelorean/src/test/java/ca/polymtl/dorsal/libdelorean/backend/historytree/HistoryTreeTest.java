@@ -9,23 +9,19 @@
 
 package ca.polymtl.dorsal.libdelorean.backend.historytree;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import com.google.common.collect.Iterables;
+import org.jetbrains.annotations.NotNull;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.Iterables;
-
-import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
+import static org.junit.Assert.*;
 
 /**
  * Tests the history tree
@@ -41,13 +37,13 @@ public class HistoryTreeTest {
 
     /* String with 23 characters, interval in file will be 25 bytes long */
     private static final String TEST_STRING = "abcdefghifklmnopqrstuvw"; //$NON-NLS-1$
-    private static final @NonNull StateValue STRING_VALUE = StateValue.newValueString(TEST_STRING);
+    private static final @NotNull StateValue STRING_VALUE = StateValue.newValueString(TEST_STRING);
     private static final int STRING_INTERVAL_SIZE = (new HTInterval(0, 1, 1, STRING_VALUE)).getSizeOnDisk();
 
-    private static final @NonNull StateValue LONG_VALUE = StateValue.newValueLong(10L);
+    private static final @NotNull StateValue LONG_VALUE = StateValue.newValueLong(10L);
     private static final int LONG_INTERVAL_SIZE = (new HTInterval(0, 1, 1, LONG_VALUE)).getSizeOnDisk();
 
-    private static final @NonNull StateValue INT_VALUE = StateValue.newValueInt(1);
+    private static final @NotNull StateValue INT_VALUE = StateValue.newValueInt(1);
     private static final int INT_INTERVAL_SIZE = (new HTInterval(0, 1, 1, INT_VALUE)).getSizeOnDisk();
 
     private File fTempFile;
@@ -105,7 +101,7 @@ public class HistoryTreeTest {
         return setupSmallTree(3);
     }
 
-    private static long fillValues(HistoryTree ht, @NonNull StateValue value, int nbValues, long start) {
+    private static long fillValues(HistoryTree ht, @NotNull StateValue value, int nbValues, long start) {
         for (int i = 0; i < nbValues; i++) {
             ht.insertInterval(new HTInterval(start + i, start + i + 1, 1, value));
         }

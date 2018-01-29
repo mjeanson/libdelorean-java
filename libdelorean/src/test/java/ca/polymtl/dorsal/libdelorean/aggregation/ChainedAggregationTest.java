@@ -12,7 +12,6 @@ package ca.polymtl.dorsal.libdelorean.aggregation;
 import ca.polymtl.dorsal.libdelorean.IStateSystemWriter;
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -31,7 +30,7 @@ public class ChainedAggregationTest extends AggregationTestBase {
 
     @Override
     protected IStateAggregationRule createRuleWithParameters(IStateSystemWriter ssb,
-            int targetQuark, List<String @NonNull []> patterns) {
+            int targetQuark, List<String[]> patterns) {
         /* Does not apply to this test */
         throw new UnsupportedOperationException();
     }

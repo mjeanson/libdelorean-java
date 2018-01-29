@@ -10,18 +10,17 @@
 
 package ca.polymtl.dorsal.libdelorean.backend;
 
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.eclipse.jdt.annotation.NonNull;
+import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.Assert.fail;
 
 /**
  * Test the {@link HistoryTreeBackend} class.
@@ -33,7 +32,7 @@ import ca.polymtl.dorsal.libdelorean.backend.historytree.HistoryTreeBackend;
 public class HistoryTreeBackendTest extends StateHistoryBackendTestBase {
 
     /** State system ID */
-    protected static final @NonNull String SSID = "test"; //$NON-NLS-1$
+    protected static final @NotNull String SSID = "test"; //$NON-NLS-1$
     /** Provider version */
     protected static final int PROVIDER_VERSION = 0;
 

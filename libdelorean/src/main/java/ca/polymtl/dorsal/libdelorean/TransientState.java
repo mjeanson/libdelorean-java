@@ -17,8 +17,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.NullStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Alexandre Montplaisir
  */
-@NonNullByDefault
 class TransientState {
 
     /* Indicates where to insert state changes that we generate */
@@ -333,7 +331,7 @@ class TransientState {
      * @param t
      *            The requested timestamp
      */
-    public void doQuery(List<@Nullable StateInterval> stateInfo, long t) {
+    public void doQuery(List<StateInterval> stateInfo, long t) {
         fRWLock.readLock().lock();
         try {
             if (!this.fIsActive) {

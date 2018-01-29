@@ -11,24 +11,16 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import static java.util.Objects.requireNonNull;
+import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
-
-import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
+import static java.util.Objects.requireNonNull;
 
 /**
  * The Attribute Tree is the /proc-like filesystem used to organize attributes.
@@ -255,9 +247,9 @@ final class AttributeTree {
      *             If 'attributeQuark' is invalid, or if there is no attrbiute
      *             associated to it.
      */
-    public synchronized @NonNull List<@NonNull Integer> getSubAttributes(int attributeQuark, boolean recursive)
+    public synchronized @NotNull List<Integer> getSubAttributes(int attributeQuark, boolean recursive)
             throws AttributeNotFoundException {
-        List<@NonNull Integer> listOfChildren = new ArrayList<>();
+        List<Integer> listOfChildren = new ArrayList<>();
         Attribute startingAttribute;
 
         /* Check if the quark is valid */
@@ -311,7 +303,7 @@ final class AttributeTree {
      *            The quark of the attribute
      * @return The (base) name of the attribute
      */
-    public synchronized @NonNull String getAttributeName(int quark) {
+    public synchronized @NotNull String getAttributeName(int quark) {
         return attributeList.get(quark).getName();
     }
 
@@ -322,7 +314,7 @@ final class AttributeTree {
      *            The quark of the attribute
      * @return The full path name of the attribute
      */
-    public synchronized @NonNull String getFullAttributeName(int quark) {
+    public synchronized @NotNull String getFullAttributeName(int quark) {
         return attributeList.get(quark).getFullAttributeName();
     }
 
@@ -334,7 +326,7 @@ final class AttributeTree {
      *            The quark of the attribute
      * @return The path elements of the full path
      */
-    public synchronized String @NonNull [] getFullAttributePathArray(int quark) {
+    public synchronized @NotNull String[] getFullAttributePathArray(int quark) {
         return attributeList.get(quark).getFullAttribute();
     }
 

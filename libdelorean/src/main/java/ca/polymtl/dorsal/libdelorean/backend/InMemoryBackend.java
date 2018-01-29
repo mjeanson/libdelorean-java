@@ -14,7 +14,6 @@ import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -42,7 +41,7 @@ class InMemoryBackend implements IStateHistoryBackend {
      */
     private static final Comparator<StateInterval> END_COMPARATOR = Comparator.comparing(StateInterval::getEnd).thenComparing(StateInterval::getAttribute);
 
-    private final @NonNull String ssid;
+    private final @NotNull String ssid;
     private final TreeSet<StateInterval> intervals;
     private final long startTime;
 
@@ -56,7 +55,7 @@ class InMemoryBackend implements IStateHistoryBackend {
      * @param startTime
      *            The start time of this interval store
      */
-    public InMemoryBackend(@NonNull String ssid, long startTime) {
+    public InMemoryBackend(@NotNull String ssid, long startTime) {
         this.ssid = ssid;
         this.startTime = startTime;
         this.latestTime = startTime;

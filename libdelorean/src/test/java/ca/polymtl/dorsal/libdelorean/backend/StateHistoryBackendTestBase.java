@@ -13,7 +13,6 @@ package ca.polymtl.dorsal.libdelorean.backend;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
 import com.google.common.collect.ImmutableSet;
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -174,7 +173,7 @@ public abstract class StateHistoryBackendTestBase {
         for (long t = backend.getStartTime(); t <= backend.getEndTime(); t++) {
             final long ts = t;
 
-            List<@Nullable StateInterval> stateInfo = new ArrayList<>(fNbAttributes);
+            List<StateInterval> stateInfo = new ArrayList<>(fNbAttributes);
             IntStream.range(0, fNbAttributes).forEach(i -> stateInfo.add(null));
             backend.doQuery(stateInfo, t);
 

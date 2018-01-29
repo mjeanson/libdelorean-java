@@ -15,8 +15,6 @@ import ca.polymtl.dorsal.libdelorean.exceptions.StateSystemDisposedException;
 import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,6 @@ import java.util.Set;
  *
  * @author Alexandre Montplaisir
  */
-@NonNullByDefault
 public interface IStateSystemReader extends IStateSystemQuarkResolver {
 
     /**
@@ -136,7 +133,7 @@ public interface IStateSystemReader extends IStateSystemQuarkResolver {
      * @throws StateSystemDisposedException
      *             If the query is sent after the state system has been disposed
      */
-    List<@NonNull StateInterval> queryFullState(long t)
+    List<StateInterval> queryFullState(long t)
             throws StateSystemDisposedException;
 
     /**

@@ -15,8 +15,8 @@ import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.*;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -266,7 +266,7 @@ public class Statedump {
 
         private static void insertStateValueInStateNode(JSONObject stateNode, StateValue stateValue) throws JSONException {
 
-            @NonNull String type;
+            @NotNull String type;
             Object value;
 
             if (stateValue instanceof BooleanStateValue) {

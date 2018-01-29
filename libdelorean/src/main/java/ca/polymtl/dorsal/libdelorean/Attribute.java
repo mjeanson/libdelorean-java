@@ -11,7 +11,8 @@
 
 package ca.polymtl.dorsal.libdelorean;
 
-import static java.util.Objects.requireNonNull;
+import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintWriter;
 import java.util.Collections;
@@ -19,9 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNull;
-
-import com.google.common.collect.ImmutableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * An Attribute is a "node" in the Attribute Tree. It represents a smallest
@@ -35,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 final class Attribute {
 
     private final Attribute parent;
-    private final @NonNull String name;
+    private final @NotNull String name;
     private final int quark;
 
     /** The sub-attributes (<basename, attribute>) of this attribute */
@@ -52,7 +51,7 @@ final class Attribute {
      * @param quark
      *            The integer representation of this attribute
      */
-    public Attribute(Attribute parent, @NonNull String name, int quark) {
+    public Attribute(Attribute parent, @NotNull String name, int quark) {
         this.parent = parent;
         this.quark = quark;
         this.name = name;
@@ -77,7 +76,7 @@ final class Attribute {
      *
      * @return The name of this attribute
      */
-    public @NonNull String getName() {
+    public @NotNull String getName() {
         return name;
     }
 
@@ -194,7 +193,7 @@ final class Attribute {
      *
      * @return The full attribute path elements
      */
-    public String @NonNull [] getFullAttribute() {
+    public @NotNull String[] getFullAttribute() {
         LinkedList<String> list = new LinkedList<>();
         Attribute curNode = this;
 
@@ -204,7 +203,7 @@ final class Attribute {
             curNode = curNode.parent;
         }
 
-        return list.toArray(new @NonNull String[0]);
+        return list.toArray(new String[0]);
     }
 
     /**
@@ -213,7 +212,7 @@ final class Attribute {
      *
      * @return The full name of this attribute
      */
-    public @NonNull String getFullAttributeName() {
+    public @NotNull String getFullAttributeName() {
         String[] array = this.getFullAttribute();
         StringBuffer buf = new StringBuffer();
 

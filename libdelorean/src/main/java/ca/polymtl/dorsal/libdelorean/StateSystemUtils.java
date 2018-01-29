@@ -16,8 +16,7 @@ import ca.polymtl.dorsal.libdelorean.exceptions.TimeRangeException;
 import ca.polymtl.dorsal.libdelorean.interval.StateInterval;
 import ca.polymtl.dorsal.libdelorean.statevalue.IntegerStateValue;
 import ca.polymtl.dorsal.libdelorean.statevalue.StateValue;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -29,7 +28,6 @@ import java.util.concurrent.FutureTask;
  *
  * @author Geneviève Bastien
  */
-@NonNullByDefault
 public final class StateSystemUtils {
 
     private StateSystemUtils() {
@@ -61,7 +59,7 @@ public final class StateSystemUtils {
      *             If the query is sent after the state system has been disposed
      */
     public static @Nullable StateInterval querySingleStackTop(IStateSystemReader ss,
-                                                              long t, int stackAttributeQuark)
+                                      long t, int stackAttributeQuark)
             throws AttributeNotFoundException, StateSystemDisposedException {
         StateValue curStackStateValue = ss.querySingleState(t, stackAttributeQuark).getStateValue();
 

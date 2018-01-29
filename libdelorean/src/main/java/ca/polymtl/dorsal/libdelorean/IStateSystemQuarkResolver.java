@@ -11,7 +11,6 @@
 package ca.polymtl.dorsal.libdelorean;
 
 import ca.polymtl.dorsal.libdelorean.exceptions.AttributeNotFoundException;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import java.util.List;
 
@@ -21,7 +20,6 @@ import java.util.List;
  *
  * @author Alexandre Montplaisir
  */
-@NonNullByDefault
 public interface IStateSystemQuarkResolver {
 
     /** Quark representing the root attribute */
